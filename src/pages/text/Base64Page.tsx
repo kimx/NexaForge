@@ -9,8 +9,10 @@ import { getRelatedTools } from "../../utils/toolHelpers";
 import { trackEvent } from "../../utils/analytics";
 import { useSeo } from "../../hooks/useSeo";
 import { validateFileSize, validateMime } from "../../utils/validation";
+import { useLanguage } from "../../context/LanguageContext";
 
 export function Base64Page(): JSX.Element {
+  const { t } = useLanguage();
   const [mode, setMode] = useState<"textToBase64" | "base64ToText" | "fileToBase64">("textToBase64");
   const [text, setText] = useState("");
   const [resultText, setResultText] = useState("");
@@ -21,34 +23,36 @@ export function Base64Page(): JSX.Element {
   const [copyError, setCopyError] = useState<string | null>(null);
 
   const tool = FILE_TOOLS.find((item) => item.id === "base64");
+  const title = t("tool.base64.title");
+  const description = t("tool.base64.description");
   const toolMeta: ToolMeta = {
-    title: "Base64 - NexaForge",
-    description: "Encode and decode Base64 locally for text and files.",
+    title: `${title} - ${t("header.title")}`,
+    description,
     canonical: "/text/base64",
-    h1: "Base64",
+    h1: title,
   };
   useSeo(toolMeta);
 
   const relatedTools = getRelatedTools("base64");
   const howItWorks = useMemo(
     () => [
-      "Choose conversion mode.",
-      "Run processing and copy or download result text.",
+      t("tool.base64.how.0"),
+      t("tool.base64.how.1"),
     ],
-    []
+    [t]
   );
   const faq = useMemo(
     () => [
       {
-        q: "File size support?",
-        a: "Files are subject to local limit constraints.",
+        q: t("tool.base64.faq.0.question"),
+        a: t("tool.base64.faq.0.answer"),
       },
       {
-        q: "Does this upload files?",
-        a: "No. File read and encode remains local.",
+        q: t("tool.base64.faq.1.question"),
+        a: t("tool.base64.faq.1.answer"),
       },
     ],
-    []
+    [t]
   );
 
   const handleProcess = async () => {
@@ -83,12 +87,12 @@ export function Base64Page(): JSX.Element {
       if (mode === "fileToBase64") {
         const source = files[0];
         if (!source) {
-          throw new Error("Please select one file.");
+          throw new Error(t("error.selectOneFile", { type: t("label.fileType.file") }));
         }
         const sizeError = validateFileSize(source);
         const mimeError = validateMime(source, "*/*");
         if (sizeError || mimeError) {
-          throw new Error(sizeError?.message ?? mimeError?.message ?? "Invalid file.");
+          throw new Error(sizeError?.message ?? mimeError?.message ?? t("error.invalidFile"));
         }
         const encoded = await fileToBase64(source);
         setResultText(encoded);
@@ -104,7 +108,7 @@ export function Base64Page(): JSX.Element {
       setProcessing("success");
       trackEvent("process_success", { tool: "base64" });
     } catch (err) {
-      setError("Unable to process this file.\nThe file may be corrupted or unsupported.");
+      setError(t("error.processingFailed"));
       setProcessing("error");
       trackEvent("process_failed", { tool: "base64" });
       console.error(err);
@@ -112,46 +116,42 @@ export function Base64Page(): JSX.Element {
   };
 
   return (
-    <ToolPageTemplate
-      tool={tool ?? FILE_TOOLS[0]}
-      meta={toolMeta}
-      breadcrumb={["Home", tool?.title ?? "Base64"]}
-      children={{
+      <ToolPageTemplate
+        tool={tool ?? FILE_TOOLS[0]}
+        meta={toolMeta}
+        breadcrumb={["Home", t("tool.base64.title")]}
+        children={{
         workspace: (
           <>
             {mode === "fileToBase64" ? (
               <FileDropzone
-                label="Drop file here"
+                label={t("label.dropFile")}
                 multiple={false}
                 onFiles={setFiles}
                 accept="*/*"
               />
             ) : (
-              <p>Enter text in the field below.</p>
+              <p>{t("tool.base64.label.enterText")}</p>
             )}
           </>
         ),
         options: (
           <div className="tool-form">
             <label>
-              Mode
+              {t("label.mode")}
               <select
                 value={mode}
                 onChange={(event) =>
                   setMode(event.target.value as "textToBase64" | "base64ToText" | "fileToBase64")
                 }
               >
-                <option value="textToBase64">Text → Base64</option>
-                <option value="base64ToText">Base64 → Text</option>
-                <option value="fileToBase64">File → Base64</option>
+                <option value="textToBase64">{t("tool.base64.option.textToBase64")}</option>
+                <option value="base64ToText">{t("tool.base64.option.base64ToText")}</option>
+                <option value="fileToBase64">{t("tool.base64.option.fileToBase64")}</option>
               </select>
             </label>
             {mode !== "fileToBase64" && (
-              <textarea
-                rows={6}
-                value={text}
-                onChange={(event) => setText(event.target.value)}
-              />
+              <textarea rows={6} value={text} onChange={(event) => setText(event.target.value)} />
             )}
             <div className="tool-actions">
               <button
@@ -161,7 +161,7 @@ export function Base64Page(): JSX.Element {
                 onClick={handleProcess}
                 aria-busy={processing === "processing"}
               >
-                {processing === "processing" ? "Processing..." : "Process"}
+                {processing === "processing" ? t("button.processing") : t("button.process")}
               </button>
               <button
                 type="button"
@@ -171,12 +171,12 @@ export function Base64Page(): JSX.Element {
                     await navigator.clipboard.writeText(resultText);
                     setCopyError(null);
                   } catch {
-                    setCopyError("Unable to copy result to clipboard.");
+                    setCopyError(t("error.copyFailed"));
                   }
                 }}
                 disabled={!resultText || processing === "processing"}
               >
-                Copy
+                {t("button.copy")}
               </button>
             </div>
           </div>
@@ -185,7 +185,7 @@ export function Base64Page(): JSX.Element {
           <>
             {processing === "error" && error && <p role="alert" className="error">{error}</p>}
             {copyError && <p role="alert" className="error">{copyError}</p>}
-            <pre>{resultText || "No output."}</pre>
+            <pre>{resultText || t("tool.base64.label.noOutput")}</pre>
             <div className="tool-actions">
               <DownloadButton
                 result={resultFile}
@@ -202,4 +202,3 @@ export function Base64Page(): JSX.Element {
     />
   );
 }
-

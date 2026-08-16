@@ -25,9 +25,13 @@ describe("JsonFormatterPage", () => {
       .mockImplementation(() => new Promise<string>(() => {}));
 
     const { container } = renderWithRouter(<JsonFormatterPage />);
+    const sourceSelect = screen.getByRole("combobox", { name: "Input source" });
+    const modeSelect = screen.getByRole("combobox", { name: "Mode" });
+    fireEvent.change(sourceSelect, { target: { value: "file" } });
     const input = container.querySelector("input[type=\"file\"]") as HTMLInputElement;
     const file = new File(["{\\\"a\\\":1}"], "sample.json", { type: "application/json" });
     fireEvent.change(input, { target: { files: [file] } });
+    fireEvent.change(modeSelect, { target: { value: "format" } });
     fireEvent.click(screen.getByRole("button", { name: "Process" }));
 
     await waitFor(() => {
@@ -46,8 +50,10 @@ describe("JsonFormatterPage", () => {
     });
 
     const { container } = renderWithRouter(<JsonFormatterPage />);
+    const sourceSelect = screen.getByRole("combobox", { name: "Input source" });
     const input = container.querySelector("input[type=\"file\"]") as HTMLInputElement;
     const file = new File(["{invalid"], "sample.json", { type: "application/json" });
+    fireEvent.change(sourceSelect, { target: { value: "file" } });
     fireEvent.change(input, { target: { files: [file] } });
     fireEvent.click(screen.getByRole("button", { name: "Process" }));
 
@@ -65,10 +71,11 @@ describe("JsonFormatterPage", () => {
     const minifySpy = vi.spyOn(jsonService, "minifyJson");
 
     const { container } = renderWithRouter(<JsonFormatterPage />);
+    const sourceSelect = screen.getByRole("combobox", { name: "Input source" });
+    const modeSelect = screen.getByRole("combobox", { name: "Mode" });
     const input = container.querySelector("input[type=\"file\"]") as HTMLInputElement;
     const file = new File(["{\"a\":1}"], "sample.json", { type: "application/json" });
-    const modeSelect = screen.getByRole("combobox");
-
+    fireEvent.change(sourceSelect, { target: { value: "file" } });
     fireEvent.change(input, { target: { files: [file] } });
     fireEvent.change(modeSelect, { target: { value: "minify" } });
     fireEvent.click(screen.getByRole("button", { name: "Process" }));

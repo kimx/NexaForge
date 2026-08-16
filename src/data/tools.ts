@@ -97,6 +97,20 @@ export const FILE_TOOLS: ToolDefinition[] = [
     title: "QR Code",
     description: "Create and download PNG QR codes from text or URL.",
     path: "/qr-code",
+    category: "Image",
+  },
+  {
+    id: "jwt-key",
+    title: "JWT Key Generator",
+    description: "Generate local Base64URL-safe random keys.",
+    path: "/developer/jwt-key",
+    category: "Developer",
+  },
+  {
+    id: "jwt-decoder",
+    title: "JWT Decoder",
+    description: "Decode JWT header, payload, and signature.",
+    path: "/developer/jwt-decoder",
     category: "Developer",
   },
 ];

@@ -10,8 +10,10 @@ import { getRelatedTools } from "../../utils/toolHelpers";
 import { trackEvent } from "../../utils/analytics";
 import { useSeo } from "../../hooks/useSeo";
 import { validateFileSize, validateMime } from "../../utils/validation";
+import { useLanguage } from "../../context/LanguageContext";
 
 export function PdfRotatePage(): JSX.Element {
+  const { t } = useLanguage();
   const [files, setFiles] = useState<File[]>([]);
   const [degrees, setDegrees] = useState<90 | 180 | 270>(90);
   const [pagesInput, setPagesInput] = useState("");
@@ -21,48 +23,50 @@ export function PdfRotatePage(): JSX.Element {
   const [rotateAll, setRotateAll] = useState(true);
 
   const tool = FILE_TOOLS.find((item) => item.id === "pdf-rotate");
+  const title = t("tool.pdf-rotate.title");
+  const description = t("tool.pdf-rotate.description");
   const toolMeta: ToolMeta = {
-    title: "PDF Rotate - NexaForge",
-    description: "Rotate PDF files with page-specific options in-browser.",
+    title: `${title} - ${t("header.title")}`,
+    description,
     canonical: "/pdf/rotate",
-    h1: "PDF Rotate",
+    h1: title,
   };
   useSeo(toolMeta);
 
   const relatedTools = getRelatedTools("pdf-rotate");
   const howItWorks = useMemo(
     () => [
-      "Upload a PDF file.",
-      "Choose 90, 180 or 270 degrees.",
-      "Optionally set specific pages.",
-      "Download the rotated PDF.",
+      t("tool.pdf-rotate.how.0"),
+      t("tool.pdf-rotate.how.1"),
+      t("tool.pdf-rotate.how.2"),
+      t("tool.pdf-rotate.how.3"),
     ],
-    []
+    [t]
   );
   const faq = useMemo(
     () => [
       {
-        q: "Can I rotate only one page?",
-        a: "Yes. Uncheck All Pages and input a single page or range.",
+        q: t("tool.pdf-rotate.faq.0.question"),
+        a: t("tool.pdf-rotate.faq.0.answer"),
       },
       {
-        q: "What happens after processing?",
-        a: "A new PDF is downloaded; original file is untouched.",
+        q: t("tool.pdf-rotate.faq.1.question"),
+        a: t("tool.pdf-rotate.faq.1.answer"),
       },
     ],
-    []
+    [t]
   );
 
   const handleProcess = async () => {
     if (!files[0]) {
-      setError("Please select one PDF.");
+      setError(t("error.selectOneFile", { type: t("label.fileType.pdf") }));
       return;
     }
     const source = files[0];
     const sizeError = validateFileSize(source);
     const mimeError = validateMime(source, "application/pdf");
     if (sizeError || mimeError) {
-      setError(sizeError?.message ?? mimeError?.message ?? "Invalid file.");
+      setError(sizeError?.message ?? mimeError?.message ?? t("error.invalidFile"));
       setProcessing("error");
       trackEvent("process_failed", { tool: "pdf-rotate" });
       return;
@@ -77,7 +81,7 @@ export function PdfRotatePage(): JSX.Element {
       setProcessing("success");
       trackEvent("process_success", { tool: "pdf-rotate" });
     } catch (err) {
-      setError("Unable to process this file.\nThe file may be corrupted or unsupported.");
+      setError(t("error.processingFailed"));
       setProcessing("error");
       trackEvent("process_failed", { tool: "pdf-rotate" });
       console.error(err);
@@ -85,15 +89,15 @@ export function PdfRotatePage(): JSX.Element {
   };
 
   return (
-    <ToolPageTemplate
-      tool={tool ?? FILE_TOOLS[0]}
-      meta={toolMeta}
-      breadcrumb={["Home", tool?.title ?? "PDF Rotate"]}
-      children={{
+      <ToolPageTemplate
+        tool={tool ?? FILE_TOOLS[0]}
+        meta={toolMeta}
+        breadcrumb={["Home", t("tool.pdf-rotate.title")]}
+        children={{
         workspace: (
           <>
             <FileDropzone
-              label="Drop PDF here"
+              label={t("label.dropPdf")}
               accept="application/pdf"
               multiple={false}
               onFiles={setFiles}
@@ -104,7 +108,7 @@ export function PdfRotatePage(): JSX.Element {
         options: (
           <div className="tool-form">
             <label>
-              Rotate Angle
+              {t("label.rotateAngle")}
               <select
                 value={degrees}
                 onChange={(event) => setDegrees(Number(event.target.value) as 90 | 180 | 270)}
@@ -120,11 +124,11 @@ export function PdfRotatePage(): JSX.Element {
                 checked={rotateAll}
                 onChange={(event) => setRotateAll(event.target.checked)}
               />
-              Rotate all pages
+              {t("label.rotateAllPages")}
             </label>
             {!rotateAll && (
               <label>
-                Target pages
+                {t("label.targetPages")}
                 <input
                   value={pagesInput}
                   onChange={(event) => setPagesInput(event.target.value)}
@@ -138,7 +142,7 @@ export function PdfRotatePage(): JSX.Element {
               disabled={processing === "processing"}
               aria-busy={processing === "processing"}
             >
-              {processing === "processing" ? "Processing..." : "Process"}
+              {processing === "processing" ? t("button.processing") : t("button.process")}
             </button>
           </div>
         ),
@@ -149,7 +153,11 @@ export function PdfRotatePage(): JSX.Element {
                 {error}
               </p>
             )}
-            {result && <p>Output size: {(result.size / 1024).toFixed(2)} KB</p>}
+            {result && (
+              <p>
+                {t("tool.pdf-rotate.label.outputSize", { size: (result.size / 1024).toFixed(2) })}
+              </p>
+            )}
             <DownloadButton
               result={result}
               disabled={processing === "processing"}
@@ -164,4 +172,3 @@ export function PdfRotatePage(): JSX.Element {
     />
   );
 }
-

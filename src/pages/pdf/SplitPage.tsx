@@ -10,8 +10,10 @@ import { getRelatedTools } from "../../utils/toolHelpers";
 import { trackEvent } from "../../utils/analytics";
 import { useSeo } from "../../hooks/useSeo";
 import { validateFileSize, validateMime } from "../../utils/validation";
+import { useLanguage } from "../../context/LanguageContext";
 
 export function PdfSplitPage(): JSX.Element {
+  const { t } = useLanguage();
   const [file, setFile] = useState<File[]>([]);
   const [ranges, setRanges] = useState("1");
   const [processing, setProcessing] = useState<ProcessingState>("idle");
@@ -19,47 +21,49 @@ export function PdfSplitPage(): JSX.Element {
   const [error, setError] = useState<string | null>(null);
 
   const tool = FILE_TOOLS.find((item) => item.id === "pdf-split");
+  const title = t("tool.pdf-split.title");
+  const description = t("tool.pdf-split.description");
   const toolMeta: ToolMeta = {
-    title: "PDF Split - NexaForge",
-    description: "Split PDFs by range input directly in your browser.",
+    title: `${title} - ${t("header.title")}`,
+    description,
     canonical: "/pdf/split",
-    h1: "PDF Split",
+    h1: title,
   };
   useSeo(toolMeta);
 
   const relatedTools = getRelatedTools("pdf-split");
   const howItWorks = useMemo(
     () => [
-      "Upload a PDF file.",
-      "Type ranges such as 1, 1-3, 1-3,5,8-10.",
-      "Process and download the resulting split file.",
+      t("tool.pdf-split.how.0"),
+      t("tool.pdf-split.how.1"),
+      t("tool.pdf-split.how.2"),
     ],
-    []
+    [t]
   );
   const faq = useMemo(
     () => [
       {
-        q: "Is page index 0 supported?",
-        a: "No. Pages are 1-based for user input.",
+        q: t("tool.pdf-split.faq.0.question"),
+        a: t("tool.pdf-split.faq.0.answer"),
       },
       {
-        q: "Can I split to multiple files?",
-        a: "This stage outputs one file for selected ranges.",
+        q: t("tool.pdf-split.faq.1.question"),
+        a: t("tool.pdf-split.faq.1.answer"),
       },
     ],
-    []
+    [t]
   );
 
   const handleProcess = async () => {
     if (!file[0]) {
-      setError("Please select one PDF.");
+      setError(t("error.selectOneFile", { type: t("label.fileType.pdf") }));
       return;
     }
     const source = file[0];
     const sizeError = validateFileSize(source);
     const mimeError = validateMime(source, "application/pdf");
     if (sizeError || mimeError) {
-      setError(sizeError?.message ?? mimeError?.message ?? "Invalid file.");
+      setError(sizeError?.message ?? mimeError?.message ?? t("error.invalidFile"));
       setProcessing("error");
       trackEvent("process_failed", { tool: "pdf-split" });
       return;
@@ -73,7 +77,7 @@ export function PdfSplitPage(): JSX.Element {
       setProcessing("success");
       trackEvent("process_success", { tool: "pdf-split" });
     } catch (err) {
-      setError("Unable to process this file.\nThe file may be corrupted or unsupported.");
+      setError(t("error.processingFailed"));
       setProcessing("error");
       trackEvent("process_failed", { tool: "pdf-split" });
       console.error(err);
@@ -81,15 +85,15 @@ export function PdfSplitPage(): JSX.Element {
   };
 
   return (
-    <ToolPageTemplate
-      tool={tool ?? FILE_TOOLS[0]}
-      meta={toolMeta}
-      breadcrumb={["Home", tool?.title ?? "PDF Split"]}
-      children={{
+      <ToolPageTemplate
+        tool={tool ?? FILE_TOOLS[0]}
+        meta={toolMeta}
+        breadcrumb={["Home", t("tool.pdf-split.title")]}
+        children={{
         workspace: (
           <>
             <FileDropzone
-              label="Drop PDF here"
+              label={t("label.dropPdf")}
               accept="application/pdf"
               onFiles={setFile}
               multiple={false}
@@ -100,7 +104,7 @@ export function PdfSplitPage(): JSX.Element {
         options: (
           <div className="tool-form">
             <label>
-              Page Ranges
+              {t("label.pageRanges")}
               <input
                 value={ranges}
                 onChange={(event) => setRanges(event.target.value)}
@@ -113,14 +117,18 @@ export function PdfSplitPage(): JSX.Element {
               disabled={processing === "processing"}
               aria-busy={processing === "processing"}
             >
-              {processing === "processing" ? "Processing..." : "Process"}
+              {processing === "processing" ? t("button.processing") : t("button.process")}
             </button>
           </div>
         ),
         result: (
           <>
             {processing === "error" && error && <p role="alert" className="error">{error}</p>}
-            {result && <p>Output size: {(result.size / 1024).toFixed(2)} KB</p>}
+            {result ? (
+              <p>{t("tool.pdf-split.label.outputSize", { size: (result.size / 1024).toFixed(2) })}</p>
+            ) : (
+              <p>{t("label.noResult")}</p>
+            )}
             <DownloadButton
               result={result}
               disabled={processing === "processing"}
@@ -135,4 +143,3 @@ export function PdfSplitPage(): JSX.Element {
     />
   );
 }
-

@@ -8,8 +8,10 @@ import { getRelatedTools } from "../../utils/toolHelpers";
 import { trackEvent } from "../../utils/analytics";
 import { useSeo } from "../../hooks/useSeo";
 import { useBlobUrl } from "../../hooks/useBlobUrl";
+import { useLanguage } from "../../context/LanguageContext";
 
 export function QrPage(): JSX.Element {
+  const { t } = useLanguage();
   const [text, setText] = useState("https://example.com");
   const [size, setSize] = useState(256);
   const [errorCorrectionLevel, setErrorCorrectionLevel] = useState<"L" | "M" | "Q" | "H">("M");
@@ -18,37 +20,43 @@ export function QrPage(): JSX.Element {
   const [error, setError] = useState<string | null>(null);
 
   const tool = FILE_TOOLS.find((item) => item.id === "qr-code");
+  const title = t("tool.qr-code.title");
+  const description = t("tool.qr-code.description");
   const toolMeta: ToolMeta = {
-    title: "QR Code - NexaForge",
-    description: "Generate PNG QR codes in-browser for text or URL.",
+    title: `${title} - ${t("header.title")}`,
+    description,
     canonical: "/qr-code",
-    h1: "QR Code",
+    h1: title,
   };
   useSeo(toolMeta);
 
   const relatedTools = getRelatedTools("qr-code");
   const previewUrl = useBlobUrl(result?.blob);
   const howItWorks = useMemo(
-    () => ["Input text or URL.", "Choose size and error-correction level.", "Generate and download."],
-    []
+    () => [
+      t("tool.qr-code.how.0"),
+      t("tool.qr-code.how.1"),
+      t("tool.qr-code.how.2"),
+    ],
+    [t]
   );
   const faq = useMemo(
     () => [
       {
-        q: "Is internet needed?",
-        a: "No. Generation uses a local library in browser.",
+        q: t("tool.qr-code.faq.0.question"),
+        a: t("tool.qr-code.faq.0.answer"),
       },
       {
-        q: "Can we generate SVG?",
-        a: "First phase supports PNG download only.",
+        q: t("tool.qr-code.faq.1.question"),
+        a: t("tool.qr-code.faq.1.answer"),
       },
     ],
-    []
+    [t]
   );
 
   const handleGenerate = async () => {
     if (!text.trim()) {
-      setError("Please enter text.");
+      setError(t("error.selectText"));
       return;
     }
     setError(null);
@@ -61,23 +69,23 @@ export function QrPage(): JSX.Element {
       trackEvent("process_success", { tool: "qr-code" });
     } catch (err) {
       setProcessing("error");
-      setError("Unable to process this file.\nThe file may be corrupted or unsupported.");
+      setError(t("error.processingFailed"));
       trackEvent("process_failed", { tool: "qr-code" });
       console.error(err);
     }
   };
 
   return (
-    <ToolPageTemplate
-      tool={tool ?? FILE_TOOLS[0]}
-      meta={toolMeta}
-      breadcrumb={["Home", tool?.title ?? "QR Code"]}
-      children={{
+      <ToolPageTemplate
+        tool={tool ?? FILE_TOOLS[0]}
+        meta={toolMeta}
+        breadcrumb={["Home", t("tool.qr-code.title")]}
+        children={{
         workspace: (
           <>
-            <p>Dropzone is not required for text input tools.</p>
+            <p>{t("tool.qr-code.label.noDropzone")}</p>
             <label>
-              Text / URL
+              {t("label.textOrUrl")}
               <textarea rows={4} value={text} onChange={(event) => setText(event.target.value)} />
             </label>
           </>
@@ -85,7 +93,7 @@ export function QrPage(): JSX.Element {
         options: (
           <div className="tool-form">
             <label>
-              Size
+              {t("label.size")}
               <input
                 type="range"
                 min={128}
@@ -93,13 +101,15 @@ export function QrPage(): JSX.Element {
                 value={size}
                 onChange={(event) => setSize(Number(event.target.value))}
               />
-              {size}px
+              {t("tool.qr-code.label.sizePixel", { size })}
             </label>
             <label>
-              Error correction level
+              {t("tool.qr-code.label.errorCorrection")}
               <select
                 value={errorCorrectionLevel}
-                onChange={(event) => setErrorCorrectionLevel(event.target.value as "L" | "M" | "Q" | "H")}
+                onChange={(event) =>
+                  setErrorCorrectionLevel(event.target.value as "L" | "M" | "Q" | "H")
+                }
               >
                 <option value="L">L</option>
                 <option value="M">M</option>
@@ -114,7 +124,7 @@ export function QrPage(): JSX.Element {
               disabled={processing === "processing"}
               aria-busy={processing === "processing"}
             >
-              {processing === "processing" ? "Generating..." : "Generate"}
+              {processing === "processing" ? t("button.generating") : t("tool.qr-code.label.generateButton")}
             </button>
           </div>
         ),
@@ -122,9 +132,9 @@ export function QrPage(): JSX.Element {
           <>
             {processing === "error" && error && <p role="alert" className="error">{error}</p>}
             {result ? (
-              <img src={previewUrl} alt="QR Code preview" />
+              <img src={previewUrl} alt={t("label.preview")} />
             ) : (
-              <p>Generate to preview.</p>
+              <p>{t("tool.qr-code.label.noPreview")}</p>
             )}
             <DownloadButton
               result={result}
@@ -140,4 +150,3 @@ export function QrPage(): JSX.Element {
     />
   );
 }
-

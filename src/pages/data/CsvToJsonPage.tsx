@@ -10,8 +10,10 @@ import { getRelatedTools } from "../../utils/toolHelpers";
 import { trackEvent } from "../../utils/analytics";
 import { useSeo } from "../../hooks/useSeo";
 import { validateFileSize, validateMime } from "../../utils/validation";
+import { useLanguage } from "../../context/LanguageContext";
 
 export function CsvToJsonPage(): JSX.Element {
+  const { t } = useLanguage();
   const [files, setFiles] = useState<File[]>([]);
   const [processing, setProcessing] = useState<ProcessingState>("idle");
   const [result, setResult] = useState<FileProcessResult | null>(null);
@@ -19,47 +21,49 @@ export function CsvToJsonPage(): JSX.Element {
   const [error, setError] = useState<string | null>(null);
 
   const tool = FILE_TOOLS.find((item) => item.id === "csv-to-json");
+  const title = t("tool.csv-to-json.title");
+  const description = t("tool.csv-to-json.description");
   const toolMeta: ToolMeta = {
-    title: "CSV to JSON - NexaForge",
-    description: "Convert CSV to JSON output safely in browser.",
+    title: `${title} - ${t("header.title")}`,
+    description,
     canonical: "/data/csv-to-json",
-    h1: "CSV to JSON",
+    h1: title,
   };
   useSeo(toolMeta);
 
   const relatedTools = getRelatedTools("csv-to-json");
   const howItWorks = useMemo(
     () => [
-      "Upload CSV file.",
-      "Headers are used as property names.",
-      "Process and inspect preview JSON before download.",
+      t("tool.csv-to-json.how.0"),
+      t("tool.csv-to-json.how.1"),
+      t("tool.csv-to-json.how.2"),
     ],
-    []
+    [t]
   );
   const faq = useMemo(
     () => [
       {
-        q: "Does header need to exist?",
-        a: "Yes for stable parsing. If missing, PapaParse will infer columns.",
+        q: t("tool.csv-to-json.faq.0.question"),
+        a: t("tool.csv-to-json.faq.0.answer"),
       },
       {
-        q: "Are files uploaded?",
-        a: "No, CSV is processed in-browser.",
+        q: t("tool.csv-to-json.faq.1.question"),
+        a: t("tool.csv-to-json.faq.1.answer"),
       },
     ],
-    []
+    [t]
   );
 
   const handleProcess = async () => {
     const source = files[0];
     if (!source) {
-      setError("Please select one csv file.");
+      setError(t("error.selectOneFile", { type: t("label.fileType.csv") }));
       return;
     }
     const mimeError = validateMime(source, "text/csv");
     const sizeError = validateFileSize(source);
     if (mimeError || sizeError) {
-      setError(mimeError?.message ?? sizeError?.message ?? "Invalid file.");
+      setError(mimeError?.message ?? sizeError?.message ?? t("error.invalidFile"));
       setProcessing("error");
       trackEvent("process_failed", { tool: "csv-to-json" });
       return;
@@ -81,7 +85,7 @@ export function CsvToJsonPage(): JSX.Element {
       setProcessing("success");
       trackEvent("process_success", { tool: "csv-to-json" });
     } catch (err) {
-      setError("Unable to process this file.\nThe file may be corrupted or unsupported.");
+      setError(t("error.processingFailed"));
       setProcessing("error");
       trackEvent("process_failed", { tool: "csv-to-json" });
       console.error(err);
@@ -89,15 +93,15 @@ export function CsvToJsonPage(): JSX.Element {
   };
 
   return (
-    <ToolPageTemplate
-      tool={tool ?? FILE_TOOLS[0]}
-      meta={toolMeta}
-      breadcrumb={["Home", tool?.title ?? "CSV to JSON"]}
-      children={{
+      <ToolPageTemplate
+        tool={tool ?? FILE_TOOLS[0]}
+        meta={toolMeta}
+        breadcrumb={["Home", t("tool.csv-to-json.title")]}
+        children={{
         workspace: (
           <>
             <FileDropzone
-              label="Drop CSV here"
+              label={t("label.dropCsv")}
               accept="text/csv"
               multiple={false}
               onFiles={setFiles}
@@ -114,14 +118,18 @@ export function CsvToJsonPage(): JSX.Element {
               disabled={processing === "processing"}
               aria-busy={processing === "processing"}
             >
-              {processing === "processing" ? "Processing..." : "Process"}
+              {processing === "processing" ? t("button.processing") : t("button.process")}
             </button>
           </div>
         ),
         result: (
           <>
             {processing === "error" && error && <p role="alert" className="error">{error}</p>}
-            <pre>{preview || "No preview."}</pre>
+            {preview ? (
+              <pre>{preview}</pre>
+            ) : (
+              <p>{t("tool.csv-to-json.label.preview")}</p>
+            )}
             <DownloadButton
               result={result}
               disabled={processing === "processing"}
@@ -136,4 +144,3 @@ export function CsvToJsonPage(): JSX.Element {
     />
   );
 }
-

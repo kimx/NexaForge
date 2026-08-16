@@ -7,9 +7,11 @@ import { generateUuids } from "../../services/text/textService";
 import { getRelatedTools } from "../../utils/toolHelpers";
 import { trackEvent } from "../../utils/analytics";
 import { useSeo } from "../../hooks/useSeo";
+import { useLanguage } from "../../context/LanguageContext";
 import type { FileProcessResult } from "../../types/tool";
 
 export function UuidPage(): JSX.Element {
+  const { t } = useLanguage();
   const [count, setCount] = useState(1);
   const [processing, setProcessing] = useState<ProcessingState>("idle");
   const [resultText, setResultText] = useState("");
@@ -18,35 +20,37 @@ export function UuidPage(): JSX.Element {
   const [copyError, setCopyError] = useState<string | null>(null);
 
   const tool = FILE_TOOLS.find((item) => item.id === "uuid");
+  const title = t("tool.uuid.title");
+  const description = t("tool.uuid.description");
   const toolMeta: ToolMeta = {
-    title: "UUID Generator - NexaForge",
-    description: "Generate random UUIDs using crypto.randomUUID().",
+    title: `${title} - ${t("header.title")}`,
+    description,
     canonical: "/text/uuid",
-    h1: "UUID Generator",
+    h1: title,
   };
   useSeo(toolMeta);
 
   const relatedTools = getRelatedTools("uuid");
   const howItWorks = useMemo(
     () => [
-      "Select single or batch mode by setting count.",
-      "Click Generate to create UUIDs.",
-      "Copy or download generated list.",
+      t("tool.uuid.how.0"),
+      t("tool.uuid.how.1"),
+      t("tool.uuid.how.2"),
     ],
-    []
+    [t]
   );
   const faq = useMemo(
     () => [
       {
-        q: "What is max count?",
-        a: "Maximum 1000 in one run.",
+        q: t("tool.uuid.faq.0.question"),
+        a: t("tool.uuid.faq.0.answer"),
       },
       {
-        q: "Are UUIDs secure?",
-        a: "crypto.randomUUID is used directly in browser.",
+        q: t("tool.uuid.faq.1.question"),
+        a: t("tool.uuid.faq.1.answer"),
       },
     ],
-    []
+    [t]
   );
 
   const handleGenerate = async () => {
@@ -57,7 +61,7 @@ export function UuidPage(): JSX.Element {
     try {
       const normalized = Math.min(1000, Math.max(1, count));
       const uuids = generateUuids(normalized);
-      const output = uuids.join("\n");
+      const output = uuids.join("\\n");
       setResultText(output);
       const blob = new Blob([output], { type: "text/plain" });
       setResult({
@@ -71,22 +75,22 @@ export function UuidPage(): JSX.Element {
       trackEvent("process_success", { tool: "uuid" });
     } catch (err) {
       setProcessing("error");
-      setError("Unable to process this file.\nThe file may be corrupted or unsupported.");
+      setError(t("error.processingFailed"));
       trackEvent("process_failed", { tool: "uuid" });
       console.error(err);
     }
   };
 
   return (
-    <ToolPageTemplate
-      tool={tool ?? FILE_TOOLS[0]}
-      meta={toolMeta}
-      breadcrumb={["Home", tool?.title ?? "UUID Generator"]}
-      children={{
+      <ToolPageTemplate
+        tool={tool ?? FILE_TOOLS[0]}
+        meta={toolMeta}
+        breadcrumb={["Home", t("tool.uuid.title")]}
+        children={{
         workspace: (
           <div className="tool-form">
             <label>
-              Count
+              {t("label.count")}
               <input
                 type="number"
                 min={1}
@@ -106,7 +110,7 @@ export function UuidPage(): JSX.Element {
               disabled={processing === "processing"}
               aria-busy={processing === "processing"}
             >
-              {processing === "processing" ? "Processing..." : "Generate"}
+              {processing === "processing" ? t("button.processing") : t("button.generate")}
             </button>
           </div>
         ),
@@ -114,7 +118,7 @@ export function UuidPage(): JSX.Element {
           <>
             {processing === "error" && error && <p role="alert" className="error">{error}</p>}
             {copyError && <p role="alert" className="error">{copyError}</p>}
-            <pre>{resultText || "No output."}</pre>
+            <pre>{resultText || t("tool.uuid.label.noOutput")}</pre>
             <div className="tool-actions">
               <button
                 type="button"
@@ -124,12 +128,12 @@ export function UuidPage(): JSX.Element {
                     await navigator.clipboard.writeText(resultText);
                     setCopyError(null);
                   } catch {
-                    setCopyError("Unable to copy result to clipboard.");
+                    setCopyError(t("error.copyFailed"));
                   }
                 }}
                 disabled={!resultText || processing === "processing"}
               >
-                Copy
+                {t("button.copy")}
               </button>
               <DownloadButton
                 result={result}
@@ -146,4 +150,3 @@ export function UuidPage(): JSX.Element {
     />
   );
 }
-

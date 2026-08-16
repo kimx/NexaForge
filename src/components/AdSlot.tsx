@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { useLanguage } from "../context/LanguageContext";
 
 export interface AdSlotProps {
   position: "tool-result" | "home";
@@ -16,6 +17,7 @@ const AD_SLOT_PATTERN = /^\d{10,16}$/;
 
 export function AdSlot({ position, adSlotId }: AdSlotProps): JSX.Element {
   const adRef = useRef<HTMLModElement>(null);
+  const { t } = useLanguage();
   const slotId = adSlotId ?? AD_SLOT_FALLBACK[position];
 
   if (!AD_SLOT_PATTERN.test(slotId)) {
@@ -53,8 +55,8 @@ export function AdSlot({ position, adSlotId }: AdSlotProps): JSX.Element {
   }, [slotId]);
 
   return (
-    <section className={`ad-slot ad-slot--${position}`} aria-label="Advertisement">
-      <span className="ad-slot__label">Advertisement ({position})</span>
+      <section className={`ad-slot ad-slot--${position}`} aria-label={t("adSlot.aria")}>
+        <span className="ad-slot__label">{t("adSlot.label", { position })}</span>
       <ins
         ref={adRef}
         className="adsbygoogle ad-slot__unit"

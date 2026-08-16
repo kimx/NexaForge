@@ -10,8 +10,10 @@ import { getRelatedTools } from "../../utils/toolHelpers";
 import { trackEvent } from "../../utils/analytics";
 import { useSeo } from "../../hooks/useSeo";
 import { validateFileSize, validateMime } from "../../utils/validation";
+import { useLanguage } from "../../context/LanguageContext";
 
 export function JsonToCsvPage(): JSX.Element {
+  const { t } = useLanguage();
   const [files, setFiles] = useState<File[]>([]);
   const [includeHeader, setIncludeHeader] = useState(true);
   const [processing, setProcessing] = useState<ProcessingState>("idle");
@@ -19,47 +21,49 @@ export function JsonToCsvPage(): JSX.Element {
   const [error, setError] = useState<string | null>(null);
 
   const tool = FILE_TOOLS.find((item) => item.id === "json-to-csv");
+  const title = t("tool.json-to-csv.title");
+  const description = t("tool.json-to-csv.description");
   const toolMeta: ToolMeta = {
-    title: "JSON to CSV - NexaForge",
-    description: "Convert array JSON objects into CSV format locally.",
+    title: `${title} - ${t("header.title")}`,
+    description,
     canonical: "/data/json-to-csv",
-    h1: "JSON to CSV",
+    h1: title,
   };
   useSeo(toolMeta);
 
   const relatedTools = getRelatedTools("json-to-csv");
   const howItWorks = useMemo(
     () => [
-      "Upload array JSON.",
-      "Toggle whether header row is required.",
-      "Process for browser-side conversion.",
+      t("tool.json-to-csv.how.0"),
+      t("tool.json-to-csv.how.1"),
+      t("tool.json-to-csv.how.2"),
     ],
-    []
+    [t]
   );
   const faq = useMemo(
     () => [
       {
-        q: "Supported JSON structure",
-        a: "Top-level array of plain objects.",
+        q: t("tool.json-to-csv.faq.0.question"),
+        a: t("tool.json-to-csv.faq.0.answer"),
       },
       {
-        q: "What if nested objects exist?",
-        a: "Nested values are flattened poorly in this first version.",
+        q: t("tool.json-to-csv.faq.1.question"),
+        a: t("tool.json-to-csv.faq.1.answer"),
       },
     ],
-    []
+    [t]
   );
 
   const handleProcess = async () => {
     const source = files[0];
     if (!source) {
-      setError("Please select one json file.");
+      setError(t("error.selectOneFile", { type: t("label.fileType.json") }));
       return;
     }
     const mimeError = validateMime(source, "application/json,text/plain");
     const sizeError = validateFileSize(source);
     if (mimeError || sizeError) {
-      setError(mimeError?.message ?? sizeError?.message ?? "Invalid file.");
+      setError(mimeError?.message ?? sizeError?.message ?? t("error.invalidFile"));
       setProcessing("error");
       trackEvent("process_failed", { tool: "json-to-csv" });
       return;
@@ -73,7 +77,7 @@ export function JsonToCsvPage(): JSX.Element {
       setProcessing("success");
       trackEvent("process_success", { tool: "json-to-csv" });
     } catch (err) {
-      setError("Unable to process this file.\nThe file may be corrupted or unsupported.");
+      setError(t("error.processingFailed"));
       setProcessing("error");
       trackEvent("process_failed", { tool: "json-to-csv" });
       console.error(err);
@@ -81,15 +85,15 @@ export function JsonToCsvPage(): JSX.Element {
   };
 
   return (
-    <ToolPageTemplate
-      tool={tool ?? FILE_TOOLS[0]}
-      meta={toolMeta}
-      breadcrumb={["Home", tool?.title ?? "JSON to CSV"]}
-      children={{
+      <ToolPageTemplate
+        tool={tool ?? FILE_TOOLS[0]}
+        meta={toolMeta}
+        breadcrumb={["Home", t("tool.json-to-csv.title")]}
+        children={{
         workspace: (
           <>
             <FileDropzone
-              label="Drop JSON here"
+              label={t("label.dropJson")}
               accept="application/json,text/plain"
               onFiles={setFiles}
               multiple={false}
@@ -105,7 +109,7 @@ export function JsonToCsvPage(): JSX.Element {
                 checked={includeHeader}
                 onChange={(event) => setIncludeHeader(event.target.checked)}
               />
-              Include header
+              {t("label.includeHeader")}
             </label>
             <button
               type="button"
@@ -114,7 +118,7 @@ export function JsonToCsvPage(): JSX.Element {
               disabled={processing === "processing"}
               aria-busy={processing === "processing"}
             >
-              {processing === "processing" ? "Processing..." : "Process"}
+              {processing === "processing" ? t("button.processing") : t("button.process")}
             </button>
           </div>
         ),
@@ -135,4 +139,3 @@ export function JsonToCsvPage(): JSX.Element {
     />
   );
 }
-

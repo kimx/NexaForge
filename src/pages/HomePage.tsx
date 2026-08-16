@@ -15,8 +15,8 @@ const categoryOrder: ToolDefinition["category"][] = [
   "Image",
   "PDF",
   "Data",
-  "Text",
   "Developer",
+  "Text",
 ];
 
 const TOOL_VISUALS: Record<string, { label: string; tone: string }> = {
@@ -33,6 +33,8 @@ const TOOL_VISUALS: Record<string, { label: string; tone: string }> = {
   base64: { label: "64", tone: "amber" },
   hash: { label: "#", tone: "violet" },
   uuid: { label: "ID", tone: "sky" },
+  "jwt-key": { label: "KEY", tone: "violet" },
+  "jwt-decoder": { label: "JWT", tone: "blue" },
   "qr-code": { label: "QR", tone: "blue" },
 };
 
@@ -112,10 +114,6 @@ export function HomePage(): JSX.Element {
       <section className="home-hero">
         <img className="home-hero__visual" src="/nexaforge-hero.png" alt="" aria-hidden="true" />
         <div className="home-hero__content">
-          <div className="home-hero__brandline">
-            <img className="home-hero__mark" src="/nexaforge-mark.png" alt="" aria-hidden="true" />
-            <span>{t("home.eyebrow")}</span>
-          </div>
           <h1>
             <span>Nexa</span>
             <span className="home-hero__title-accent">Forge</span>
@@ -136,8 +134,6 @@ export function HomePage(): JSX.Element {
           </div>
         </div>
       </section>
-
-      <AdSlot position="home" adSlotId={homeAdSlotId} />
 
       <div className="home-dashboard">
         <ToolSidebar />
@@ -202,6 +198,8 @@ export function HomePage(): JSX.Element {
           </div>
         </section>
       </div>
+
+      <AdSlot position="home" adSlotId={homeAdSlotId} />
     </main>
   );
 }

@@ -10,10 +10,12 @@ import { trackEvent } from "../../utils/analytics";
 import { useSeo } from "../../hooks/useSeo";
 import { validateFileSize, validateMime } from "../../utils/validation";
 import { PREVIEW_LIMIT } from "../../config/fileLimits";
+import { useLanguage } from "../../context/LanguageContext";
 
 type CsvRow = string[];
 
 export function CsvViewerPage(): JSX.Element {
+  const { t } = useLanguage();
   const [files, setFiles] = useState<File[]>([]);
   const [processing, setProcessing] = useState<ProcessingState>("idle");
   const [headers, setHeaders] = useState<string[]>([]);
@@ -22,47 +24,49 @@ export function CsvViewerPage(): JSX.Element {
   const [error, setError] = useState<string | null>(null);
 
   const tool = FILE_TOOLS.find((item) => item.id === "csv-viewer");
+  const title = t("tool.csv-viewer.title");
+  const description = t("tool.csv-viewer.description");
   const toolMeta: ToolMeta = {
-    title: "CSV Viewer - NexaForge",
-    description: "Upload CSV and preview table data quickly in your browser.",
+    title: `${title} - ${t("header.title")}`,
+    description,
     canonical: "/data/csv-viewer",
-    h1: "CSV Viewer",
+    h1: title,
   };
   useSeo(toolMeta);
 
   const relatedTools = getRelatedTools("csv-viewer");
   const howItWorks = useMemo(
     () => [
-      "Upload a CSV file.",
-      "Preview up to 1000 rows for large files.",
-      "See detected columns and total row count.",
+      t("tool.csv-viewer.how.0"),
+      t("tool.csv-viewer.how.1"),
+      t("tool.csv-viewer.how.2"),
     ],
-    []
+    [t]
   );
   const faq = useMemo(
     () => [
       {
-        q: "Does it render all rows?",
-        a: "To protect memory, this page limits preview rows.",
+        q: t("tool.csv-viewer.faq.0.question"),
+        a: t("tool.csv-viewer.faq.0.answer"),
       },
       {
-        q: "Can I parse files with headers?",
-        a: "Headers are auto-detected for the first row.",
+        q: t("tool.csv-viewer.faq.1.question"),
+        a: t("tool.csv-viewer.faq.1.answer"),
       },
     ],
-    []
+    [t]
   );
 
   const handleProcess = async () => {
     const source = files[0];
     if (!source) {
-      setError("Please select one csv file.");
+      setError(t("error.selectOneFile", { type: t("label.fileType.csv") }));
       return;
     }
     const mimeError = validateMime(source, "text/csv");
     const sizeError = validateFileSize(source);
     if (mimeError || sizeError) {
-      setError(mimeError?.message ?? sizeError?.message ?? "Invalid file.");
+      setError(mimeError?.message ?? sizeError?.message ?? t("error.invalidFile"));
       setProcessing("error");
       trackEvent("process_failed", { tool: "csv-viewer" });
       return;
@@ -79,7 +83,7 @@ export function CsvViewerPage(): JSX.Element {
       setProcessing("success");
       trackEvent("process_success", { tool: "csv-viewer" });
     } catch (err) {
-      setError("Unable to process this file.\nThe file may be corrupted or unsupported.");
+      setError(t("error.processingFailed"));
       setProcessing("error");
       trackEvent("process_failed", { tool: "csv-viewer" });
       console.error(err);
@@ -87,15 +91,15 @@ export function CsvViewerPage(): JSX.Element {
   };
 
   return (
-    <ToolPageTemplate
-      tool={tool ?? FILE_TOOLS[0]}
-      meta={toolMeta}
-      breadcrumb={["Home", tool?.title ?? "CSV Viewer"]}
-      children={{
+      <ToolPageTemplate
+        tool={tool ?? FILE_TOOLS[0]}
+        meta={toolMeta}
+        breadcrumb={["Home", t("tool.csv-viewer.title")]}
+        children={{
         workspace: (
           <>
             <FileDropzone
-              label="Drop CSV here"
+              label={t("label.dropCsv")}
               accept="text/csv"
               onFiles={setFiles}
               multiple={false}
@@ -112,36 +116,40 @@ export function CsvViewerPage(): JSX.Element {
               disabled={processing === "processing"}
               aria-busy={processing === "processing"}
             >
-              {processing === "processing" ? "Processing..." : "Process"}
+              {processing === "processing" ? t("button.processing") : t("button.process")}
             </button>
           </div>
         ),
         result: (
           <>
             {processing === "error" && error && <p role="alert" className="error">{error}</p>}
-            <p>Rows: {totalRows}</p>
-            <p>Columns: {headers.length}</p>
-            <p>File Size: {sourceLength(files)}</p>
-            <div className="table-wrapper">
-              <table>
-                <thead>
-                  <tr>
-                    {headers.map((header) => (
-                      <th key={header}>{header}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {rows.map((row, rowIndex) => (
-                    <tr key={String(rowIndex)}>
-                      {row.map((column, colIndex) => (
-                        <td key={`${rowIndex}-${colIndex}`}>{column}</td>
+            <p>{t("label.rows")}: {totalRows}</p>
+            <p>{t("label.columns")}: {headers.length}</p>
+            <p>{t("label.fileSize")}: {sourceLength(files)}</p>
+            {rows.length > 0 ? (
+              <div className="table-wrapper">
+                <table>
+                  <thead>
+                    <tr>
+                      {headers.map((header) => (
+                        <th key={header}>{header}</th>
                       ))}
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {rows.map((row, rowIndex) => (
+                      <tr key={String(rowIndex)}>
+                        {row.map((column, colIndex) => (
+                          <td key={`${rowIndex}-${colIndex}`}>{column}</td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <p>{t("label.noResult")}</p>
+            )}
           </>
         ),
         howItWorks,
@@ -163,4 +171,3 @@ function sourceLength(files: File[]): string {
   }
   return `${size} B`;
 }
-

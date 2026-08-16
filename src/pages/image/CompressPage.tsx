@@ -11,10 +11,12 @@ import { trackEvent } from "../../utils/analytics";
 import { useSeo } from "../../hooks/useSeo";
 import { useBlobUrl } from "../../hooks/useBlobUrl";
 import { validateFileSize, validateMime } from "../../utils/validation";
+import { useLanguage } from "../../context/LanguageContext";
 
 const IMAGE_ACCEPT = "image/jpeg,image/png,image/webp";
 
 export function ImageCompressPage(): JSX.Element {
+  const { t } = useLanguage();
   const [files, setFiles] = useState<File[]>([]);
   const [quality, setQuality] = useState(80);
   const [format, setFormat] = useState<"jpeg" | "png" | "webp">("jpeg");
@@ -24,11 +26,13 @@ export function ImageCompressPage(): JSX.Element {
   const [originalSize, setOriginalSize] = useState<number>(0);
 
   const tool = FILE_TOOLS.find((item) => item.id === "image-compress");
+  const title = t("tool.image-compress.title");
+  const description = t("tool.image-compress.description");
   const toolMeta: ToolMeta = {
-    title: "Image Compress - NexaForge",
-    description: "Compress image files entirely in browser with quality control.",
+    title: `${title} - ${t("header.title")}`,
+    description,
     canonical: "/image/compress",
-    h1: "Image Compress",
+    h1: title,
   };
   useSeo(toolMeta);
 
@@ -38,38 +42,38 @@ export function ImageCompressPage(): JSX.Element {
 
   const howItWorks = useMemo(
     () => [
-      "Pick an image file.",
-      "Adjust quality to reduce size.",
-      "Run processing to compress and compare original / output.",
-      "Download the compressed output.",
+      t("tool.image-compress.how.0"),
+      t("tool.image-compress.how.1"),
+      t("tool.image-compress.how.2"),
+      t("tool.image-compress.how.3"),
     ],
-    []
+    [t]
   );
 
   const faq = useMemo(
     () => [
       {
-        q: "Can I keep transparency?",
-        a: "PNG/WebP outputs can keep transparency better than JPG.",
+        q: t("tool.image-compress.faq.0.question"),
+        a: t("tool.image-compress.faq.0.answer"),
       },
       {
-        q: "Are files uploaded?",
-        a: "No. All processing is local.",
+        q: t("tool.image-compress.faq.1.question"),
+        a: t("tool.image-compress.faq.1.answer"),
       },
     ],
-    []
+    [t]
   );
 
   const handleProcess = async () => {
     if (!files[0]) {
-      setError("Please select one image file.");
+      setError(t("error.selectOneFile", { type: t("label.fileType.image") }));
       return;
     }
     const source = files[0];
     const mimeError = validateMime(source, IMAGE_ACCEPT);
     const sizeError = validateFileSize(source);
     if (mimeError || sizeError) {
-      setError(mimeError?.message ?? sizeError?.message ?? "Invalid file.");
+      setError(mimeError?.message ?? sizeError?.message ?? t("error.invalidFile"));
       setProcessing("error");
       trackEvent("process_failed", { tool: "image-compress" });
       return;
@@ -88,7 +92,7 @@ export function ImageCompressPage(): JSX.Element {
       setProcessing("success");
       trackEvent("process_success", { tool: "image-compress" });
     } catch (err) {
-      setError("Unable to process this file.\nThe file may be corrupted or unsupported.");
+      setError(t("error.processingFailed"));
       setProcessing("error");
       trackEvent("process_failed", { tool: "image-compress" });
       console.error(err);
@@ -96,19 +100,17 @@ export function ImageCompressPage(): JSX.Element {
   };
 
   return (
-    <ToolPageTemplate
-      tool={tool ?? FILE_TOOLS[0]}
-      meta={toolMeta}
-      breadcrumb={["Home", tool?.title ?? "Image Compress"]}
-      children={{
+      <ToolPageTemplate
+        tool={tool ?? FILE_TOOLS[0]}
+        meta={toolMeta}
+        breadcrumb={["Home", t("tool.image-compress.title")]}
+        children={{
         workspace: (
           <>
             <FileDropzone
-              label="Drop image here"
+              label={t("label.dropImage")}
               accept={IMAGE_ACCEPT}
-              onFiles={(selected) => {
-                setFiles(selected);
-              }}
+              onFiles={setFiles}
               multiple={false}
             />
             <FileInfo files={files} />
@@ -117,7 +119,7 @@ export function ImageCompressPage(): JSX.Element {
         options: (
           <div className="tool-form">
             <label>
-              Output Format
+              {t("label.outputFormat")}
               <select value={format} onChange={(event) => setFormat(event.target.value as "jpeg" | "png" | "webp")}>
                 <option value="jpeg">JPG</option>
                 <option value="png">PNG</option>
@@ -125,7 +127,7 @@ export function ImageCompressPage(): JSX.Element {
               </select>
             </label>
             <label>
-              Quality: {quality}
+              {t("label.quality")}: {quality}
               <input
                 type="range"
                 min={1}
@@ -141,7 +143,7 @@ export function ImageCompressPage(): JSX.Element {
               aria-busy={processing === "processing"}
               onClick={handleProcess}
             >
-              {processing === "processing" ? "Processing..." : "Process"}
+              {processing === "processing" ? t("button.processing") : t("button.process")}
             </button>
           </div>
         ),
@@ -154,13 +156,19 @@ export function ImageCompressPage(): JSX.Element {
             )}
             {result ? (
               <div>
-                <p>Original Size: {(originalSize / 1024).toFixed(2)} KB</p>
-                <p>Output Size: {(result.size / 1024).toFixed(2)} KB</p>
-                <p>Compression Ratio: {ratio}%</p>
-                <img src={previewUrl} alt="Compressed preview" className="preview-image" />
+                <p>
+                  {t("label.originalSize")}: {(originalSize / 1024).toFixed(2)} KB
+                </p>
+                <p>
+                  {t("label.outputSize")}: {(result.size / 1024).toFixed(2)} KB
+                </p>
+                <p>
+                  {t("label.compressionRatio")}: {ratio}%
+                </p>
+                <img src={previewUrl} alt={t("label.preview")} className="preview-image" />
               </div>
             ) : (
-              <p>No result yet.</p>
+              <p>{t("label.noResult")}</p>
             )}
             <DownloadButton
               result={result}
@@ -176,4 +184,3 @@ export function ImageCompressPage(): JSX.Element {
     />
   );
 }
-

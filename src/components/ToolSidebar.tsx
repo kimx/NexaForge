@@ -5,11 +5,11 @@ import type { ToolDefinition } from "../types/tool";
 import { localizedCategoryLabel, useLanguage, useLocalizedToolMeta } from "../context/LanguageContext";
 
 const categoryOrder: ToolDefinition["category"][] = [
+  "Data",
+  "Developer",
   "Image",
   "PDF",
-  "Data",
   "Text",
-  "Developer",
 ];
 
 const groupedTools = categoryOrder.reduce(
@@ -61,13 +61,6 @@ export function ToolSidebar(): JSX.Element {
 
   return (
     <aside className="tool-sidebar" aria-label={t("sidebar.aria")}>
-      <header className="tool-sidebar__brand">
-        <NavLink to="/" className="tool-sidebar__home-link">
-          {t("header.title")}
-        </NavLink>
-        <p className="tool-sidebar__sub">{t("header.subtitle")}</p>
-      </header>
-
       <div className="tool-sidebar__search-wrap">
         <label htmlFor="tool-search" className="tool-sidebar__search-label">
           {t("sidebar.searchLabel")}
@@ -87,16 +80,9 @@ export function ToolSidebar(): JSX.Element {
         </NavLink>
       </nav>
 
-      <p className="tool-sidebar__meta">
-        {keywordNormalized ? t("sidebar.resultCount", { count: filteredTools.length }) : t("sidebar.sectionTitle")}
-      </p>
-
       {!keywordNormalized && categoryOrder.map((category) => (
         <section className="tool-sidebar__section" key={category}>
-            <h2>
-            {localizedCategoryLabel(category, t)}
-            <span className="tool-sidebar__count">{(groupedTools[category] ?? []).length}</span>
-          </h2>
+          <h2>{localizedCategoryLabel(category, t)}</h2>
           <ul className="tool-sidebar__list">
             {groupedTools[category].map((tool) => (
               <li key={tool.id}>
@@ -115,10 +101,7 @@ export function ToolSidebar(): JSX.Element {
       {keywordNormalized &&
         groupedFilteredTools.map(({ category, tools }) => (
           <section className="tool-sidebar__section" key={category}>
-              <h2>
-              {localizedCategoryLabel(category, t)}
-                <span className="tool-sidebar__count">{tools.length}</span>
-              </h2>
+            <h2>{localizedCategoryLabel(category, t)}</h2>
               <ul className="tool-sidebar__list">
                 {tools.map((tool) => (
                   <li key={tool.id}>

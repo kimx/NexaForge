@@ -1,5 +1,5 @@
-import { Link } from "react-router-dom";
 import { useLanguage, type Locale } from "../context/LanguageContext";
+import { Link } from "react-router-dom";
 
 export function Header(): JSX.Element {
   const { t, locale, setLocale } = useLanguage();
@@ -9,12 +9,9 @@ export function Header(): JSX.Element {
   return (
     <header className="site-header">
       <div className="top-banner">
-        <div className="top-banner__copy">
-          <span className="top-banner__eyebrow">NEXAFORGE / WORKSPACE</span>
-          <p>
-            <strong>{t("top.banner")}</strong> {t("top.banner.cta")}
-          </p>
-        </div>
+        <Link to="/" className="top-banner__home">
+          {t("sidebar.home")}
+        </Link>
         <div className="language-switch" role="group" aria-label={t("top.languageSwitcherLabel")}>
           <button
             type="button"
@@ -32,16 +29,6 @@ export function Header(): JSX.Element {
           >
             {t("lang.en")}
           </button>
-        </div>
-      </div>
-      <div className="header-main">
-        <Link className="brand" to="/" aria-label={t("header.title")}>
-          <img className="brand__mark" src="/nexaforge-mark.png" alt="" />
-          <span className="brand__wordmark">{t("header.title")}</span>
-        </Link>
-        <div className="header-copy">
-          <span className="header-copy__label">LOCAL FILE OPS</span>
-          <p>{t("header.subtitle")}</p>
         </div>
       </div>
     </header>

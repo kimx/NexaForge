@@ -47,7 +47,7 @@ export function ToolPageTemplate({
   }, [tool.id]);
 
   return (
-    <main className="tool-page">
+    <main className={`tool-page ${tool.id === "json-formatter" ? "tool-page--json-formatter" : ""}`}>
       <div className="tool-container">
         <nav className="breadcrumb tool-page__breadcrumb" aria-label={t("breadcrumb.aria")}>
           {localizedBreadcrumb.map((item, index) => (
@@ -58,18 +58,18 @@ export function ToolPageTemplate({
           ))}
         </nav>
 
-        <h1 className="tool-page__title">{toolTitle}</h1>
+        <div className="tool-page__title-row">
+          <h1 className="tool-page__title">{toolTitle}</h1>
+          <PrivacyNotice inline />
+        </div>
         <p className="short-description tool-page__description">{toolDescription}</p>
-        <p className="tool-canonical tool-page__meta">URL: {meta.canonical}</p>
-
-        <PrivacyNotice />
 
         <div className="tool-page__duo">
-          <section className="tool-card">
+          <section className="tool-card tool-page__panel tool-page__panel--workspace">
             <h2>{t("toolPage.workspace")}</h2>
             {children.workspace}
           </section>
-          <section className="tool-card">
+          <section className="tool-card tool-page__panel tool-page__panel--options">
             <h2>{t("toolPage.options")}</h2>
             {children.options}
           </section>

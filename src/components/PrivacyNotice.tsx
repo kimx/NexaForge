@@ -1,13 +1,24 @@
 import { useLanguage } from "../context/LanguageContext";
 
-export function PrivacyNotice(): JSX.Element {
+interface PrivacyNoticeProps {
+  inline?: boolean;
+}
+
+export function PrivacyNotice({ inline = false }: PrivacyNoticeProps): JSX.Element {
   const { t } = useLanguage();
+  const compactText = `${t("privacyNotice.title")}：${t("privacyNotice.description")} ${t("privacyNotice.neverUploaded")}`;
 
   return (
-    <section className="privacy-notice" aria-label={t("privacyNotice.aria")}>
-      <h2>{t("privacyNotice.title")}</h2>
-      <p>{t("privacyNotice.description")}</p>
-      <p>{t("privacyNotice.neverUploaded")}</p>
-    </section>
+    inline ? (
+      <p className="privacy-notice privacy-notice--inline" aria-label={t("privacyNotice.aria")}>
+        {compactText}
+      </p>
+    ) : (
+      <section className="privacy-notice" aria-label={t("privacyNotice.aria")}>
+        <p className="privacy-notice__title">{t("privacyNotice.title")}</p>
+        <p>{t("privacyNotice.description")}</p>
+        <p>{t("privacyNotice.neverUploaded")}</p>
+      </section>
+    )
   );
 }

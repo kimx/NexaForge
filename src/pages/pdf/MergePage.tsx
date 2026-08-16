@@ -9,44 +9,48 @@ import { getRelatedTools } from "../../utils/toolHelpers";
 import { trackEvent } from "../../utils/analytics";
 import { useSeo } from "../../hooks/useSeo";
 import { validateFileSize, validateMime } from "../../utils/validation";
+import { useLanguage } from "../../context/LanguageContext";
 
 export function PdfMergePage(): JSX.Element {
+  const { t } = useLanguage();
   const [files, setFiles] = useState<File[]>([]);
   const [processing, setProcessing] = useState<ProcessingState>("idle");
   const [result, setResult] = useState<FileProcessResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const tool = FILE_TOOLS.find((item) => item.id === "pdf-merge");
+  const title = t("tool.pdf-merge.title");
+  const description = t("tool.pdf-merge.description");
   const toolMeta: ToolMeta = {
-    title: "PDF Merge - NexaForge",
-    description: "Merge multiple PDFs entirely in your browser.",
+    title: `${title} - ${t("header.title")}`,
+    description,
     canonical: "/pdf/merge",
-    h1: "PDF Merge",
+    h1: title,
   };
   useSeo(toolMeta);
 
   const relatedTools = getRelatedTools("pdf-merge");
   const howItWorks = useMemo(
     () => [
-      "Drag and drop multiple PDF files.",
-      "Drag order is the output order.",
-      "Click Process to merge all pages.",
-      "Download merged.pdf.",
+      t("tool.pdf-merge.how.0"),
+      t("tool.pdf-merge.how.1"),
+      t("tool.pdf-merge.how.2"),
+      t("tool.pdf-merge.how.3"),
     ],
-    []
+    [t]
   );
   const faq = useMemo(
     () => [
       {
-        q: "Can I merge files over 100MB?",
-        a: "This tool limits PDF processing at 100MB per file for stability.",
+        q: t("tool.pdf-merge.faq.0.question"),
+        a: t("tool.pdf-merge.faq.0.answer"),
       },
       {
-        q: "Are files uploaded to server?",
-        a: "No upload. All files stay local.",
+        q: t("tool.pdf-merge.faq.1.question"),
+        a: t("tool.pdf-merge.faq.1.answer"),
       },
     ],
-    []
+    [t]
   );
 
   const moveFile = (index: number, direction: -1 | 1): void => {
@@ -65,7 +69,7 @@ export function PdfMergePage(): JSX.Element {
 
   const handleProcess = async () => {
     if (!files.length) {
-      setError("Please select at least one PDF.");
+      setError(t("error.selectOneFile", { type: t("label.fileType.file") }));
       return;
     }
     const invalid = files.find((file) => {
@@ -74,7 +78,7 @@ export function PdfMergePage(): JSX.Element {
       return Boolean(size || mime);
     });
     if (invalid) {
-      setError("Unsupported file or too large.");
+      setError(t("error.invalidFile"));
       setProcessing("error");
       trackEvent("process_failed", { tool: "pdf-merge" });
       return;
@@ -89,7 +93,7 @@ export function PdfMergePage(): JSX.Element {
       setProcessing("success");
       trackEvent("process_success", { tool: "pdf-merge" });
     } catch (err) {
-      setError("Unable to process this file.\nThe file may be corrupted or unsupported.");
+      setError(t("error.processingFailed"));
       setProcessing("error");
       trackEvent("process_failed", { tool: "pdf-merge" });
       console.error(err);
@@ -97,15 +101,15 @@ export function PdfMergePage(): JSX.Element {
   };
 
   return (
-    <ToolPageTemplate
-      tool={tool ?? FILE_TOOLS[0]}
-      meta={toolMeta}
-      breadcrumb={["Home", tool?.title ?? "PDF Merge"]}
-      children={{
+      <ToolPageTemplate
+        tool={tool ?? FILE_TOOLS[0]}
+        meta={toolMeta}
+        breadcrumb={["Home", t("tool.pdf-merge.title")]}
+        children={{
         workspace: (
           <>
             <FileDropzone
-              label="Drop PDF files here"
+              label={t("label.dropPdf")}
               accept="application/pdf"
               multiple
               onFiles={setFiles}
@@ -142,7 +146,7 @@ export function PdfMergePage(): JSX.Element {
               disabled={processing === "processing"}
               aria-busy={processing === "processing"}
             >
-              {processing === "processing" ? "Processing..." : "Process"}
+              {processing === "processing" ? t("button.processing") : t("button.process")}
             </button>
           </div>
         ),
@@ -153,7 +157,11 @@ export function PdfMergePage(): JSX.Element {
                 {error}
               </p>
             )}
-            {result && <p>Output size: {(result.size / 1024).toFixed(2)} KB</p>}
+            {result ? (
+              <p>{t("tool.pdf-merge.label.outputSize", { size: (result.size / 1024).toFixed(2) })}</p>
+            ) : (
+              <p>{t("label.noResult")}</p>
+            )}
             <DownloadButton
               result={result}
               disabled={processing === "processing"}
@@ -168,4 +176,3 @@ export function PdfMergePage(): JSX.Element {
     />
   );
 }
-

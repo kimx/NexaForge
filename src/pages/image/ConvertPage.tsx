@@ -11,10 +11,12 @@ import { trackEvent } from "../../utils/analytics";
 import { useSeo } from "../../hooks/useSeo";
 import { useBlobUrl } from "../../hooks/useBlobUrl";
 import { validateFileSize, validateMime } from "../../utils/validation";
+import { useLanguage } from "../../context/LanguageContext";
 
 const IMAGE_ACCEPT = "image/jpeg,image/png,image/webp";
 
 export function ImageConvertPage(): JSX.Element {
+  const { t } = useLanguage();
   const [files, setFiles] = useState<File[]>([]);
   const [format, setFormat] = useState<"jpeg" | "png" | "webp">("png");
   const [processing, setProcessing] = useState<ProcessingState>("idle");
@@ -22,11 +24,13 @@ export function ImageConvertPage(): JSX.Element {
   const [error, setError] = useState<string | null>(null);
 
   const tool = FILE_TOOLS.find((item) => item.id === "image-convert");
+  const title = t("tool.image-convert.title");
+  const description = t("tool.image-convert.description");
   const toolMeta: ToolMeta = {
-    title: "Image Converter - NexaForge",
-    description: "Convert JPG, PNG and WebP formats directly in the browser.",
+    title: `${title} - ${t("header.title")}`,
+    description,
     canonical: "/image/convert",
-    h1: "Image Converter",
+    h1: title,
   };
   useSeo(toolMeta);
 
@@ -35,31 +39,31 @@ export function ImageConvertPage(): JSX.Element {
 
   const howItWorks = useMemo(
     () => [
-      "Upload a supported image.",
-      "Pick output format.",
-      "Process to convert format in-browser.",
-      "Download converted result.",
+      t("tool.image-convert.how.0"),
+      t("tool.image-convert.how.1"),
+      t("tool.image-convert.how.2"),
+      t("tool.image-convert.how.3"),
     ],
-    []
+    [t]
   );
 
   const faq = useMemo(
     () => [
       {
-        q: "Can all conversions run offline?",
-        a: "Yes. Files never leave your browser.",
+        q: t("tool.image-convert.faq.0.question"),
+        a: t("tool.image-convert.faq.0.answer"),
       },
       {
-        q: "Can I keep all image metadata?",
-        a: "Not all metadata is preserved in this first phase.",
+        q: t("tool.image-convert.faq.1.question"),
+        a: t("tool.image-convert.faq.1.answer"),
       },
     ],
-    []
+    [t]
   );
 
   const handleProcess = async () => {
     if (!files[0]) {
-      setError("Please select one image file.");
+      setError(t("error.selectOneFile", { type: t("label.fileType.image") }));
       return;
     }
 
@@ -67,7 +71,7 @@ export function ImageConvertPage(): JSX.Element {
     const mimeError = validateMime(source, IMAGE_ACCEPT);
     const sizeError = validateFileSize(source);
     if (mimeError || sizeError) {
-      setError(mimeError?.message ?? sizeError?.message ?? "Invalid file.");
+      setError(mimeError?.message ?? sizeError?.message ?? t("error.invalidFile"));
       setProcessing("error");
       trackEvent("process_failed", { tool: "image-convert" });
       return;
@@ -82,7 +86,7 @@ export function ImageConvertPage(): JSX.Element {
       setProcessing("success");
       trackEvent("process_success", { tool: "image-convert" });
     } catch (err) {
-      setError("Unable to process this file.\nThe file may be corrupted or unsupported.");
+      setError(t("error.processingFailed"));
       setProcessing("error");
       trackEvent("process_failed", { tool: "image-convert" });
       console.error(err);
@@ -90,15 +94,15 @@ export function ImageConvertPage(): JSX.Element {
   };
 
   return (
-    <ToolPageTemplate
-      tool={tool ?? FILE_TOOLS[0]}
-      meta={toolMeta}
-      breadcrumb={["Home", tool?.title ?? "Image Converter"]}
-      children={{
+      <ToolPageTemplate
+        tool={tool ?? FILE_TOOLS[0]}
+        meta={toolMeta}
+        breadcrumb={["Home", t("tool.image-convert.title")]}
+        children={{
         workspace: (
           <>
             <FileDropzone
-              label="Drop image here"
+              label={t("label.dropImage")}
               accept={IMAGE_ACCEPT}
               onFiles={setFiles}
               multiple={false}
@@ -109,8 +113,11 @@ export function ImageConvertPage(): JSX.Element {
         options: (
           <div className="tool-form">
             <label>
-              Target format
-              <select value={format} onChange={(event) => setFormat(event.target.value as "jpeg" | "png" | "webp")}>
+              {t("label.targetFormat")}
+              <select
+                value={format}
+                onChange={(event) => setFormat(event.target.value as "jpeg" | "png" | "webp")}
+              >
                 <option value="jpeg">JPG</option>
                 <option value="png">PNG</option>
                 <option value="webp">WebP</option>
@@ -123,7 +130,7 @@ export function ImageConvertPage(): JSX.Element {
               aria-busy={processing === "processing"}
               onClick={handleProcess}
             >
-              {processing === "processing" ? "Processing..." : "Process"}
+              {processing === "processing" ? t("button.processing") : t("button.process")}
             </button>
           </div>
         ),
@@ -136,10 +143,10 @@ export function ImageConvertPage(): JSX.Element {
             )}
             {result ? (
               <div>
-                <img src={previewUrl} alt="Converted preview" className="preview-image" />
+                <img src={previewUrl} alt={t("label.preview")} className="preview-image" />
               </div>
             ) : (
-              <p>No result yet.</p>
+              <p>{t("label.noResult")}</p>
             )}
             <DownloadButton
               result={result}
@@ -155,4 +162,3 @@ export function ImageConvertPage(): JSX.Element {
     />
   );
 }
-

@@ -11,8 +11,10 @@ import { trackEvent } from "../../utils/analytics";
 import { useSeo } from "../../hooks/useSeo";
 import { readFileAsText } from "../../services/file/fileService";
 import { validateFileSize, validateMime } from "../../utils/validation";
+import { useLanguage } from "../../context/LanguageContext";
 
 export function HashPage(): JSX.Element {
+  const { t } = useLanguage();
   const [files, setFiles] = useState<File[]>([]);
   const [algorithm, setAlgorithm] = useState<HashOptions["algorithm"]>("SHA-256");
   const [processing, setProcessing] = useState<ProcessingState>("idle");
@@ -20,47 +22,49 @@ export function HashPage(): JSX.Element {
   const [error, setError] = useState<string | null>(null);
 
   const tool = FILE_TOOLS.find((item) => item.id === "hash");
+  const title = t("tool.hash.title");
+  const description = t("tool.hash.description");
   const toolMeta: ToolMeta = {
-    title: "Hash Generator - NexaForge",
-    description: "Compute SHA digests in browser.",
+    title: `${title} - ${t("header.title")}`,
+    description,
     canonical: "/text/hash",
-    h1: "Hash Generator",
+    h1: title,
   };
   useSeo(toolMeta);
 
   const relatedTools = getRelatedTools("hash");
   const howItWorks = useMemo(
     () => [
-      "Drop one text file.",
-      "Choose hashing algorithm.",
-      "Generate digest with browser crypto API.",
+      t("tool.hash.how.0"),
+      t("tool.hash.how.1"),
+      t("tool.hash.how.2"),
     ],
-    []
+    [t]
   );
   const faq = useMemo(
     () => [
       {
-        q: "Can I use MD5?",
-        a: "No. MD5 is intentionally not supported.",
+        q: t("tool.hash.faq.0.question"),
+        a: t("tool.hash.faq.0.answer"),
       },
       {
-        q: "Does the data leave the browser?",
-        a: "No.",
+        q: t("tool.hash.faq.1.question"),
+        a: t("tool.hash.faq.1.answer"),
       },
     ],
-    []
+    [t]
   );
 
   const handleProcess = async () => {
     const source = files[0];
     if (!source) {
-      setError("Please select one file.");
+      setError(t("error.selectOneFile", { type: t("label.fileType.file") }));
       return;
     }
     const mimeError = validateMime(source, "*/*");
     const sizeError = validateFileSize(source);
     if (mimeError || sizeError) {
-      setError(mimeError?.message ?? sizeError?.message ?? "Invalid file.");
+      setError(mimeError?.message ?? sizeError?.message ?? t("error.invalidFile"));
       setProcessing("error");
       trackEvent("process_failed", { tool: "hash" });
       return;
@@ -76,7 +80,7 @@ export function HashPage(): JSX.Element {
       setProcessing("success");
       trackEvent("process_success", { tool: "hash" });
     } catch (err) {
-      setError("Unable to process this file.\nThe file may be corrupted or unsupported.");
+      setError(t("error.processingFailed"));
       setProcessing("error");
       trackEvent("process_failed", { tool: "hash" });
       console.error(err);
@@ -84,15 +88,15 @@ export function HashPage(): JSX.Element {
   };
 
   return (
-    <ToolPageTemplate
-      tool={tool ?? FILE_TOOLS[0]}
-      meta={toolMeta}
-      breadcrumb={["Home", tool?.title ?? "Hash Generator"]}
-      children={{
+      <ToolPageTemplate
+        tool={tool ?? FILE_TOOLS[0]}
+        meta={toolMeta}
+        breadcrumb={["Home", t("tool.hash.title")]}
+        children={{
         workspace: (
           <>
             <FileDropzone
-              label="Drop file here"
+              label={t("label.dropFile")}
               accept="*/*"
               multiple={false}
               onFiles={setFiles}
@@ -103,7 +107,7 @@ export function HashPage(): JSX.Element {
         options: (
           <div className="tool-form">
             <label>
-              Algorithm
+              {t("label.algorithm")}
               <select value={algorithm} onChange={(event) => setAlgorithm(event.target.value as HashOptions["algorithm"])}>
                 <option value="SHA-1">SHA-1</option>
                 <option value="SHA-256">SHA-256</option>
@@ -119,7 +123,7 @@ export function HashPage(): JSX.Element {
                 disabled={processing === "processing"}
                 aria-busy={processing === "processing"}
               >
-                {processing === "processing" ? "Processing..." : "Process"}
+                {processing === "processing" ? t("button.processing") : t("button.process")}
               </button>
               <button
                 type="button"
@@ -128,12 +132,12 @@ export function HashPage(): JSX.Element {
                   try {
                     await navigator.clipboard.writeText(resultText);
                   } catch {
-                    setError("Unable to copy result to clipboard.");
+                    setError(t("error.copyFailed"));
                   }
                 }}
                 disabled={!resultText || processing === "processing"}
               >
-                Copy
+                {t("button.copy")}
               </button>
             </div>
           </div>
@@ -141,7 +145,7 @@ export function HashPage(): JSX.Element {
         result: (
           <>
             {processing === "error" && error && <p role="alert" className="error">{error}</p>}
-            {resultText ? <pre>{resultText}</pre> : <p>No output.</p>}
+            {resultText ? <pre>{resultText}</pre> : <p>{t("tool.hash.label.noOutput")}</p>}
             {resultText ? (
               <DownloadButton
                 result={{
@@ -163,4 +167,3 @@ export function HashPage(): JSX.Element {
     />
   );
 }
-

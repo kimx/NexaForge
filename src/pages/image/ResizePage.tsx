@@ -11,9 +11,11 @@ import { trackEvent } from "../../utils/analytics";
 import { useSeo } from "../../hooks/useSeo";
 import { useBlobUrl } from "../../hooks/useBlobUrl";
 import { validateFileSize, validateMime } from "../../utils/validation";
+import { useLanguage } from "../../context/LanguageContext";
 import type { FileProcessResult } from "../../types/tool";
 
 export function ImageResizePage(): JSX.Element {
+  const { t } = useLanguage();
   const [files, setFiles] = useState<File[]>([]);
   const [processing, setProcessing] = useState<ProcessingState>("idle");
   const [result, setResult] = useState<FileProcessResult | null>(null);
@@ -25,11 +27,13 @@ export function ImageResizePage(): JSX.Element {
   const [format, setFormat] = useState<"jpeg" | "png" | "webp">("jpeg");
 
   const tool = FILE_TOOLS.find((item) => item.id === "image-resize");
+  const title = t("tool.image-resize.title");
+  const description = t("tool.image-resize.description");
   const toolMeta: ToolMeta = {
-    title: "Image Resize - NexaForge",
-    description: "Resize JPG, PNG, and WebP files directly in your browser.",
+    title: `${title} - ${t("header.title")}`,
+    description,
     canonical: "/image/resize",
-    h1: "Image Resize",
+    h1: title,
   };
   useSeo(toolMeta);
 
@@ -40,31 +44,31 @@ export function ImageResizePage(): JSX.Element {
 
   const howItWorks = useMemo(
     () => [
-      "Drop your JPG, PNG or WebP file.",
-      "Set your output width, height and quality.",
-      "Click Process to create a resized image in your browser.",
-      "Download the result as JPG, PNG, or WebP.",
+      t("tool.image-resize.how.0"),
+      t("tool.image-resize.how.1"),
+      t("tool.image-resize.how.2"),
+      t("tool.image-resize.how.3"),
     ],
-    []
+    [t]
   );
 
   const faq = useMemo(
     () => [
       {
-        q: "Do images upload to any server?",
-        a: "No. Processing stays completely inside your browser.",
+        q: t("tool.image-resize.faq.0.question"),
+        a: t("tool.image-resize.faq.0.answer"),
       },
       {
-        q: "What happens with memory usage?",
-        a: "We release image objects after processing and revoke object URLs on replace/unmount.",
+        q: t("tool.image-resize.faq.1.question"),
+        a: t("tool.image-resize.faq.1.answer"),
       },
     ],
-    []
+    [t]
   );
 
   const handleProcess = async () => {
     if (!hasSelection) {
-      setError("Please select one image file.");
+      setError(t("error.selectOneFile", { type: t("label.fileType.image") }));
       return;
     }
 
@@ -72,7 +76,7 @@ export function ImageResizePage(): JSX.Element {
     const mimeError = validateMime(source, "image/jpeg,image/png,image/webp");
     const sizeError = validateFileSize(source);
     if (mimeError || sizeError) {
-      setError(mimeError?.message ?? sizeError?.message ?? "Invalid file.");
+      setError(mimeError?.message ?? sizeError?.message ?? t("error.invalidFile"));
       trackEvent("process_failed", { tool: "image-resize" });
       setProcessing("error");
       return;
@@ -95,22 +99,22 @@ export function ImageResizePage(): JSX.Element {
       trackEvent("process_success", { tool: "image-resize" });
     } catch (err) {
       setProcessing("error");
-      setError("Unable to process this file.\nThe file may be corrupted or unsupported.");
+      setError(t("error.processingFailed"));
       trackEvent("process_failed", { tool: "image-resize" });
       console.error(err);
     }
   };
 
   return (
-    <ToolPageTemplate
-      tool={tool ?? FILE_TOOLS[0]}
-      meta={toolMeta}
-      breadcrumb={["Home", tool?.title ?? "Image Resize"]}
-      children={{
+      <ToolPageTemplate
+        tool={tool ?? FILE_TOOLS[0]}
+        meta={toolMeta}
+        breadcrumb={["Home", t("tool.image-resize.title")]}
+        children={{
         workspace: (
           <>
             <FileDropzone
-              label="Drop image here"
+              label={t("label.dropImage")}
               accept="image/jpeg,image/png,image/webp"
               onFiles={setFiles}
               multiple={false}
@@ -121,7 +125,7 @@ export function ImageResizePage(): JSX.Element {
         options: (
           <div className="tool-form">
             <label>
-              Width
+              {t("label.width")}
               <input
                 type="number"
                 value={width}
@@ -130,7 +134,7 @@ export function ImageResizePage(): JSX.Element {
               />
             </label>
             <label>
-              Height
+              {t("label.height")}
               <input
                 type="number"
                 value={height}
@@ -144,10 +148,10 @@ export function ImageResizePage(): JSX.Element {
                 checked={keepAspectRatio}
                 onChange={(event) => setKeepAspectRatio(event.target.checked)}
               />
-              Keep Aspect Ratio
+              {t("label.keepAspectRatio")}
             </label>
             <label>
-              Quality: {quality}
+              {t("label.quality")}: {quality}
               <input
                 type="range"
                 min={1}
@@ -157,7 +161,7 @@ export function ImageResizePage(): JSX.Element {
               />
             </label>
             <label>
-              Format
+              {t("label.format")}
               <select
                 value={format}
                 onChange={(event) => setFormat(event.target.value as "jpeg" | "png" | "webp")}
@@ -174,7 +178,7 @@ export function ImageResizePage(): JSX.Element {
               aria-busy={processing === "processing"}
               onClick={handleProcess}
             >
-              {processing === "processing" ? "Processing..." : "Process"}
+              {processing === "processing" ? t("button.processing") : t("button.process")}
             </button>
           </div>
         ),
@@ -187,11 +191,11 @@ export function ImageResizePage(): JSX.Element {
             )}
             {result ? (
               <div>
-                <p>Size: {(result.size / 1024).toFixed(2)} KB</p>
-                <img src={previewUrl} alt="Resized preview" className="preview-image" />
+                <p>{t("label.size")}: {(result.size / 1024).toFixed(2)} KB</p>
+                <img src={previewUrl} alt={t("label.preview")} className="preview-image" />
               </div>
             ) : (
-              <p>Run processing to preview output.</p>
+              <p>{t("label.noResult")}</p>
             )}
             <DownloadButton
               result={result}
@@ -207,4 +211,3 @@ export function ImageResizePage(): JSX.Element {
     />
   );
 }
-
