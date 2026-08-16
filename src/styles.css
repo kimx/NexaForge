@@ -426,12 +426,14 @@ h1 {
   color: var(--text-main);
   font-size: 0.82rem;
   font-weight: 500;
-  min-width: 68px;
+  width: 76px;
+  min-width: 76px;
   white-space: nowrap;
   padding: 0.42rem 0.68rem;
   cursor: pointer;
   transition: background-color 140ms var(--ease), border-color 140ms var(--ease), color 140ms var(--ease),
     box-shadow 140ms var(--ease);
+  user-select: none;
 }
 
 .language-switch__btn + .language-switch__btn {
@@ -456,6 +458,11 @@ h1 {
 
 .language-switch__btn:hover {
   background: rgba(112, 174, 252, 0.14);
+}
+
+.language-switch__btn:focus-visible {
+  outline: 2px solid rgba(68, 149, 251, 0.6);
+  outline-offset: 2px;
 }
 
 .hero,
@@ -905,6 +912,7 @@ button::after,
   content: "";
   position: absolute;
   inset: 0;
+  pointer-events: none;
   border-radius: inherit;
   background: linear-gradient(95deg, transparent, rgba(255, 255, 255, 0.32), transparent);
   opacity: 0;

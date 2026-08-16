@@ -4,12 +4,7 @@ import { useLanguage, type Locale } from "../context/LanguageContext";
 export function Header(): JSX.Element {
   const { t, locale, setLocale } = useLanguage();
 
-  const switchLocale = (next: Locale) => {
-    if (locale === next) {
-      return;
-    }
-    setLocale(next);
-  };
+  const switchLocale = (next: Locale) => setLocale(next);
 
   return (
     <header className="site-header">
@@ -25,7 +20,6 @@ export function Header(): JSX.Element {
             type="button"
             className={`language-switch__btn ${locale === "zh-TW" ? "is-active" : ""}`}
             onClick={() => switchLocale("zh-TW")}
-            disabled={locale === "zh-TW"}
             aria-pressed={locale === "zh-TW"}
           >
             {t("lang.zh")}
@@ -34,7 +28,6 @@ export function Header(): JSX.Element {
             type="button"
             className={`language-switch__btn ${locale === "en" ? "is-active" : ""}`}
             onClick={() => switchLocale("en")}
-            disabled={locale === "en"}
             aria-pressed={locale === "en"}
           >
             {t("lang.en")}

@@ -4,6 +4,7 @@ import {
   useContext,
   useMemo,
   useEffect,
+  useCallback,
   useState,
 } from "react";
 
@@ -43,9 +44,27 @@ function readInitialLocale(): Locale {
   }
 
   try {
-    return normalizeLocale(window.localStorage.getItem(LOCALE_STORAGE_KEY));
+    const stored = window.localStorage.getItem(LOCALE_STORAGE_KEY);
+    if (stored) {
+      return normalizeLocale(stored);
+    }
+
+    const browserLocale = window.navigator.language;
+    return normalizeLocale(browserLocale);
   } catch {
     return "zh-TW";
+  }
+}
+
+function persistLocaleState(locale: Locale): void {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  try {
+    window.localStorage.setItem(LOCALE_STORAGE_KEY, locale);
+  } catch {
+    // Best effort: persist in memory when storage is unavailable.
   }
 }
 
@@ -267,16 +286,16 @@ function renderTemplate(template: string, params?: Record<string, string | numbe
 const LanguageContext = createContext<LanguageContextValue | null>(null);
 
 export function LanguageProvider({ children }: PropsWithChildren): JSX.Element {
-  const [locale, setLocale] = useState<Locale>(readInitialLocale);
+  const [locale, setLocaleValue] = useState<Locale>(readInitialLocale);
+  const setLocale = useCallback((next: Locale) => {
+    const normalized = normalizeLocale(next);
+    setLocaleValue(normalized);
+    persistLocaleState(normalized);
+  }, []);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      try {
-        window.localStorage.setItem(LOCALE_STORAGE_KEY, locale);
-      } catch {
-        // Best effort: if storage is unavailable, keep app behavior in memory.
-      }
-      document.documentElement.lang = locale === "en" ? "en" : "zh-TW";
+      document.documentElement.lang = locale === "en" ? "en" : "zh-Hant";
     }
   }, [locale]);
 
