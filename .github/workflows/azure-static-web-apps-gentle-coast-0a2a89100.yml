@@ -37,6 +37,9 @@ jobs:
         run: npm ci
 
       - name: Build
+        env:
+          VITE_ADSENSE_SLOT_HOME: ${{ vars.VITE_ADSENSE_SLOT_HOME || '4722885744' }}
+          VITE_ADSENSE_SLOT_TOOL_RESULT: ${{ vars.VITE_ADSENSE_SLOT_TOOL_RESULT || '4722885744' }}
         run: npm run build
 
       - name: Verify dist
@@ -51,8 +54,7 @@ jobs:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: upload
 
-          # npm run build 已經自行產生 dist，
-          # Azure 不要再執行 Oryx Build。
+          # npm run build to dist output
           app_location: dist
           api_location: ""
           output_location: ""
