@@ -15,6 +15,8 @@ import { Base64Page } from "./pages/text/Base64Page";
 import { HashPage } from "./pages/text/HashPage";
 import { UuidPage } from "./pages/text/UuidPage";
 import { HtmlEncoderPage } from "./pages/text/HtmlEncoderPage";
+import { TextDiffPage } from "./pages/text/TextDiffPage";
+import { MarkdownPreviewPage } from "./pages/text/MarkdownPreviewPage";
 import { QrPage } from "./pages/qr/QrPage";
 import { JwtDecoderPage } from "./pages/developer/JwtDecoderPage";
 import { JwtKeyGeneratorPage } from "./pages/developer/JwtKeyGeneratorPage";
@@ -65,6 +67,8 @@ const TOOL_VISUALS: Record<string, { label: string; tone: string }> = {
   "csv-to-json": { label: "CSV", tone: "mint" },
   "json-to-csv": { label: "{}", tone: "blue" },
   "base64": { label: "64", tone: "amber" },
+  "text-diff": { label: "≠", tone: "violet" },
+  "markdown-previewer": { label: "MD", tone: "sky" },
   "html-encoder": { label: "HTML", tone: "blue" },
   hash: { label: "#", tone: "violet" },
   uuid: { label: "ID", tone: "sky" },
@@ -138,7 +142,9 @@ export default function App() {
       <Route path="/text/base64" element={<ToolFrame><Base64Page /></ToolFrame>} />
       <Route path="/text/hash" element={<ToolFrame><HashPage /></ToolFrame>} />
       <Route path="/text/uuid" element={<ToolFrame><UuidPage /></ToolFrame>} />
+      <Route path="/text/diff" element={<ToolFrame><TextDiffPage /></ToolFrame>} />
       <Route path="/text/html-encoder" element={<ToolFrame><HtmlEncoderPage /></ToolFrame>} />
+      <Route path="/text/markdown" element={<ToolFrame><MarkdownPreviewPage /></ToolFrame>} />
       <Route path="/developer/jwt-key" element={<ToolFrame><JwtKeyGeneratorPage /></ToolFrame>} />
       <Route path="/developer/jwt-decoder" element={<ToolFrame><JwtDecoderPage /></ToolFrame>} />
 

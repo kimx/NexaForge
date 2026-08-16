@@ -93,6 +93,13 @@ export const FILE_TOOLS: ToolDefinition[] = [
     category: "Text",
   },
   {
+    id: "text-diff",
+    title: "Text Diff",
+    description: "Compare two texts and see line-level differences.",
+    path: "/text/diff",
+    category: "Text",
+  },
+  {
     id: "html-encoder",
     title: "HTML Encoder",
     description: "Encode and decode HTML entities locally in browser.",
@@ -116,9 +123,16 @@ export const FILE_TOOLS: ToolDefinition[] = [
   {
     id: "jwt-decoder",
     title: "JWT Decoder",
-    description: "Decode JWT header, payload, and signature.",
+    description: "Decode JWT header, payload, and signature locally.",
     path: "/developer/jwt-decoder",
     category: "Developer",
+  },
+  {
+    id: "markdown-previewer",
+    title: "Markdown Preview",
+    description: "Preview Markdown instantly with support for headings, lists, links, and code blocks.",
+    path: "/text/markdown",
+    category: "Text",
   },
 ];
 

@@ -17,6 +17,7 @@ const ROUTE_HEADINGS: Record<string, string> = {
   "/text/base64": "Base64",
   "/text/hash": "Hash Generator",
   "/text/uuid": "UUID Generator",
+  "/text/markdown": "Markdown Preview",
   "/qr-code": "QR Code",
 };
 

@@ -31,6 +31,7 @@ const TOOL_VISUALS: Record<string, { label: string; tone: string }> = {
   "csv-to-json": { label: "CSV", tone: "mint" },
   "json-to-csv": { label: "{}", tone: "blue" },
   base64: { label: "64", tone: "amber" },
+  "markdown-previewer": { label: "MD", tone: "sky" },
   hash: { label: "#", tone: "violet" },
   uuid: { label: "ID", tone: "sky" },
   "jwt-key": { label: "KEY", tone: "violet" },
