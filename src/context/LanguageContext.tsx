@@ -17,17 +17,36 @@ interface LanguageContextValue {
 
 const LOCALE_STORAGE_KEY = "nexaforge-locale";
 
+function normalizeLocale(raw: string | null): Locale {
+  if (!raw) {
+    return "zh-TW";
+  }
+
+  switch (raw.toLowerCase().trim()) {
+    case "zh":
+    case "zh-tw":
+    case "zh-hant":
+      return "zh-TW";
+    case "en":
+    case "en-us":
+    case "en-gb":
+    case "en-ca":
+      return "en";
+    default:
+      return "zh-TW";
+  }
+}
+
 function readInitialLocale(): Locale {
   if (typeof window === "undefined") {
     return "zh-TW";
   }
 
-  const raw = window.localStorage.getItem(LOCALE_STORAGE_KEY);
-  if (raw === "zh-TW" || raw === "en") {
-    return raw;
+  try {
+    return normalizeLocale(window.localStorage.getItem(LOCALE_STORAGE_KEY));
+  } catch {
+    return "zh-TW";
   }
-
-  return "zh-TW";
 }
 
 const zhMessages: Record<string, string> = {
@@ -252,8 +271,12 @@ export function LanguageProvider({ children }: PropsWithChildren): JSX.Element {
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      window.localStorage.setItem(LOCALE_STORAGE_KEY, locale);
-      document.documentElement.lang = locale === "en" ? "en" : "zh-Hant";
+      try {
+        window.localStorage.setItem(LOCALE_STORAGE_KEY, locale);
+      } catch {
+        // Best effort: if storage is unavailable, keep app behavior in memory.
+      }
+      document.documentElement.lang = locale === "en" ? "en" : "zh-TW";
     }
   }, [locale]);
 
