@@ -93,6 +93,13 @@ export const FILE_TOOLS: ToolDefinition[] = [
     category: "Text",
   },
   {
+    id: "html-encoder",
+    title: "HTML Encoder",
+    description: "Encode and decode HTML entities locally in browser.",
+    path: "/text/html-encoder",
+    category: "Text",
+  },
+  {
     id: "qr-code",
     title: "QR Code",
     description: "Create and download PNG QR codes from text or URL.",
