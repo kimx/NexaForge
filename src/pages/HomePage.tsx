@@ -67,6 +67,7 @@ export function HomePage(): JSX.Element {
   const { t } = useLanguage();
   const toolMeta = useLocalizedToolMeta();
   const [keyword, setKeyword] = useState("");
+  const homeAdSlotId = import.meta.env.VITE_ADSENSE_SLOT_HOME;
   const homeMeta: ToolMeta = {
     title: t("home.title"),
     description: t("home.subtitle"),
@@ -136,7 +137,7 @@ export function HomePage(): JSX.Element {
         </div>
       </section>
 
-      <AdSlot position="home" />
+      <AdSlot position="home" adSlotId={homeAdSlotId} />
 
       <div className="home-dashboard">
         <ToolSidebar />

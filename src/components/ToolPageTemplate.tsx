@@ -80,7 +80,10 @@ export function ToolPageTemplate({
           {children.result}
         </section>
 
-        <AdSlot position="tool-result" />
+        <AdSlot
+          position="tool-result"
+          adSlotId={import.meta.env.VITE_ADSENSE_SLOT_TOOL_RESULT}
+        />
 
         <section className="tool-card">
           <h2>{t("toolPage.how")}</h2>
