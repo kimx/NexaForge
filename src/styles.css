@@ -1074,6 +1074,7 @@ select:focus {
 .ad-placeholder {
   position: relative;
   min-height: 118px;
+  gap: 10px;
   border-radius: 1rem;
   border: 1px dashed rgba(122, 170, 227, 0.6);
   background: linear-gradient(140deg, #ffffff 0%, #f0f6ff 100%);
@@ -1084,6 +1085,26 @@ select:focus {
   text-align: center;
   padding: 22px;
   box-shadow: var(--shadow-3);
+}
+
+.ad-slot {
+  align-items: stretch;
+}
+
+.ad-slot__label {
+  font-size: 0.68rem;
+  color: #6d90b6;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.ad-slot__unit {
+  min-height: 90px;
+  width: 100%;
+}
+
+.ad-slot--home {
+  margin-bottom: 16px;
 }
 
 .ad-slot::before,

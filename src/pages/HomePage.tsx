@@ -9,6 +9,7 @@ import {
   useLocalizedToolMeta,
 } from "../context/LanguageContext";
 import { ToolSidebar } from "../components/ToolSidebar";
+import { AdSlot } from "../components/AdSlot";
 
 const categoryOrder: ToolDefinition["category"][] = [
   "Image",
@@ -134,6 +135,8 @@ export function HomePage(): JSX.Element {
           </div>
         </div>
       </section>
+
+      <AdSlot position="home" />
 
       <div className="home-dashboard">
         <ToolSidebar />
