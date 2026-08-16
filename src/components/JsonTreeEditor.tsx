@@ -2,9 +2,11 @@ import { type ClipboardEvent, useMemo, useState } from "react";
 import { useLanguage } from "../context/LanguageContext";
 
 type JsonPrimitive = string | number | boolean | null;
-type JsonArray = JsonValue[];
+interface JsonArray extends Array<JsonValue> {}
 export type JsonValue = JsonPrimitive | JsonObject | JsonArray;
-type JsonObject = Record<string, JsonValue>;
+interface JsonObject {
+  [key: string]: JsonValue;
+}
 type JsonPath = Array<string | number>;
 type JsonType = "string" | "number" | "boolean" | "null" | "object" | "array";
 
@@ -25,6 +27,10 @@ interface AddDraft {
 
 function isJsonObject(value: JsonValue): value is JsonObject {
   return value !== null && typeof value === "object" && !Array.isArray(value);
+}
+
+function isJsonArray(value: JsonValue): value is JsonArray {
+  return Array.isArray(value);
 }
 
 function pathToKey(path: JsonPath): string {
@@ -355,7 +361,7 @@ function TreeNode({
   const childCount =
     isJsonObject(value)
       ? Object.keys(value).length
-      : Array.isArray(value)
+      : isJsonArray(value)
         ? value.length
         : 0;
 
@@ -523,9 +529,9 @@ function TreeNode({
               </li>
             ) : null}
           </ul>
-        ) : (
+        ) : isJsonArray(value) ? (
           <ul className="json-tree__list">
-            {value.map((child, childIndex) => (
+            {value.map((child: JsonValue, childIndex: number) => (
               <li key={`${path.join(".")}-${childIndex}`} className="json-tree__list-item">
                 <TreeNode
                   label={`[${childIndex}]`}
@@ -560,7 +566,7 @@ function TreeNode({
               </li>
             ) : null}
           </ul>
-        )}
+        ) : null}
       </div>
     </details>
   );

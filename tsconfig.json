@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "types": ["vitest/globals"],
+    "types": ["vite/client", "vitest/globals"],
     "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "bundler",
