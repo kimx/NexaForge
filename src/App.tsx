@@ -19,7 +19,7 @@ import { Footer } from "./components/Footer";
 import { Header } from "./components/Header";
 import { ToolSidebar } from "./components/ToolSidebar";
 
-function ScrollToTop(): JSX.Element {
+function ScrollToTop(): JSX.Element | null {
   const { pathname } = useLocation();
 
   useEffect(() => {

@@ -5,7 +5,7 @@ export interface AdSlotProps {
   adSlotId?: string;
 }
 
-type WindowWithAds = Window & { adsbygoogle?: { push: (value?: object) => void }[] };
+type WindowWithAds = Window & { adsbygoogle?: Array<{ [key: string]: unknown }> };
 
 const ADSENSE_CLIENT = "ca-pub-7081186471554630";
 const AD_SLOT_FALLBACK: Record<AdSlotProps["position"], string> = {
