@@ -12,7 +12,7 @@ const AD_SLOT_FALLBACK: Record<AdSlotProps["position"], string> = {
   home: "",
   "tool-result": "",
 };
-const AD_SLOT_PATTERN = /^\d{16}$/;
+const AD_SLOT_PATTERN = /^\d{10,16}$/;
 
 export function AdSlot({ position, adSlotId }: AdSlotProps): JSX.Element {
   const adRef = useRef<HTMLModElement>(null);
