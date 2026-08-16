@@ -14,6 +14,7 @@ export function JwtDecoderPage(): JSX.Element {
   const [token, setToken] = useState("");
   const [processing, setProcessing] = useState<ProcessingState>("idle");
   const [decodedText, setDecodedText] = useState("");
+  const [expirationText, setExpirationText] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [copyError, setCopyError] = useState<string | null>(null);
 
@@ -51,6 +52,41 @@ export function JwtDecoderPage(): JSX.Element {
     [t]
   );
 
+  const extractExpirationText = (payload: unknown): string | null => {
+    if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
+      return null;
+    }
+
+    const candidate = (payload as { exp?: unknown }).exp;
+    if (candidate === undefined || candidate === null) {
+      return null;
+    }
+
+    const epochSeconds =
+      typeof candidate === "number"
+        ? candidate
+        : typeof candidate === "string"
+          ? Number(candidate)
+          : NaN;
+
+    if (!Number.isFinite(epochSeconds) || epochSeconds <= 0) {
+      return null;
+    }
+
+    const expiresAt = new Date(epochSeconds * 1000);
+    if (Number.isNaN(expiresAt.getTime())) {
+      return null;
+    }
+
+    const expired = Math.floor(Date.now() / 1000) > epochSeconds;
+    const readable = expiresAt.toLocaleString();
+
+    return `${t("tool.jwt-decoder.label.expiresAt", {
+      time: readable,
+      unix: String(epochSeconds),
+    })}${expired ? ` ${t("tool.jwt-decoder.label.expired")}` : ""}`;
+  };
+
   const decodedFile = useMemo<FileProcessResult | null>(() => {
     if (!decodedText) {
       return null;
@@ -68,6 +104,7 @@ export function JwtDecoderPage(): JSX.Element {
   const handleDecode = () => {
     setCopyError(null);
     setError(null);
+    setExpirationText(null);
 
     if (!token.trim()) {
       setError(t("tool.jwt-decoder.error.noToken"));
@@ -80,6 +117,7 @@ export function JwtDecoderPage(): JSX.Element {
     try {
       const result = decodeJwtToken(token);
       setDecodedText(JSON.stringify(result, null, 2));
+      setExpirationText(extractExpirationText(result.payload));
       setProcessing("success");
       trackEvent("process_success", { tool: "jwt-decoder" });
     } catch (err) {
@@ -143,6 +181,7 @@ export function JwtDecoderPage(): JSX.Element {
           <>
             {processing === "error" && error && <p role="alert" className="error">{error}</p>}
             {copyError && <p role="alert" className="error">{copyError}</p>}
+            {expirationText && <p>{expirationText}</p>}
             <pre>{decodedText || t("tool.jwt-decoder.label.noOutput")}</pre>
             <div className="tool-actions">
               <button

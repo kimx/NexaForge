@@ -404,6 +404,8 @@ const zhMessages: Record<string, string> = {
   "tool.jwt-decoder.error.decodeFailed": "解碼失敗，請確認 Token 格式。",
   "tool.jwt-decoder.label.token": "JWT 權杖",
   "tool.jwt-decoder.label.decodeButton": "解碼",
+  "tool.jwt-decoder.label.expiresAt": "過期時間：{time}（Unix: {unix}）",
+  "tool.jwt-decoder.label.expired": "（已過期）",
   "tool.jwt-decoder.label.noOutput": "尚未產生解碼結果。",
   "tool.jwt-decoder.label.tokenPlaceholder": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
 
@@ -749,6 +751,8 @@ const enMessages: Record<string, string> = {
   "tool.jwt-decoder.error.decodeFailed": "Unable to decode token.",
   "tool.jwt-decoder.label.token": "JWT Token",
   "tool.jwt-decoder.label.decodeButton": "Decode",
+  "tool.jwt-decoder.label.expiresAt": "Expires at: {time} (Unix: {unix})",
+  "tool.jwt-decoder.label.expired": "(expired)",
   "tool.jwt-decoder.label.noOutput": "No decoded output yet.",
   "tool.jwt-decoder.label.tokenPlaceholder": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
 
