@@ -2192,22 +2192,6 @@ small {
     grid-template-columns: 1fr;
   }
 
-  .site-content--collapsed {
-    grid-template-columns: 1fr;
-  }
-
-  .site-content--collapsed .tool-sidebar {
-    width: 100%;
-    min-width: 0;
-    max-height: none;
-    padding: 10px;
-  }
-
-  .site-content--collapsed .tool-sidebar__toggle {
-    width: 44px;
-    margin-inline: auto;
-  }
-
   .tool-sidebar {
     position: static;
     max-height: none;
@@ -2621,10 +2605,6 @@ button:hover,
   transition: grid-template-columns 220ms var(--ease);
 }
 
-.home-dashboard--collapsed {
-  grid-template-columns: 58px minmax(0, 1fr);
-}
-
 .home-dashboard .tool-sidebar {
   position: sticky;
   top: 18px;
@@ -2927,17 +2907,6 @@ button:hover,
 @media (max-width: 900px) {
   .home-dashboard {
     grid-template-columns: 1fr;
-  }
-
-  .home-dashboard--collapsed {
-    grid-template-columns: 1fr;
-  }
-
-  .home-dashboard--collapsed .tool-sidebar {
-    width: 100%;
-    min-width: 0;
-    max-height: none;
-    padding: 10px;
   }
 
   .home-dashboard .tool-sidebar {
