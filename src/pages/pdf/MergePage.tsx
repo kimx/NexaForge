@@ -1,5 +1,7 @@
 import { useMemo, useState } from "react";
-import { ProcessingState, ToolMeta, FileProcessResult } from "../../types/tool";
+import type { DragEvent } from "react";
+import { Link } from "react-router-dom";
+import { ProcessingState, ToolMeta, FileProcessResult, FileRejection } from "../../types/tool";
 import { FILE_TOOLS } from "../../data/tools";
 import { ToolPageTemplate } from "../../components/ToolPageTemplate";
 import { FileDropzone } from "../../components/FileDropzone";
@@ -10,6 +12,7 @@ import { trackEvent } from "../../utils/analytics";
 import { useSeo } from "../../hooks/useSeo";
 import { validateFileSize, validateMime } from "../../utils/validation";
 import { useLanguage } from "../../context/LanguageContext";
+import { formatFileSize } from "../../utils/fileSize";
 
 export function PdfMergePage(): JSX.Element {
   const { t } = useLanguage();
@@ -17,6 +20,7 @@ export function PdfMergePage(): JSX.Element {
   const [processing, setProcessing] = useState<ProcessingState>("idle");
   const [result, setResult] = useState<FileProcessResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
 
   const tool = FILE_TOOLS.find((item) => item.id === "pdf-merge");
   const title = t("tool.pdf-merge.title");
@@ -63,8 +67,55 @@ export function PdfMergePage(): JSX.Element {
       const temp = next[targetIndex];
       next[targetIndex] = next[index];
       next[index] = temp;
+      setProcessing("ready");
       return next;
     });
+  };
+
+  const handleFiles = (incoming: File[]): void => {
+    setFiles((current) => [...current, ...incoming]);
+    setResult(null);
+    setError(null);
+    setProcessing("ready");
+    trackEvent("workflow_ready", { tool: "pdf-merge" });
+  };
+
+  const handleRejectedFiles = (rejections: FileRejection[]): void => {
+    setError(rejections.map((rejection) => `${rejection.fileName}: ${rejection.reason}`).join("\n"));
+    setProcessing("error");
+  };
+
+  const removeFile = (index: number): void => {
+    setFiles((current) => current.filter((_, fileIndex) => fileIndex !== index));
+    setResult(null);
+    setProcessing(files.length > 1 ? "ready" : "idle");
+  };
+
+  const clearFiles = (): void => {
+    setFiles([]);
+    setResult(null);
+    setError(null);
+    setProcessing("idle");
+  };
+
+  const handleDropReorder = (event: DragEvent<HTMLLIElement>, targetIndex: number): void => {
+    event.preventDefault();
+    const sourceIndex = draggedIndex ?? Number(event.dataTransfer.getData("text/plain"));
+    if (!Number.isInteger(sourceIndex) || sourceIndex === targetIndex) {
+      setDraggedIndex(null);
+      return;
+    }
+    setFiles((current) => {
+      if (sourceIndex < 0 || sourceIndex >= current.length || targetIndex < 0 || targetIndex >= current.length) {
+        return current;
+      }
+      const next = [...current];
+      const [moved] = next.splice(sourceIndex, 1);
+      next.splice(targetIndex, 0, moved);
+      return next;
+    });
+    setDraggedIndex(null);
+    setProcessing("ready");
   };
 
   const handleProcess = async () => {
@@ -108,28 +159,56 @@ export function PdfMergePage(): JSX.Element {
         children={{
         workspace: (
           <>
-            <FileDropzone
+        <FileDropzone
               label={t("label.dropPdf")}
               accept="application/pdf"
               multiple
-              onFiles={setFiles}
+              onFiles={handleFiles}
+              onRejectedFiles={handleRejectedFiles}
             />
-            <ol className="reorder-list">
+            {files.length > 0 ? (
+              <div className="pdf-merge-list-summary">
+                <span>{t("fileInfo.selectedPlural", { count: files.length })} · {t("fileInfo.totalSize")}: {formatFileSize(files.reduce((total, file) => total + file.size, 0))}</span>
+                <button type="button" className="btn secondary file-btn" onClick={clearFiles}>{t("fileInfo.clearAll")}</button>
+              </div>
+            ) : null}
+            <ol className="reorder-list" aria-label={t("pdfMerge.fileOrderLabel")}>
               {files.map((file, index) => (
-                <li key={`${file.name}-${file.size}-${index}`}>
-                  <span>
-                    {index + 1}. {file.name}
+                <li
+                  key={`${file.name}-${file.size}-${index}`}
+                  className={`reorder-list__item${draggedIndex === index ? " reorder-list__item--dragging" : ""}`}
+                  draggable
+                  aria-posinset={index + 1}
+                  aria-setsize={files.length}
+                  onDragStart={(event) => {
+                    setDraggedIndex(index);
+                    event.dataTransfer.effectAllowed = "move";
+                    event.dataTransfer.setData("text/plain", String(index));
+                  }}
+                  onDragOver={(event) => event.preventDefault()}
+                  onDrop={(event) => handleDropReorder(event, index)}
+                  onDragEnd={() => setDraggedIndex(null)}
+                >
+                  <span className="reorder-list__handle" title={t("pdfMerge.dragHandle")} aria-hidden="true">⠿</span>
+                  <span className="reorder-list__name">
+                    <strong>{index + 1}. {file.name}</strong>
+                    <small>{formatFileSize(file.size)} · {file.type || t("fileInfo.unknownType")}</small>
                   </span>
-                  <div className="button-row">
-                    <button type="button" onClick={() => moveFile(index, -1)} disabled={index === 0}>
+                  <div className="button-row reorder-list__actions">
+                    <button type="button" className="file-btn" onClick={() => moveFile(index, -1)} disabled={index === 0} aria-label={t("pdfMerge.moveUp")}>
                       ↑
                     </button>
                     <button
                       type="button"
+                      className="file-btn"
                       onClick={() => moveFile(index, 1)}
                       disabled={index === files.length - 1}
+                      aria-label={t("pdfMerge.moveDown")}
                     >
                       ↓
+                    </button>
+                    <button type="button" className="file-btn" onClick={() => removeFile(index)} aria-label={`${t("fileInfo.remove")} ${file.name}`}>
+                      ×
                     </button>
                   </div>
                 </li>
@@ -152,26 +231,36 @@ export function PdfMergePage(): JSX.Element {
         ),
         result: (
           <>
-            {processing === "error" && error && (
-              <p role="alert" className="error">
-                {error}
-              </p>
-            )}
-            {result ? (
-              <p>{t("tool.pdf-merge.label.outputSize", { size: (result.size / 1024).toFixed(2) })}</p>
-            ) : (
-              <p>{t("label.noResult")}</p>
-            )}
+            <p>{t("tool.pdf-merge.label.outputSize", { size: ((result?.size ?? 0) / 1024).toFixed(2) })}</p>
+          </>
+        ),
+        nextActions: (
+          <>
             <DownloadButton
               result={result}
               disabled={processing === "processing"}
-              onDownloaded={() => trackEvent("download", { tool: "pdf-merge" })}
+              onDownloaded={() => {
+                trackEvent("download", { tool: "pdf-merge" });
+                trackEvent("result_action_used", { tool: "pdf-merge", action: "download" });
+              }}
             />
+            <Link className="btn secondary" to="/pdf/rotate" onClick={() => trackEvent("result_action_used", { tool: "pdf-merge", action: "rotate" })}>
+              {t("toolPage.nextRotate")}
+            </Link>
+            <Link className="btn secondary" to="/pdf/split" onClick={() => trackEvent("result_action_used", { tool: "pdf-merge", action: "split" })}>
+              {t("toolPage.nextSplit")}
+            </Link>
           </>
         ),
         howItWorks,
         faq,
         relatedTools,
+      }}
+      workflow={{
+        state: processing,
+        error,
+        onRetry: handleProcess,
+        onReprocess: handleProcess,
       }}
     />
   );

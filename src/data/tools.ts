@@ -7,6 +7,8 @@ export const FILE_TOOLS: ToolDefinition[] = [
     description: "Resize JPG, PNG, or WebP directly in the browser.",
     path: "/image/resize",
     category: "Image",
+    aliases: ["resize image", "scale image", "change size"],
+    keywords: ["photo", "image", "jpeg", "png", "webp"],
   },
   {
     id: "image-compress",
@@ -14,6 +16,8 @@ export const FILE_TOOLS: ToolDefinition[] = [
     description: "Compress with quality control and compare file sizes.",
     path: "/image/compress",
     category: "Image",
+    aliases: ["compress image", "reduce image size", "optimize photo"],
+    keywords: ["photo", "jpeg", "png", "webp", "quality"],
   },
   {
     id: "image-convert",
@@ -21,6 +25,8 @@ export const FILE_TOOLS: ToolDefinition[] = [
     description: "Convert JPG, PNG, and WebP formats instantly.",
     path: "/image/convert",
     category: "Image",
+    aliases: ["convert image", "reformat image", "jpeg to png"],
+    keywords: ["photo", "convert", "format", "jpeg", "png", "webp"],
   },
   {
     id: "pdf-merge",
@@ -28,6 +34,8 @@ export const FILE_TOOLS: ToolDefinition[] = [
     description: "Merge many PDF files and download a single file.",
     path: "/pdf/merge",
     category: "PDF",
+    aliases: ["combine pdf", "merge pdf", "append pdf"],
+    keywords: ["document", "pdf", "combine", "stitch"],
   },
   {
     id: "pdf-split",
@@ -35,6 +43,8 @@ export const FILE_TOOLS: ToolDefinition[] = [
     description: "Split pages by range input with secure browser-side validation.",
     path: "/pdf/split",
     category: "PDF",
+    aliases: ["split pdf", "separate pdf"],
+    keywords: ["document", "pdf", "range", "pages", "split"],
   },
   {
     id: "pdf-rotate",
@@ -42,6 +52,8 @@ export const FILE_TOOLS: ToolDefinition[] = [
     description: "Rotate selected pages with preview and quality-safe output.",
     path: "/pdf/rotate",
     category: "PDF",
+    aliases: ["rotate pdf", "page rotation"],
+    keywords: ["document", "pdf", "rotate", "90", "180", "270"],
   },
   {
     id: "json-formatter",
@@ -49,6 +61,8 @@ export const FILE_TOOLS: ToolDefinition[] = [
     description: "Format, minify, and validate JSON in seconds.",
     path: "/data/json-formatter",
     category: "Data",
+    aliases: ["json beautifier", "beautify json", "format json", "pretty json"],
+    keywords: ["json", "format", "minify", "validator"],
   },
   {
     id: "csv-viewer",
@@ -56,6 +70,8 @@ export const FILE_TOOLS: ToolDefinition[] = [
     description: "Render large CSV safely with preview and metadata.",
     path: "/data/csv-viewer",
     category: "Data",
+    aliases: ["view csv", "inspect csv", "open csv"],
+    keywords: ["csv", "table", "preview", "metadata"],
   },
   {
     id: "csv-to-json",
@@ -63,6 +79,8 @@ export const FILE_TOOLS: ToolDefinition[] = [
     description: "Convert CSV files to JSON quickly and download.",
     path: "/data/csv-to-json",
     category: "Data",
+    aliases: ["csv to json", "convert csv", "export json"],
+    keywords: ["csv", "json", "convert", "table"],
   },
   {
     id: "json-to-csv",
@@ -70,6 +88,8 @@ export const FILE_TOOLS: ToolDefinition[] = [
     description: "Transform object arrays into CSV output.",
     path: "/data/json-to-csv",
     category: "Data",
+    aliases: ["json to csv", "export csv", "convert json"],
+    keywords: ["json", "csv", "transform", "flatten", "table"],
   },
   {
     id: "base64",
@@ -77,6 +97,8 @@ export const FILE_TOOLS: ToolDefinition[] = [
     description: "Text, Base64, and file conversion fully local.",
     path: "/text/base64",
     category: "Text",
+    aliases: ["base64 encode", "base64 decode", "encode text", "decode text"],
+    keywords: ["text", "base64", "binary", "file conversion"],
   },
   {
     id: "hash",
@@ -84,6 +106,8 @@ export const FILE_TOOLS: ToolDefinition[] = [
     description: "Generate SHA digest values in browser securely.",
     path: "/text/hash",
     category: "Text",
+    aliases: ["sha", "digest", "checksum"],
+    keywords: ["hash", "sha-256", "sha-512", "crypto"],
   },
   {
     id: "uuid",
@@ -91,6 +115,8 @@ export const FILE_TOOLS: ToolDefinition[] = [
     description: "Generate one UUID or batch up to 1000.",
     path: "/text/uuid",
     category: "Text",
+    aliases: ["uuid", "guid", "unique id", "id generator"],
+    keywords: ["uuid", "uid", "identifier", "random"],
   },
   {
     id: "text-diff",
@@ -98,6 +124,8 @@ export const FILE_TOOLS: ToolDefinition[] = [
     description: "Compare two texts and see line-level differences.",
     path: "/text/diff",
     category: "Text",
+    aliases: ["text compare", "compare text", "diff file"],
+    keywords: ["diff", "text", "line compare", "patch"],
   },
   {
     id: "html-encoder",
@@ -105,6 +133,8 @@ export const FILE_TOOLS: ToolDefinition[] = [
     description: "Encode and decode HTML entities locally in browser.",
     path: "/text/html-encoder",
     category: "Text",
+    aliases: ["html escape", "html entities", "encode html"],
+    keywords: ["html", "entities", "escape", "decode"],
   },
   {
     id: "qr-code",
@@ -112,6 +142,8 @@ export const FILE_TOOLS: ToolDefinition[] = [
     description: "Create and download PNG QR codes from text or URL.",
     path: "/qr-code",
     category: "Image",
+    aliases: ["qr generator", "qr maker", "qr image"],
+    keywords: ["qr", "barcode", "code", "url", "image"],
   },
   {
     id: "jwt-key",
@@ -119,6 +151,8 @@ export const FILE_TOOLS: ToolDefinition[] = [
     description: "Generate local Base64URL-safe random keys.",
     path: "/developer/jwt-key",
     category: "Developer",
+    aliases: ["jwt secret", "jwt key", "token key"],
+    keywords: ["developer", "jwt", "secret", "crypto"],
   },
   {
     id: "jwt-decoder",
@@ -126,6 +160,44 @@ export const FILE_TOOLS: ToolDefinition[] = [
     description: "Decode JWT header, payload, and signature locally.",
     path: "/developer/jwt-decoder",
     category: "Developer",
+    aliases: ["decode jwt", "jwt inspect", "token decode"],
+    keywords: ["developer", "jwt", "decode", "token", "header"],
+  },
+  {
+    id: "url-encoder",
+    title: "URL Encoder / Decoder",
+    description: "Encode and decode URL components locally.",
+    path: "/developer/url-encoder",
+    category: "Developer",
+    aliases: ["url encode", "url decode", "uri encoder", "percent encoding"],
+    keywords: ["developer", "url", "uri", "encode", "decode"],
+  },
+  {
+    id: "unix-timestamp",
+    title: "Unix Timestamp",
+    description: "Convert Unix timestamps and dates in your browser.",
+    path: "/developer/unix-timestamp",
+    category: "Developer",
+    aliases: ["timestamp converter", "epoch converter", "unix time"],
+    keywords: ["developer", "timestamp", "epoch", "date", "time"],
+  },
+  {
+    id: "json-yaml",
+    title: "JSON <-> YAML",
+    description: "Convert common JSON and YAML data locally.",
+    path: "/developer/json-yaml",
+    category: "Developer",
+    aliases: ["json to yaml", "yaml to json", "yaml converter"],
+    keywords: ["developer", "json", "yaml", "convert", "config"],
+  },
+  {
+    id: "json-diff",
+    title: "JSON Diff",
+    description: "Compare two JSON documents and inspect their changes.",
+    path: "/developer/json-diff",
+    category: "Developer",
+    aliases: ["compare json", "json compare", "json difference"],
+    keywords: ["developer", "json", "diff", "compare", "changes"],
   },
   {
     id: "markdown-previewer",
@@ -133,6 +205,8 @@ export const FILE_TOOLS: ToolDefinition[] = [
     description: "Preview Markdown instantly with support for headings, lists, links, and code blocks.",
     path: "/text/markdown",
     category: "Text",
+    aliases: ["markdown", "md preview", "render markdown"],
+    keywords: ["markdown", "preview", "md", "renderer"],
   },
 ];
 

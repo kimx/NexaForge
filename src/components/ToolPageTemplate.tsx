@@ -1,19 +1,22 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { PrivacyNotice } from "./PrivacyNotice";
 import { AdSlot } from "./AdSlot";
-import type { ToolMeta, ToolDefinition } from "../types/tool";
+import type { ToolMeta, ToolDefinition, ToolWorkflow } from "../types/tool";
 import { useLanguage, useLocalizedToolMeta } from "../context/LanguageContext";
 import { trackEvent } from "../utils/analytics";
+import { ProcessingStatus } from "./ProcessingStatus";
 
 interface ToolPageTemplateProps {
   tool: ToolDefinition;
   meta: ToolMeta;
   breadcrumb: string[];
+  workflow?: ToolWorkflow;
   children: {
     workspace: JSX.Element;
     options: JSX.Element;
     result: JSX.Element;
+    nextActions?: JSX.Element;
     howItWorks: string[];
     faq: { q: string; a: string }[];
     relatedTools: ToolDefinition[];
@@ -24,10 +27,12 @@ export function ToolPageTemplate({
   tool,
   meta,
   breadcrumb,
+  workflow,
   children,
 }: ToolPageTemplateProps): JSX.Element {
   const { t } = useLanguage();
   const localToolMeta = useLocalizedToolMeta();
+  const resultRef = useRef<HTMLElement | null>(null);
 
   const toolTitle = localToolMeta(tool.id, "title");
   const toolDescription = localToolMeta(tool.id, "description");
@@ -45,6 +50,23 @@ export function ToolPageTemplate({
   useEffect(() => {
     trackEvent("tool_open", { tool: tool.id });
   }, [tool.id]);
+
+  useEffect(() => {
+    if (workflow?.state !== "success") {
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 120);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [workflow?.state]);
+
+  const showResultContent = !workflow || workflow.state === "success";
+  const showResultSection = !workflow || workflow.state !== "idle";
 
   return (
     <main className={`tool-page ${tool.id === "json-formatter" ? "tool-page--json-formatter" : ""}`}>
@@ -75,10 +97,24 @@ export function ToolPageTemplate({
           </section>
         </div>
 
-        <section className="tool-card">
-          <h2>{t("toolPage.result")}</h2>
-          {children.result}
-        </section>
+        {showResultSection ? (
+          <section className={`tool-card tool-page__result${workflow ? ` tool-page__result--${workflow.state}` : ""}`} ref={resultRef}>
+            <h2>{t("toolPage.result")}</h2>
+            {workflow ? <ProcessingStatus {...workflow} /> : null}
+            {showResultContent ? children.result : null}
+            {workflow?.state === "success" && children.nextActions ? (
+              <div className="next-actions">
+                <h3>{t("toolPage.nextActions")}</h3>
+                <div className="next-actions__row">{children.nextActions}</div>
+                {workflow.onReprocess ? (
+                  <button type="button" className="btn secondary" onClick={workflow.onReprocess}>
+                    {t("toolPage.reprocess")}
+                  </button>
+                ) : null}
+              </div>
+            ) : null}
+          </section>
+        ) : null}
 
         <AdSlot
           position="tool-result"

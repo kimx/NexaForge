@@ -20,6 +20,7 @@ import { MarkdownPreviewPage } from "./pages/text/MarkdownPreviewPage";
 import { QrPage } from "./pages/qr/QrPage";
 import { JwtDecoderPage } from "./pages/developer/JwtDecoderPage";
 import { JwtKeyGeneratorPage } from "./pages/developer/JwtKeyGeneratorPage";
+import { DeveloperToolsPage } from "./pages/developer/DeveloperToolsPage";
 import { Footer } from "./components/Footer";
 import { Header } from "./components/Header";
 import { ToolSidebar } from "./components/ToolSidebar";
@@ -74,6 +75,10 @@ const TOOL_VISUALS: Record<string, { label: string; tone: string }> = {
   uuid: { label: "ID", tone: "sky" },
   "jwt-key": { label: "KEY", tone: "violet" },
   "jwt-decoder": { label: "JWT", tone: "blue" },
+  "url-encoder": { label: "URL", tone: "sky" },
+  "unix-timestamp": { label: "TIME", tone: "mint" },
+  "json-yaml": { label: "YAML", tone: "amber" },
+  "json-diff": { label: "DIFF", tone: "violet" },
   "qr-code": { label: "QR", tone: "blue" },
 };
 
@@ -87,6 +92,23 @@ function ToolFrame({ children }: { children: JSX.Element }): JSX.Element {
   const landingTitle = currentTool ? localToolMeta(currentTool.id, "title") : routeLabel;
   const landingDescription = currentTool ? localToolMeta(currentTool.id, "description") : t("home.subtitle");
   const landingVisual = currentTool ? TOOL_VISUALS[currentTool.id] : undefined;
+
+  useEffect(() => {
+    if (!currentTool || pathname === "/") {
+      return;
+    }
+    try {
+      const stored = window.localStorage.getItem("nexaforge-recent-tools");
+      const previous = stored ? JSON.parse(stored) : [];
+      const recent = Array.isArray(previous) ? previous.filter((id): id is string => typeof id === "string") : [];
+      window.localStorage.setItem(
+        "nexaforge-recent-tools",
+        JSON.stringify([currentTool.id, ...recent.filter((id) => id !== currentTool.id)].slice(0, 6))
+      );
+    } catch {
+      // Recent tools are best-effort when storage is unavailable.
+    }
+  }, [currentTool, pathname]);
 
   return (
     <div className="site-shell">
@@ -147,6 +169,10 @@ export default function App() {
       <Route path="/text/markdown" element={<ToolFrame><MarkdownPreviewPage /></ToolFrame>} />
       <Route path="/developer/jwt-key" element={<ToolFrame><JwtKeyGeneratorPage /></ToolFrame>} />
       <Route path="/developer/jwt-decoder" element={<ToolFrame><JwtDecoderPage /></ToolFrame>} />
+      <Route path="/developer/url-encoder" element={<ToolFrame><DeveloperToolsPage kind="url-encoder" /></ToolFrame>} />
+      <Route path="/developer/unix-timestamp" element={<ToolFrame><DeveloperToolsPage kind="unix-timestamp" /></ToolFrame>} />
+      <Route path="/developer/json-yaml" element={<ToolFrame><DeveloperToolsPage kind="json-yaml" /></ToolFrame>} />
+      <Route path="/developer/json-diff" element={<ToolFrame><DeveloperToolsPage kind="json-diff" /></ToolFrame>} />
 
       <Route path="/qr-code" element={<ToolFrame><QrPage /></ToolFrame>} />
 

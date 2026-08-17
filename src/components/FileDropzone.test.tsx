@@ -49,6 +49,13 @@ describe("FileDropzone", () => {
     fireEvent.drop(dropzone, { dataTransfer });
 
     expect(onFiles).not.toHaveBeenCalled();
-    expect(onRejectedFiles).toHaveBeenCalledWith(["data.txt"]);
+    expect(onRejectedFiles).toHaveBeenCalledWith([
+      {
+        fileName: "data.txt",
+        reason: "invalid mime",
+        message: "Unsupported file type: text/plain",
+      },
+    ]);
+    expect(screen.getByRole("alert")).toHaveTextContent("data.txt: invalid mime");
   });
 });

@@ -1,17 +1,14 @@
 import { FILE_LIMITS } from "../config/fileLimits";
 import { detectCategory } from "./mime";
-
-export interface ValidationError {
-  message: string;
-}
+import type { FileRejectionReason, ValidationError } from "../types/tool";
 
 export function validateFileSize(file: File): ValidationError | null {
   const category = detectCategory(file);
   const maxSize = FILE_LIMITS[category] ?? FILE_LIMITS.other;
   if (file.size > maxSize) {
     return {
-      message:
-        "This file is too large to process safely in your browser.",
+      message: "This file is too large to process safely in your browser.",
+      reason: "size exceeds",
     };
   }
   return null;
@@ -42,8 +39,12 @@ export function validateMime(file: File, accept: string): ValidationError | null
   });
 
   if (!result) {
+    const hasExtensionRule = acceptParts.some((rule) => rule.startsWith("."));
+    const hasMimeRule = acceptParts.some((rule) => rule.includes("/"));
+    const reason: FileRejectionReason = hasExtensionRule ? "unsupported extension" : hasMimeRule ? "invalid mime" : "invalid mime";
     return {
       message: `Unsupported file type: ${type || "unknown"}`,
+      reason,
     };
   }
   return null;

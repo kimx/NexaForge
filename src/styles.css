@@ -3115,3 +3115,322 @@ button:hover,
     font-size: 0.68rem;
   }
 }
+
+.file-dropzone--dragging {
+  border-color: var(--brand-primary) !important;
+  background: linear-gradient(140deg, rgba(224, 241, 255, 0.98), rgba(240, 250, 255, 0.98));
+  box-shadow: 0 0 0 4px rgba(80, 145, 229, 0.16), 0 16px 32px rgba(71, 128, 202, 0.16);
+  transform: translateY(-2px) scale(1.01);
+}
+
+.file-dropzone__rejections {
+  position: relative;
+  z-index: 1;
+  margin: 12px 0 0;
+  padding: 9px 12px 9px 28px;
+  border: 1px solid rgba(205, 87, 87, 0.28);
+  border-radius: 0.65rem;
+  background: rgba(255, 245, 245, 0.88);
+  color: var(--semantic-danger);
+  font-size: 0.76rem;
+  text-align: left;
+}
+
+.file-summary,
+.pdf-merge-list-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 14px 0 0;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+}
+
+.file-summary p {
+  margin: 0;
+}
+
+.file-list li {
+  grid-template-columns: minmax(0, 1fr) 100px 130px minmax(0, auto);
+  align-items: center;
+}
+
+.file-list__name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-list__actions {
+  display: inline-flex;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.file-btn {
+  min-height: 32px;
+  padding: 0.4rem 0.62rem;
+  font-size: 0.74rem;
+}
+
+.processing-status {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 14px;
+  padding: 11px 13px;
+  border: 1px solid rgba(118, 169, 235, 0.28);
+  border-radius: 0.72rem;
+  background: var(--bg-subtle);
+}
+
+.processing-status__phase {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  font-weight: 750;
+}
+
+.processing-status__indicator {
+  width: 10px;
+  height: 10px;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+  color: var(--semantic-success);
+}
+
+.processing-status__indicator--spinning {
+  border-color: rgba(75, 134, 215, 0.25);
+  border-top-color: var(--brand-primary);
+  animation: nexaforge-spin 760ms linear infinite;
+}
+
+.processing-status--error .processing-status__indicator {
+  color: var(--semantic-danger);
+}
+
+.processing-status--processing .processing-status__phase {
+  color: var(--brand-primary);
+}
+
+.processing-status .tool-page__error {
+  margin: 0;
+  white-space: pre-line;
+}
+
+.next-actions {
+  display: grid;
+  gap: 10px;
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(118, 169, 235, 0.25);
+}
+
+.next-actions h3 {
+  margin: 0;
+  font-size: 0.82rem;
+}
+
+.next-actions__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.reorder-list {
+  display: grid;
+  gap: 8px;
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.reorder-list__item {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid rgba(118, 169, 235, 0.4);
+  border-radius: 0.72rem;
+  background: var(--bg-surface);
+  transition: border-color 160ms var(--ease), background 160ms var(--ease), opacity 160ms var(--ease);
+}
+
+.reorder-list__item:hover,
+.reorder-list__item:focus-within {
+  border-color: rgba(83, 145, 226, 0.7);
+}
+
+.reorder-list__item--dragging {
+  opacity: 0.5;
+  border-style: dashed;
+  background: var(--bg-subtle);
+}
+
+.reorder-list__handle {
+  color: var(--text-muted);
+  cursor: grab;
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.reorder-list__handle:active {
+  cursor: grabbing;
+}
+
+.reorder-list__name {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+}
+
+.reorder-list__name strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.82rem;
+}
+
+.reorder-list__name small {
+  color: var(--text-muted);
+  font-size: 0.7rem;
+}
+
+.reorder-list__actions {
+  display: inline-flex;
+  gap: 5px;
+}
+
+.finder-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px;
+  margin: 0 0 4px;
+}
+
+.finder-filters__label {
+  margin-right: 3px;
+  color: var(--text-muted);
+  font-size: 0.74rem;
+  font-weight: 750;
+}
+
+.finder-filter {
+  padding: 0.4rem 0.72rem;
+  border: 1px solid rgba(118, 169, 235, 0.32);
+  border-radius: 999px;
+  background: rgba(247, 251, 255, 0.78);
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 0.74rem;
+  transition: background 160ms var(--ease), border-color 160ms var(--ease), color 160ms var(--ease);
+}
+
+.finder-filter:hover,
+.finder-filter:focus-visible,
+.finder-filter--active {
+  border-color: var(--brand-primary);
+  background: rgba(224, 239, 255, 0.92);
+  color: var(--brand-primary);
+  outline: none;
+}
+
+.workspace-search label {
+  display: block;
+}
+
+.workspace-search__clear {
+  position: absolute;
+  top: 8px;
+  right: 9px;
+  width: 26px;
+  height: 26px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.workspace-search__clear:hover,
+.workspace-search__clear:focus-visible {
+  background: rgba(98, 151, 220, 0.12);
+  color: var(--text-primary);
+  outline: none;
+}
+
+.finder-empty {
+  padding: 24px;
+  border: 1px dashed rgba(118, 169, 235, 0.4);
+  border-radius: 0.8rem;
+  background: var(--bg-subtle);
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.finder-empty strong {
+  color: var(--text-primary);
+}
+
+.finder-empty p {
+  margin: 7px 0 14px;
+  font-size: 0.8rem;
+}
+
+.developer-output {
+  min-height: 120px;
+  margin: 0;
+  padding: 14px;
+  overflow: auto;
+  border: 1px solid rgba(118, 169, 235, 0.32);
+  border-radius: 0.72rem;
+  background: #f7fbff;
+  color: var(--text-primary);
+  font: 0.8rem/1.55 ui-monospace, SFMono-Regular, Consolas, monospace;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+@keyframes nexaforge-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 650px) {
+  .file-list li {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .file-list__size,
+  .file-list__type {
+    display: none;
+  }
+
+  .file-list__actions {
+    grid-column: 1 / -1;
+    justify-content: flex-start;
+  }
+
+  .pdf-merge-list-summary {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .reorder-list__item {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .reorder-list__actions {
+    grid-column: 2;
+    justify-content: flex-start;
+  }
+
+  .reorder-list__handle {
+    align-self: start;
+  }
+}
