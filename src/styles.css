@@ -3026,6 +3026,26 @@ button:hover,
   font-size: 1rem;
 }
 
+.recent-tools-section__meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.text-button {
+  border: 0;
+  padding: 0;
+  color: var(--brand-primary);
+  background: transparent;
+  font: inherit;
+  font-size: 0.74rem;
+  cursor: pointer;
+}
+
+.text-button:hover {
+  text-decoration: underline;
+}
+
 .sr-only {
   position: absolute;
   width: 1px;

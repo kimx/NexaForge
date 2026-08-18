@@ -112,6 +112,7 @@ export function ImageCompressPage(): JSX.Element {
         tool={tool ?? FILE_TOOLS[0]}
         meta={toolMeta}
         breadcrumb={["Home", t("tool.image-compress.title")]}
+        workflow={{ state: processing, error, onRetry: handleProcess, onReprocess: handleProcess }}
         children={{
         workspace: (
           <>

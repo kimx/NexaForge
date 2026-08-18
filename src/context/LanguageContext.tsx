@@ -286,6 +286,7 @@ const zhMessages: Record<string, string> = {
   "home.clearFilters": "清除篩選",
   "home.recentTools": "最近使用",
   "home.recentToolsCount": "{count} 個工具",
+  "home.clearRecentTools": "清除最近使用",
 
   "toolPage.workspace": "工具工作區",
   "toolPage.options": "設定",
@@ -827,6 +828,7 @@ const enMessages: Record<string, string> = {
   "home.clearFilters": "Clear filters",
   "home.recentTools": "Recent Tools",
   "home.recentToolsCount": "{count} tools",
+  "home.clearRecentTools": "Clear recent tools",
 
   "toolPage.workspace": "Tool Workspace",
   "toolPage.options": "Options",

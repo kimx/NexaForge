@@ -95,12 +95,6 @@ export function ImageResizePage(): JSX.Element {
         format,
       };
 
-      const clearSelection = (): void => {
-        setFiles([]);
-        setResult(null);
-        setError(null);
-        setProcessing("idle");
-      };
       const output = await resizeImage(source, options);
       setResult(output);
       setProcessing("success");
@@ -113,11 +107,19 @@ export function ImageResizePage(): JSX.Element {
     }
   };
 
+  const clearSelection = (): void => {
+    setFiles([]);
+    setResult(null);
+    setError(null);
+    setProcessing("idle");
+  };
+
   return (
       <ToolPageTemplate
         tool={tool ?? FILE_TOOLS[0]}
         meta={toolMeta}
         breadcrumb={["Home", t("tool.image-resize.title")]}
+        workflow={{ state: processing, error, onRetry: handleProcess, onReprocess: handleProcess }}
         children={{
         workspace: (
           <>

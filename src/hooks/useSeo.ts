@@ -39,7 +39,8 @@ export function useSeo(meta: ToolMeta): void {
       return tag;
     });
 
-    const structuredData = document.querySelector("script[data-nexaforge-seo]") ?? document.createElement("script");
+    const structuredData = document.querySelector("script[data-nexaforge-seo]") as HTMLScriptElement | null
+      ?? document.createElement("script");
     structuredData.type = "application/ld+json";
     structuredData.setAttribute("data-nexaforge-seo", "true");
     structuredData.textContent = JSON.stringify({

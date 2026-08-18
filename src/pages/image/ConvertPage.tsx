@@ -106,6 +106,7 @@ export function ImageConvertPage(): JSX.Element {
         tool={tool ?? FILE_TOOLS[0]}
         meta={toolMeta}
         breadcrumb={["Home", t("tool.image-convert.title")]}
+        workflow={{ state: processing, error, onRetry: handleProcess, onReprocess: handleProcess }}
         children={{
         workspace: (
           <>

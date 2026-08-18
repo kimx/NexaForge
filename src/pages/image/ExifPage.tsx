@@ -11,6 +11,7 @@ import type { FileProcessResult, ProcessingState, ToolMeta } from "../../types/t
 import { trackEvent } from "../../utils/analytics";
 import { getRelatedTools } from "../../utils/toolHelpers";
 import { validateFileSize, validateMime } from "../../utils/validation";
+import { SizeComparison } from "../../components/SizeComparison";
 
 export type ExifToolKind = "image-exif-viewer" | "image-remove-exif";
 
@@ -140,6 +141,7 @@ export function ExifPage({ kind }: { kind: ExifToolKind }): JSX.Element {
           <>
             {resultFile ? (
               <>
+                <SizeComparison originalSize={files[0]?.size ?? resultFile.size + removedBytes} outputSize={resultFile.size} />
                 <p>{t("tool.image-remove-exif.label.removedBytes", { count: removedBytes })}</p>
                 <p>{t("label.size")}: {(resultFile.size / 1024).toFixed(2)} KB</p>
                 <DownloadButton

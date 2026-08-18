@@ -239,7 +239,12 @@ export function HomePage(): JSX.Element {
             <div className="workspace-section recent-tools-section">
               <div className="workspace-section__heading">
                 <h3>{t("home.recentTools")}</h3>
-                <span>{t("home.recentToolsCount", { count: recentTools.length })}</span>
+                <div className="recent-tools-section__meta">
+                  <span>{t("home.recentToolsCount", { count: recentTools.length })}</span>
+                  <button type="button" className="text-button" onClick={() => setRecentToolIds([])}>
+                    {t("home.clearRecentTools")}
+                  </button>
+                </div>
               </div>
               <div className="tool-grid home-tool-grid home-tool-grid--recent">
                 {recentTools.map((tool) => <ToolCard key={tool.id} tool={tool} onOpen={rememberTool} className="home-tool-card--recent" />)}
