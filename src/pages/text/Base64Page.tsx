@@ -28,7 +28,7 @@ export function Base64Page(): JSX.Element {
   const toolMeta: ToolMeta = {
     title: `${title} - ${t("header.title")}`,
     description,
-    canonical: "/text/base64",
+    canonical: tool?.path ?? "/developer/base64",
     h1: title,
   };
   useSeo(toolMeta);
