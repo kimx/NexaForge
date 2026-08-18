@@ -37,7 +37,7 @@ function getToolIcon(toolId: string): string {
     return "◊";
   }
 
-  if (toolId === "base64" || toolId === "hash" || toolId === "uuid" || toolId === "text-diff" || toolId === "markdown-previewer") {
+  if (toolId === "base64" || toolId === "hash" || toolId === "uuid" || toolId === "text-diff" || toolId === "markdown-previewer" || toolId === "word-counter" || toolId === "case-converter" || toolId === "remove-duplicate-lines" || toolId === "sort-lines") {
     return "✎";
   }
 

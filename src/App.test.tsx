@@ -8,6 +8,8 @@ const ROUTE_HEADINGS: Record<string, string> = {
   "/image/resize": "Image Resize",
   "/image/convert": "Image Converter",
   "/image/compress": "Image Compress",
+  "/image/exif-viewer": "EXIF Viewer",
+  "/image/remove-exif": "Remove EXIF",
   "/pdf/merge": "PDF Merge",
   "/pdf/split": "PDF Split",
   "/pdf/rotate": "PDF Rotate",
@@ -15,9 +17,13 @@ const ROUTE_HEADINGS: Record<string, string> = {
   "/data/csv-viewer": "CSV Viewer",
   "/data/csv-to-json": "CSV to JSON",
   "/data/json-to-csv": "JSON to CSV",
-  "/text/base64": "Base64",
+  "/developer/base64": "Base64",
   "/text/hash": "Hash Generator",
   "/text/uuid": "UUID Generator",
+  "/text/word-counter": "Word Counter",
+  "/text/case-converter": "Case Converter",
+  "/text/remove-duplicate-lines": "Remove Duplicate Lines",
+  "/text/sort-lines": "Sort Lines",
   "/text/markdown": "Markdown Preview",
   "/qr-code": "QR Code",
 };
@@ -48,6 +54,27 @@ describe("App routes", () => {
     expect(canonical).toBeTruthy();
     await waitFor(() => {
       expect(canonical).toHaveAttribute("href", `${window.location.origin}${path}`);
+    });
+  });
+
+
+  it("redirects the legacy base64 route to the developer route", async () => {
+    render(
+      <MemoryRouter
+        initialEntries={["/text/base64"]}
+        initialIndex={0}
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+      >
+        <LanguageProvider>
+          <App />
+        </LanguageProvider>
+      </MemoryRouter>
+    );
+
+    expect(screen.getAllByRole("heading", { name: "Base64", level: 1 }).length).toBeGreaterThan(0);
+    await waitFor(() => {
+      const canonical = document.querySelector("link[rel='canonical']");
+      expect(canonical).toHaveAttribute("href", `${window.location.origin}/developer/base64`);
     });
   });
 

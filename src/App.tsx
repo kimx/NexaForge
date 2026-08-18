@@ -4,6 +4,7 @@ import { HomePage } from "./pages/HomePage";
 import { ImageResizePage } from "./pages/image/ResizePage";
 import { ImageCompressPage } from "./pages/image/CompressPage";
 import { ImageConvertPage } from "./pages/image/ConvertPage";
+import { ExifPage } from "./pages/image/ExifPage";
 import { PdfMergePage } from "./pages/pdf/MergePage";
 import { PdfSplitPage } from "./pages/pdf/SplitPage";
 import { PdfRotatePage } from "./pages/pdf/RotatePage";
@@ -17,6 +18,7 @@ import { UuidPage } from "./pages/text/UuidPage";
 import { HtmlEncoderPage } from "./pages/text/HtmlEncoderPage";
 import { TextDiffPage } from "./pages/text/TextDiffPage";
 import { MarkdownPreviewPage } from "./pages/text/MarkdownPreviewPage";
+import { TextToolsPage } from "./pages/text/TextToolsPage";
 import { QrPage } from "./pages/qr/QrPage";
 import { JwtDecoderPage } from "./pages/developer/JwtDecoderPage";
 import { JwtKeyGeneratorPage } from "./pages/developer/JwtKeyGeneratorPage";
@@ -60,6 +62,8 @@ const TOOL_VISUALS: Record<string, { label: string; tone: string }> = {
   "image-resize": { label: "IMG", tone: "blue" },
   "image-compress": { label: "↘", tone: "mint" },
   "image-convert": { label: "IMG", tone: "sky" },
+  "image-exif-viewer": { label: "EXIF", tone: "amber" },
+  "image-remove-exif": { label: "META", tone: "violet" },
   "pdf-merge": { label: "PDF", tone: "red" },
   "pdf-split": { label: "✂", tone: "violet" },
   "pdf-rotate": { label: "PDF", tone: "red" },
@@ -68,6 +72,10 @@ const TOOL_VISUALS: Record<string, { label: string; tone: string }> = {
   "csv-to-json": { label: "CSV", tone: "mint" },
   "json-to-csv": { label: "{}", tone: "blue" },
   "base64": { label: "64", tone: "amber" },
+  "word-counter": { label: "TXT", tone: "mint" },
+  "case-converter": { label: "Aa", tone: "amber" },
+  "remove-duplicate-lines": { label: "≡", tone: "violet" },
+  "sort-lines": { label: "AZ", tone: "sky" },
   "text-diff": { label: "≠", tone: "violet" },
   "markdown-previewer": { label: "MD", tone: "sky" },
   "html-encoder": { label: "HTML", tone: "blue" },
@@ -153,6 +161,8 @@ export default function App() {
       <Route path="/image/resize" element={<ToolFrame><ImageResizePage /></ToolFrame>} />
       <Route path="/image/compress" element={<ToolFrame><ImageCompressPage /></ToolFrame>} />
       <Route path="/image/convert" element={<ToolFrame><ImageConvertPage /></ToolFrame>} />
+      <Route path="/image/exif-viewer" element={<ToolFrame><ExifPage kind="image-exif-viewer" /></ToolFrame>} />
+      <Route path="/image/remove-exif" element={<ToolFrame><ExifPage kind="image-remove-exif" /></ToolFrame>} />
 
       <Route path="/pdf/merge" element={<ToolFrame><PdfMergePage /></ToolFrame>} />
       <Route path="/pdf/split" element={<ToolFrame><PdfSplitPage /></ToolFrame>} />
@@ -163,12 +173,17 @@ export default function App() {
       <Route path="/data/csv-to-json" element={<ToolFrame><CsvToJsonPage /></ToolFrame>} />
       <Route path="/data/json-to-csv" element={<ToolFrame><JsonToCsvPage /></ToolFrame>} />
 
-      <Route path="/text/base64" element={<ToolFrame><Base64Page /></ToolFrame>} />
+      <Route path="/text/base64" element={<Navigate to="/developer/base64" replace />} />
       <Route path="/text/hash" element={<ToolFrame><HashPage /></ToolFrame>} />
       <Route path="/text/uuid" element={<ToolFrame><UuidPage /></ToolFrame>} />
+      <Route path="/text/word-counter" element={<ToolFrame><TextToolsPage kind="word-counter" /></ToolFrame>} />
+      <Route path="/text/case-converter" element={<ToolFrame><TextToolsPage kind="case-converter" /></ToolFrame>} />
+      <Route path="/text/remove-duplicate-lines" element={<ToolFrame><TextToolsPage kind="remove-duplicate-lines" /></ToolFrame>} />
+      <Route path="/text/sort-lines" element={<ToolFrame><TextToolsPage kind="sort-lines" /></ToolFrame>} />
       <Route path="/text/diff" element={<ToolFrame><TextDiffPage /></ToolFrame>} />
       <Route path="/text/html-encoder" element={<ToolFrame><HtmlEncoderPage /></ToolFrame>} />
       <Route path="/text/markdown" element={<ToolFrame><MarkdownPreviewPage /></ToolFrame>} />
+      <Route path="/developer/base64" element={<ToolFrame><Base64Page /></ToolFrame>} />
       <Route path="/developer/jwt-key" element={<ToolFrame><JwtKeyGeneratorPage /></ToolFrame>} />
       <Route path="/developer/jwt-decoder" element={<ToolFrame><JwtDecoderPage /></ToolFrame>} />
       <Route path="/developer/url-encoder" element={<ToolFrame><DeveloperToolsPage kind="url-encoder" /></ToolFrame>} />

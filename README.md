@@ -28,6 +28,8 @@ NexaForge 將常見工具集中到一個站點，從圖片到 PDF、從 JSON 到
 - **Image Resize**：調整尺寸、保留品質與預覽
 - **Image Compress**：壓縮圖片，提升傳輸與儲存效率
 - **Image Converter**：快速轉換 JPG / PNG / WebP 等格式
+- **EXIF Viewer**：檢視 JPEG 相片中的 EXIF 中繼資料
+- **Remove EXIF**：移除 JPEG 相片中的 EXIF 中繼資料
 
 ### PDF 工具
 - **PDF Merge**：合併多份 PDF
@@ -40,10 +42,16 @@ NexaForge 將常見工具集中到一個站點，從圖片到 PDF、從 JSON 到
 - **CSV → JSON**：CSV 轉 JSON
 - **JSON → CSV**：JSON 轉 CSV
 
-### 文字與開發者工具
-- **Base64**：文字與檔案的 Base64 互轉
+### 文字工具
+- **Word Counter**：統計文字、字元與行數
+- **Case Converter**：快速轉換大小寫樣式
+- **Remove Duplicate Lines**：移除重複行並保留首次出現
+- **Sort Lines**：將文字逐行排序
 - **Hash Generator**：生成安全雜湊
 - **UUID Generator**：快速建立 UUID
+
+### 開發者工具
+- **Base64**：文字與檔案的 Base64 互轉
 - **JWT Decoder / JWT Key Generator**：開發驗證流程輔助
 - **QR Code**：文字轉 QR
 

@@ -23,6 +23,22 @@ describe("ToolSidebar", () => {
     expect(screen.getByRole("link", { name: /image resize|影像縮放/i })).toHaveAttribute("href", "/image/resize");
   });
 
+
+  it("shows Base64 in the developer category", () => {
+    render(
+      <MemoryRouter>
+        <LanguageProvider>
+          <ToolSidebar />
+        </LanguageProvider>
+      </MemoryRouter>
+    );
+
+    const developerCategory = screen.getByRole("button", { name: /developer.*tools|開發者.*工具/i });
+    fireEvent.click(developerCategory);
+
+    expect(screen.getByRole("link", { name: /base64/i })).toHaveAttribute("href", "/developer/base64");
+  });
+
   it("does not show the documentation resource link", () => {
     render(
       <MemoryRouter>
