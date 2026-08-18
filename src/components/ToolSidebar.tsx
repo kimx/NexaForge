@@ -207,10 +207,6 @@ export function ToolSidebar(): JSX.Element {
         )}
 
         <nav className="tool-sidebar__footer" aria-label={t("sidebar.resources")}>
-          <a className="tool-sidebar__link" href="/README.md">
-            <span className="tool-sidebar__icon" aria-hidden="true">▤</span>
-            <span className="tool-sidebar__label">{t("sidebar.documentation")}</span>
-          </a>
           <a className="tool-sidebar__link" href="https://github.com/kimx/NexaForge" target="_blank" rel="noreferrer">
             <span className="tool-sidebar__icon" aria-hidden="true">⌘</span>
             <span className="tool-sidebar__label">GitHub</span>
