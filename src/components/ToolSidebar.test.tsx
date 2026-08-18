@@ -22,4 +22,16 @@ describe("ToolSidebar", () => {
     expect(imageCategory).toHaveAttribute("aria-expanded", "true");
     expect(screen.getByRole("link", { name: /image resize|影像縮放/i })).toHaveAttribute("href", "/image/resize");
   });
+
+  it("does not show the documentation resource link", () => {
+    render(
+      <MemoryRouter>
+        <LanguageProvider>
+          <ToolSidebar />
+        </LanguageProvider>
+      </MemoryRouter>
+    );
+
+    expect(screen.queryByRole("link", { name: /documentation|文件/i })).not.toBeInTheDocument();
+  });
 });
