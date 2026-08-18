@@ -28,7 +28,7 @@ export function FileInfo({ files, mode = "multi", showEmpty = true, onRemove, on
     <section className="file-list-wrap" aria-live="polite">
       <div className="file-summary">
         <p>{totalLabel} · {t("fileInfo.totalSize")}: {formatFileSize(totalSize)}</p>
-        {onClear && mode === "multi" ? (
+        {onClear ? (
           <button type="button" className="btn secondary file-btn" onClick={onClear}>
             {t("fileInfo.clearAll")}
           </button>

@@ -12,6 +12,7 @@ import { useSeo } from "../../hooks/useSeo";
 import { useBlobUrl } from "../../hooks/useBlobUrl";
 import { validateFileSize, validateMime } from "../../utils/validation";
 import { useLanguage } from "../../context/LanguageContext";
+import { SizeComparison } from "../../components/SizeComparison";
 
 const IMAGE_ACCEPT = "image/jpeg,image/png,image/webp";
 
@@ -38,7 +39,6 @@ export function ImageCompressPage(): JSX.Element {
 
   const relatedTools = getRelatedTools("image-compress");
   const previewUrl = useBlobUrl(result?.blob);
-  const ratio = result && originalSize > 0 ? ((result.size / originalSize) * 100).toFixed(2) : "0";
 
   const howItWorks = useMemo(
     () => [
@@ -99,11 +99,20 @@ export function ImageCompressPage(): JSX.Element {
     }
   };
 
+  const clearSelection = (): void => {
+    setFiles([]);
+    setResult(null);
+    setOriginalSize(0);
+    setError(null);
+    setProcessing("idle");
+  };
+
   return (
       <ToolPageTemplate
         tool={tool ?? FILE_TOOLS[0]}
         meta={toolMeta}
         breadcrumb={["Home", t("tool.image-compress.title")]}
+        workflow={{ state: processing, error, onRetry: handleProcess, onReprocess: handleProcess }}
         children={{
         workspace: (
           <>
@@ -113,7 +122,7 @@ export function ImageCompressPage(): JSX.Element {
               onFiles={setFiles}
               multiple={false}
             />
-            <FileInfo files={files} />
+            <FileInfo files={files} onClear={clearSelection} />
           </>
         ),
         options: (
@@ -156,15 +165,7 @@ export function ImageCompressPage(): JSX.Element {
             )}
             {result ? (
               <div>
-                <p>
-                  {t("label.originalSize")}: {(originalSize / 1024).toFixed(2)} KB
-                </p>
-                <p>
-                  {t("label.outputSize")}: {(result.size / 1024).toFixed(2)} KB
-                </p>
-                <p>
-                  {t("label.compressionRatio")}: {ratio}%
-                </p>
+                <SizeComparison originalSize={originalSize} outputSize={result.size} />
                 <img src={previewUrl} alt={t("label.preview")} className="preview-image" />
               </div>
             ) : (

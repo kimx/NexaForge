@@ -49,6 +49,8 @@ describe("App routes", () => {
     await waitFor(() => {
       expect(document.title).toContain(heading);
     });
+    expect(document.querySelector('meta[property="og:title"]')).toHaveAttribute("content", expect.stringContaining(heading));
+    expect(document.querySelector('script[data-nexaforge-seo]')).toHaveTextContent(heading);
 
     const canonical = document.querySelector("link[rel='canonical']");
     expect(canonical).toBeTruthy();
