@@ -574,6 +574,28 @@ body::before {
   gap: 8px;
 }
 
+.tool-sidebar__category {
+  display: grid;
+  gap: 6px;
+}
+
+.tool-sidebar__category-toggle {
+  appearance: none;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.tool-sidebar__category-chevron {
+  margin-inline-start: auto;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.tool-sidebar__nested-list {
+  padding-inline-start: 12px;
+}
+
 .tool-sidebar__categories .tool-sidebar__section-title {
   margin: 6px 0 2px;
   font-size: 0.66rem;

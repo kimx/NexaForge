@@ -52,6 +52,7 @@ export function ToolSidebar(): JSX.Element {
   const { t } = useLanguage();
   const localToolMeta = useLocalizedToolMeta();
   const [keyword, setKeyword] = useState("");
+  const [expandedCategories, setExpandedCategories] = useState<Set<ToolDefinition["category"]>>(new Set());
 
   const keywordNormalized = keyword.trim().toLowerCase();
 
@@ -85,6 +86,18 @@ export function ToolSidebar(): JSX.Element {
 
   const handleKeywordChange = (event: ChangeEvent<HTMLInputElement>) => {
     setKeyword(event.target.value);
+  };
+
+  const toggleCategory = (category: ToolDefinition["category"]) => {
+    setExpandedCategories((current) => {
+      const next = new Set(current);
+      if (next.has(category)) {
+        next.delete(category);
+      } else {
+        next.add(category);
+      }
+      return next;
+    });
   };
 
   return (
@@ -126,10 +139,37 @@ export function ToolSidebar(): JSX.Element {
           <div className="tool-sidebar__categories">
             <p className="tool-sidebar__section-title">{t("sidebar.categories")}</p>
             {categoryOrder.map((category) => (
-              <a className="tool-sidebar__link" href="/#popular-tools" key={category}>
-                <span className="tool-sidebar__icon" aria-hidden="true">{CATEGORY_ICONS[category]}</span>
-                <span className="tool-sidebar__label">{localizedCategoryLabel(category, t)} {t("sidebar.toolsSuffix")}</span>
-              </a>
+              <div className="tool-sidebar__category" key={category}>
+                <button
+                  type="button"
+                  className="tool-sidebar__link tool-sidebar__category-toggle"
+                  aria-expanded={expandedCategories.has(category)}
+                  aria-controls={`tool-sidebar-category-${category}`}
+                  onClick={() => toggleCategory(category)}
+                >
+                  <span className="tool-sidebar__icon" aria-hidden="true">{CATEGORY_ICONS[category]}</span>
+                  <span className="tool-sidebar__label">{localizedCategoryLabel(category, t)} {t("sidebar.toolsSuffix")}</span>
+                  <span className="tool-sidebar__category-chevron" aria-hidden="true">
+                    {expandedCategories.has(category) ? "⌃" : "⌄"}
+                  </span>
+                </button>
+                {expandedCategories.has(category) && (
+                  <ul className="tool-sidebar__list tool-sidebar__nested-list" id={`tool-sidebar-category-${category}`}>
+                    {FILE_TOOLS.filter((tool) => tool.category === category).map((tool) => (
+                      <li key={tool.id}>
+                        <NavLink
+                          to={tool.path}
+                          title={localToolMeta(tool.id, "title")}
+                          className={({ isActive }) => `tool-sidebar__link ${isActive ? "is-active" : ""}`}
+                        >
+                          <span className="tool-sidebar__icon" aria-hidden="true">{getToolIcon(tool.id)}</span>
+                          <span className="tool-sidebar__label">{localToolMeta(tool.id, "title")}</span>
+                        </NavLink>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
             ))}
           </div>
         )}
