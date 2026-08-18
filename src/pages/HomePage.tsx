@@ -160,34 +160,34 @@ export function HomePage(): JSX.Element {
 
   return (
     <main className="home-page">
-      <section className="home-hero">
-        <img className="home-hero__visual" src="/nexaforge-hero.png" alt="" aria-hidden="true" />
-        <div className="home-hero__content">
-          <h1>
-            <span>Nexa</span>
-            <span className="home-hero__title-accent">Forge</span>
-          </h1>
-          <p>{t("home.subtitle")}</p>
-          <div className="home-hero__actions">
-            <Link to="/image/resize" className="btn">
-              {t("home.primaryCta")}
-            </Link>
-            <a href="#popular-tools" className="btn secondary">
-              {t("home.secondaryCta")}
-            </a>
-          </div>
-          <div className="home-hero__proof" aria-label={t("home.proofLabel")}>
-            <span>{t("home.proof.local")}</span>
-            <span>{t("home.proof.formats")}</span>
-            <span>{t("home.proof.noAccount")}</span>
-          </div>
-        </div>
-      </section>
-
       <div className="home-dashboard">
         <ToolSidebar />
 
         <section className="home-workspace">
+          <section className="home-hero">
+            <img className="home-hero__visual" src="/nexaforge-hero.png" alt="" aria-hidden="true" />
+            <div className="home-hero__content">
+              <h1>
+                <span>Nexa</span>
+                <span className="home-hero__title-accent">Forge</span>
+              </h1>
+              <p>{t("home.subtitle")}</p>
+              <div className="home-hero__actions">
+                <Link to="/image/resize" className="btn">
+                  {t("home.primaryCta")}
+                </Link>
+                <a href="#popular-tools" className="btn secondary">
+                  {t("home.secondaryCta")}
+                </a>
+              </div>
+              <div className="home-hero__proof" aria-label={t("home.proofLabel")}>
+                <span>{t("home.proof.local")}</span>
+                <span>{t("home.proof.formats")}</span>
+                <span>{t("home.proof.noAccount")}</span>
+              </div>
+            </div>
+          </section>
+
           <div className="workspace-heading">
             <div>
               <span className="workspace-heading__eyebrow">{t("home.workspaceKicker")}</span>

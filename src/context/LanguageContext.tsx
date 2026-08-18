@@ -88,6 +88,11 @@ const zhMessages: Record<string, string> = {
   "sidebar.collapse": "收合側欄",
   "sidebar.expand": "展開側欄",
   "sidebar.empty": "找不到符合條件的工具，試試其他關鍵字。",
+  "sidebar.categories": "分類",
+  "sidebar.toolsSuffix": "工具",
+  "sidebar.resources": "資源",
+  "sidebar.documentation": "文件",
+  "sidebar.submitRequest": "提出需求",
   "button.download": "下載",
   "fileDropzone.aria": "檔案拖放區",
   "fileDropzone.orSelect": "或點擊選擇檔案",
@@ -558,6 +563,11 @@ const enMessages: Record<string, string> = {
   "sidebar.collapse": "Collapse sidebar",
   "sidebar.expand": "Expand sidebar",
   "sidebar.empty": "No matching tools. Try another keyword.",
+  "sidebar.categories": "CATEGORIES",
+  "sidebar.toolsSuffix": "Tools",
+  "sidebar.resources": "Resources",
+  "sidebar.documentation": "Documentation",
+  "sidebar.submitRequest": "Submit Request",
   "button.download": "Download",
   "fileDropzone.aria": "File dropzone",
   "fileDropzone.orSelect": "or click to select",
@@ -1074,4 +1084,3 @@ export function useLocalizedToolMeta(): (toolId: string, type: "title" | "descri
 export function localizedCategoryLabel(category: string, t: (key: string) => string): string {
   return t(`category.${category}`);
 }
-

@@ -473,6 +473,8 @@ body::before {
   gap: 9px;
   margin-bottom: 4px;
   min-height: 2.45rem;
+  color: inherit;
+  text-decoration: none;
 }
 
 .tool-sidebar__brand-mark {
@@ -565,6 +567,42 @@ body::before {
   border-radius: 0.65rem;
   border: 1px dashed rgba(115, 160, 214, 0.45);
   background: var(--bg-subtle);
+}
+
+.tool-sidebar__categories {
+  display: grid;
+  gap: 8px;
+}
+
+.tool-sidebar__categories .tool-sidebar__section-title {
+  margin: 6px 0 2px;
+  font-size: 0.66rem;
+}
+
+.tool-sidebar__footer {
+  display: grid;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 14px;
+  border-top: 1px solid rgba(120, 163, 216, 0.24);
+}
+
+.tool-sidebar__request {
+  display: block;
+  padding: 0.58rem 0.72rem;
+  border-radius: 0.7rem;
+  background: var(--brand-primary);
+  color: var(--brand-on-primary);
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-align: center;
+  text-decoration: none;
+}
+
+.tool-sidebar__request:hover,
+.tool-sidebar__request:focus-visible {
+  background: var(--brand-primary-hover);
+  outline: none;
 }
 
 .site-header,
