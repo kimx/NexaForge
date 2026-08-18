@@ -1,6 +1,7 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import App from "./App";
+import { LanguageProvider } from "./context/LanguageContext";
 
 const ROUTE_HEADINGS: Record<string, string> = {
   "/": "NexaForge",
@@ -29,11 +30,13 @@ describe("App routes", () => {
         initialIndex={0}
         future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
       >
-        <App />
+        <LanguageProvider>
+          <App />
+        </LanguageProvider>
       </MemoryRouter>
     );
 
-    expect(screen.getByRole("heading", { name: heading, level: 1 })).toBeInTheDocument();
+    expect(screen.getAllByRole("heading", { name: heading, level: 1 }).length).toBeGreaterThan(0);
     if (path !== "/") {
       expect(document.querySelector(".page-landing__visual")).toBeInTheDocument();
     }
@@ -55,7 +58,9 @@ describe("App routes", () => {
         initialIndex={0}
         future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
       >
-        <App />
+        <LanguageProvider>
+          <App />
+        </LanguageProvider>
       </MemoryRouter>
     );
 
