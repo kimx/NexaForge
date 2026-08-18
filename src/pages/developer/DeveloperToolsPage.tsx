@@ -111,16 +111,62 @@ function yamlToJson(source: string): unknown {
   return parseBlock(0, lines[0].indent)[0];
 }
 
-function jsonDiff(left: unknown, right: unknown): string {
+export function jsonDiff(left: unknown, right: unknown): string {
   const leftLines = JSON.stringify(left, null, 2).split("\n");
   const rightLines = JSON.stringify(right, null, 2).split("\n");
   if (leftLines.join("\n") === rightLines.join("\n")) return "No differences.";
-  return [
-    "--- left",
-    ...leftLines.map((line) => `- ${line}`),
-    "+++ right",
-    ...rightLines.map((line) => `+ ${line}`),
-  ].join("\n");
+
+  const commonLengths = Array.from({ length: leftLines.length + 1 }, () =>
+    Array<number>(rightLines.length + 1).fill(0)
+  );
+  for (let leftIndex = leftLines.length - 1; leftIndex >= 0; leftIndex -= 1) {
+    for (let rightIndex = rightLines.length - 1; rightIndex >= 0; rightIndex -= 1) {
+      commonLengths[leftIndex][rightIndex] = leftLines[leftIndex] === rightLines[rightIndex]
+        ? commonLengths[leftIndex + 1][rightIndex + 1] + 1
+        : Math.max(commonLengths[leftIndex + 1][rightIndex], commonLengths[leftIndex][rightIndex + 1]);
+    }
+  }
+
+  const diffLines: string[] = [];
+  let leftIndex = 0;
+  let rightIndex = 0;
+  while (leftIndex < leftLines.length || rightIndex < rightLines.length) {
+    if (leftIndex < leftLines.length && rightIndex < rightLines.length && leftLines[leftIndex] === rightLines[rightIndex]) {
+      diffLines.push(`  ${leftLines[leftIndex]}`);
+      leftIndex += 1;
+      rightIndex += 1;
+    } else if (
+      leftIndex < leftLines.length &&
+      (rightIndex === rightLines.length || commonLengths[leftIndex + 1][rightIndex] >= commonLengths[leftIndex][rightIndex + 1])
+    ) {
+      diffLines.push(`- ${leftLines[leftIndex]}`);
+      leftIndex += 1;
+    } else {
+      diffLines.push(`+ ${rightLines[rightIndex]}`);
+      rightIndex += 1;
+    }
+  }
+
+  return ["--- left", "+++ right", ...diffLines].join("\n");
+}
+
+function JsonDiffOutput({ output }: { output: string }): JSX.Element {
+  if (!output || output === "No differences.") {
+    return <pre className="developer-output">{output}</pre>;
+  }
+
+  return (
+    <pre className="developer-output developer-output--diff">
+      {output.split("\n").map((line, index) => {
+        const lineType = line.startsWith("+ ") ? "added" : line.startsWith("- ") ? "removed" : line.startsWith("---") || line.startsWith("+++") ? "header" : "context";
+        return (
+          <span className={`developer-output__line developer-output__line--${lineType}`} key={`${line}-${index}`}>
+            {line}
+          </span>
+        );
+      })}
+    </pre>
+  );
 }
 
 export function DeveloperToolsPage({ kind }: DeveloperToolsPageProps): JSX.Element {
@@ -233,7 +279,7 @@ export function DeveloperToolsPage({ kind }: DeveloperToolsPageProps): JSX.Eleme
             </button>
           </div>
         ),
-        result: <pre className="developer-output">{output}</pre>,
+        result: kind === "json-diff" ? <JsonDiffOutput output={output} /> : <pre className="developer-output">{output}</pre>,
         nextActions: <button type="button" className="btn primary" onClick={copyOutput}>{t("developerTools.copy")}</button>,
         howItWorks,
         faq,

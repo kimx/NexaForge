@@ -3397,6 +3397,38 @@ button:hover,
   word-break: break-word;
 }
 
+.developer-output--diff {
+  padding: 0;
+  white-space: pre;
+  word-break: normal;
+}
+
+.developer-output__line {
+  display: block;
+  padding: 0 14px;
+}
+
+.developer-output__line--header {
+  padding-top: 8px;
+  padding-bottom: 2px;
+  color: var(--text-secondary);
+  font-weight: 700;
+}
+
+.developer-output__line--removed {
+  background: rgba(220, 65, 78, 0.14);
+  color: #a51f2d;
+}
+
+.developer-output__line--added {
+  background: rgba(28, 166, 90, 0.14);
+  color: #08733a;
+}
+
+.developer-output__line:last-child {
+  padding-bottom: 8px;
+}
+
 @keyframes nexaforge-spin {
   to { transform: rotate(360deg); }
 }
