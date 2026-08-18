@@ -70,6 +70,7 @@ export interface ValidationError {
 export interface ToolWorkflow {
   state: ProcessingState;
   error?: string | null;
+  progress?: number;
   onRetry?: () => void;
   onReprocess?: () => void;
 }

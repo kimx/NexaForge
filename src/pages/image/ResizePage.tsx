@@ -13,6 +13,7 @@ import { useBlobUrl } from "../../hooks/useBlobUrl";
 import { validateFileSize, validateMime } from "../../utils/validation";
 import { useLanguage } from "../../context/LanguageContext";
 import type { FileProcessResult } from "../../types/tool";
+import { SizeComparison } from "../../components/SizeComparison";
 
 export function ImageResizePage(): JSX.Element {
   const { t } = useLanguage();
@@ -93,6 +94,13 @@ export function ImageResizePage(): JSX.Element {
         quality: quality / 100,
         format,
       };
+
+      const clearSelection = (): void => {
+        setFiles([]);
+        setResult(null);
+        setError(null);
+        setProcessing("idle");
+      };
       const output = await resizeImage(source, options);
       setResult(output);
       setProcessing("success");
@@ -119,7 +127,7 @@ export function ImageResizePage(): JSX.Element {
               onFiles={setFiles}
               multiple={false}
             />
-            <FileInfo files={files} />
+            <FileInfo files={files} onClear={clearSelection} />
           </>
         ),
         options: (
@@ -191,7 +199,7 @@ export function ImageResizePage(): JSX.Element {
             )}
             {result ? (
               <div>
-                <p>{t("label.size")}: {(result.size / 1024).toFixed(2)} KB</p>
+                <SizeComparison originalSize={files[0]?.size ?? 0} outputSize={result.size} />
                 <img src={previewUrl} alt={t("label.preview")} className="preview-image" />
               </div>
             ) : (

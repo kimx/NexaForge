@@ -12,6 +12,7 @@ import { useSeo } from "../../hooks/useSeo";
 import { useBlobUrl } from "../../hooks/useBlobUrl";
 import { validateFileSize, validateMime } from "../../utils/validation";
 import { useLanguage } from "../../context/LanguageContext";
+import { SizeComparison } from "../../components/SizeComparison";
 
 const IMAGE_ACCEPT = "image/jpeg,image/png,image/webp";
 
@@ -93,6 +94,13 @@ export function ImageConvertPage(): JSX.Element {
     }
   };
 
+  const clearSelection = (): void => {
+    setFiles([]);
+    setResult(null);
+    setError(null);
+    setProcessing("idle");
+  };
+
   return (
       <ToolPageTemplate
         tool={tool ?? FILE_TOOLS[0]}
@@ -107,7 +115,7 @@ export function ImageConvertPage(): JSX.Element {
               onFiles={setFiles}
               multiple={false}
             />
-            <FileInfo files={files} />
+            <FileInfo files={files} onClear={clearSelection} />
           </>
         ),
         options: (
@@ -143,6 +151,7 @@ export function ImageConvertPage(): JSX.Element {
             )}
             {result ? (
               <div>
+                <SizeComparison originalSize={files[0]?.size ?? 0} outputSize={result.size} />
                 <img src={previewUrl} alt={t("label.preview")} className="preview-image" />
               </div>
             ) : (

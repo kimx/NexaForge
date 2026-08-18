@@ -1,19 +1,18 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { FileDropzone } from "./FileDropzone";
+import { LanguageProvider } from "../context/LanguageContext";
 
 describe("FileDropzone", () => {
   it("accepts matching files via drop", () => {
     const onFiles = vi.fn();
     const onRejectedFiles = vi.fn();
 
-    render(
-      <FileDropzone
-        label="Upload CSV"
-        accept="text/csv"
-        onFiles={onFiles}
-        onRejectedFiles={onRejectedFiles}
-      />
-    );
+    render(<LanguageProvider><FileDropzone
+      label="Upload CSV"
+      accept="text/csv"
+      onFiles={onFiles}
+      onRejectedFiles={onRejectedFiles}
+    /></LanguageProvider>);
 
     const dropzone = screen.getByLabelText("File dropzone");
     const csv = new File(["a,b\n1,2"], "data.csv", { type: "text/csv" });
@@ -31,14 +30,12 @@ describe("FileDropzone", () => {
     const onFiles = vi.fn();
     const onRejectedFiles = vi.fn();
 
-    render(
-      <FileDropzone
-        label="Upload CSV"
-        accept="text/csv"
-        onFiles={onFiles}
-        onRejectedFiles={onRejectedFiles}
-      />
-    );
+    render(<LanguageProvider><FileDropzone
+      label="Upload CSV"
+      accept="text/csv"
+      onFiles={onFiles}
+      onRejectedFiles={onRejectedFiles}
+    /></LanguageProvider>);
 
     const dropzone = screen.getByLabelText("File dropzone");
     const textFile = new File(["hello"], "data.txt", { type: "text/plain" });

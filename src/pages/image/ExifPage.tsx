@@ -87,6 +87,15 @@ export function ExifPage({ kind }: { kind: ExifToolKind }): JSX.Element {
     }
   };
 
+  const clearSelection = (): void => {
+    setFiles([]);
+    setEntries([]);
+    setResultFile(null);
+    setRemovedBytes(0);
+    setError(null);
+    setProcessing("idle");
+  };
+
   return (
     <ToolPageTemplate
       tool={tool}
@@ -98,7 +107,7 @@ export function ExifPage({ kind }: { kind: ExifToolKind }): JSX.Element {
           <>
             <FileDropzone label={t("label.dropImage")} accept="image/jpeg" multiple={false} onFiles={setFiles} />
             <p>{t("tool.image-exif.shared.jpegOnly")}</p>
-            <FileInfo files={files} />
+            <FileInfo files={files} onClear={clearSelection} />
           </>
         ),
         options: (
