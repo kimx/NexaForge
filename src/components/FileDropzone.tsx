@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useId, useRef, useState } from "react";
-import type { ChangeEvent, ClipboardEvent, DragEvent } from "react";
+import type { ChangeEvent, DragEvent } from "react";
 import type { FileRejection } from "../types/tool";
 import { validateFileSize, validateMime } from "../utils/validation";
 import { useLanguage } from "../context/LanguageContext";
@@ -53,7 +53,7 @@ export function FileDropzone({
             : file.size > maxSize
               ? {
                   message: t("fileDropzone.tooLarge"),
-                  reason: "size exceeds",
+                  reason: "size exceeds" as const,
                 }
               : null;
 
@@ -137,7 +137,7 @@ export function FileDropzone({
 
       const imageFiles = Array.from(items)
         .map((item) => item.getAsFile())
-        .filter((file): file is File => Boolean(file) && file.type.startsWith("image/"));
+        .filter((file): file is File => file !== null && file.type.startsWith("image/"));
 
       if (!imageFiles.length) {
         return;
