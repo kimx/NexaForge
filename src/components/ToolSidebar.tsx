@@ -1,5 +1,5 @@
 import { ChangeEvent, useMemo, useState } from "react";
-import { NavLink } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 import { FILE_TOOLS } from "../data/tools";
 import type { ToolDefinition } from "../types/tool";
 import { localizedCategoryLabel, useLanguage, useLocalizedToolMeta } from "../context/LanguageContext";
@@ -12,20 +12,12 @@ const categoryOrder: ToolDefinition["category"][] = [
   "Text",
 ];
 
-const groupedTools = categoryOrder.reduce(
-  (acc, category) => {
-    acc[category] = FILE_TOOLS.filter((tool) => tool.category === category);
-    return acc;
-  },
-  {} as Record<ToolDefinition["category"], ToolDefinition[]>
-);
-
 const CATEGORY_ICONS: Record<ToolDefinition["category"], string> = {
-  Image: "◈",
-  PDF: "▭",
-  Data: "◈",
-  Text: "✎",
-  Developer: "⚙",
+  Image: "▧",
+  PDF: "▤",
+  Data: "▤",
+  Text: "▤",
+  Developer: "</>",
 };
 
 function getToolIcon(toolId: string): string {
@@ -98,15 +90,15 @@ export function ToolSidebar(): JSX.Element {
   return (
     <aside className="tool-sidebar" aria-label={t("sidebar.aria")}>
       <div className="tool-sidebar__content">
-        <div className="tool-sidebar__brand">
+        <Link to="/" className="tool-sidebar__brand">
           <span className="tool-sidebar__brand-mark" aria-hidden="true">
             NF
           </span>
           <span className="tool-sidebar__brand-copy">
-            <strong>工具工作台</strong>
-            <small>File Toolkit</small>
+            <strong>NexaForge</strong>
+            <small>Utility File Workspace</small>
           </span>
-        </div>
+        </Link>
 
         <div className="tool-sidebar__search-wrap">
           <label htmlFor="tool-search" className="tool-sidebar__search-label">
@@ -130,28 +122,15 @@ export function ToolSidebar(): JSX.Element {
           </NavLink>
         </nav>
 
-        {!keywordNormalized && categoryOrder.map((category) => (
-          <section className="tool-sidebar__section" key={category}>
-            <h2 className="tool-sidebar__section-title">
-              <span className="tool-sidebar__category-icon" aria-hidden="true">
-                {CATEGORY_ICONS[category]}
-              </span>
-              <span className="tool-sidebar__label">{localizedCategoryLabel(category, t)}</span>
-            </h2>
-            <ul className="tool-sidebar__list">
-              {groupedTools[category].map((tool) => (
-                <li key={tool.id}>
-                  <NavLink to={tool.path} className={({ isActive }) => `tool-sidebar__link ${isActive ? "is-active" : ""}`} title={localToolMeta(tool.id, "title")}>
-                    <span className="tool-sidebar__icon" aria-hidden="true">
-                      {getToolIcon(tool.id)}
-                    </span>
-                    <span className="tool-sidebar__label">{localToolMeta(tool.id, "title")}</span>
-                  </NavLink>
-                </li>
-              ))}
-            </ul>
-          </section>
-        ))}
+        <div className="tool-sidebar__categories">
+          <p className="tool-sidebar__section-title">{t("sidebar.categories")}</p>
+          {categoryOrder.map((category) => (
+            <a className="tool-sidebar__link" href="/#popular-tools" key={category}>
+              <span className="tool-sidebar__icon" aria-hidden="true">{CATEGORY_ICONS[category]}</span>
+              <span className="tool-sidebar__label">{localizedCategoryLabel(category, t)} {t("sidebar.toolsSuffix")}</span>
+            </a>
+          ))}
+        </div>
 
         {keywordNormalized &&
           groupedFilteredTools.map(({ category, tools }) => (
@@ -184,6 +163,20 @@ export function ToolSidebar(): JSX.Element {
         {keywordNormalized && filteredTools.length === 0 && (
           <p className="tool-sidebar__empty">{t("sidebar.empty")}</p>
         )}
+
+        <nav className="tool-sidebar__footer" aria-label={t("sidebar.resources")}>
+          <a className="tool-sidebar__link" href="/README.md">
+            <span className="tool-sidebar__icon" aria-hidden="true">▤</span>
+            <span className="tool-sidebar__label">{t("sidebar.documentation")}</span>
+          </a>
+          <a className="tool-sidebar__link" href="https://github.com/kimx/NexaForge" target="_blank" rel="noreferrer">
+            <span className="tool-sidebar__icon" aria-hidden="true">⌘</span>
+            <span className="tool-sidebar__label">GitHub</span>
+          </a>
+        </nav>
+        <a className="tool-sidebar__request" href="https://github.com/kimx/NexaForge/issues/new" target="_blank" rel="noreferrer">
+          {t("sidebar.submitRequest")}
+        </a>
       </div>
     </aside>
   );
