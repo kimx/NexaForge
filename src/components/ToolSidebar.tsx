@@ -122,15 +122,17 @@ export function ToolSidebar(): JSX.Element {
           </NavLink>
         </nav>
 
-        <div className="tool-sidebar__categories">
-          <p className="tool-sidebar__section-title">{t("sidebar.categories")}</p>
-          {categoryOrder.map((category) => (
-            <a className="tool-sidebar__link" href="/#popular-tools" key={category}>
-              <span className="tool-sidebar__icon" aria-hidden="true">{CATEGORY_ICONS[category]}</span>
-              <span className="tool-sidebar__label">{localizedCategoryLabel(category, t)} {t("sidebar.toolsSuffix")}</span>
-            </a>
-          ))}
-        </div>
+        {!keywordNormalized && (
+          <div className="tool-sidebar__categories">
+            <p className="tool-sidebar__section-title">{t("sidebar.categories")}</p>
+            {categoryOrder.map((category) => (
+              <a className="tool-sidebar__link" href="/#popular-tools" key={category}>
+                <span className="tool-sidebar__icon" aria-hidden="true">{CATEGORY_ICONS[category]}</span>
+                <span className="tool-sidebar__label">{localizedCategoryLabel(category, t)} {t("sidebar.toolsSuffix")}</span>
+              </a>
+            ))}
+          </div>
+        )}
 
         {keywordNormalized &&
           groupedFilteredTools.map(({ category, tools }) => (
