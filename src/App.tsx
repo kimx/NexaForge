@@ -119,17 +119,19 @@ function ToolFrame({ children }: { children: JSX.Element }): JSX.Element {
       ) : (
         <>
           <section className="page-landing">
-            {landingVisual ? (
-              <span
-                className={`page-landing__icon page-landing__icon--${landingVisual.tone}`}
-                aria-hidden="true"
-              >
-                {landingVisual.label}
-              </span>
-            ) : null}
             <p className="page-landing__kicker">{t("pageLanding.kicker")}</p>
             <h1 className="page-landing__title">{landingTitle}</h1>
             <p className="page-landing__description">{landingDescription}</p>
+            {landingVisual ? (
+              <div className={`page-landing__visual page-landing__visual--${landingVisual.tone}`} aria-hidden="true">
+                <span className="page-landing__visual-grid" />
+                <span className="page-landing__visual-orbit page-landing__visual-orbit--one" />
+                <span className="page-landing__visual-orbit page-landing__visual-orbit--two" />
+                <span className={`page-landing__icon page-landing__icon--${landingVisual.tone}`}>
+                  {landingVisual.label}
+                </span>
+              </div>
+            ) : null}
           </section>
           <div className="site-content">
             <ToolSidebar />

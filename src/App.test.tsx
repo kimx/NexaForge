@@ -34,6 +34,9 @@ describe("App routes", () => {
     );
 
     expect(screen.getByRole("heading", { name: heading, level: 1 })).toBeInTheDocument();
+    if (path !== "/") {
+      expect(document.querySelector(".page-landing__visual")).toBeInTheDocument();
+    }
     await waitFor(() => {
       expect(document.title).toContain(heading);
     });
@@ -62,4 +65,3 @@ describe("App routes", () => {
     });
   });
 });
-
