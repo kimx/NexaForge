@@ -3,6 +3,11 @@ import { readFileAsArrayBuffer } from "../file/fileService";
 import type { FileProcessResult } from "../../types/tool";
 import { assertValidPageRanges, parsePageRanges } from "./pageRange";
 
+export async function getPdfPageCount(file: File): Promise<number> {
+  const source = await PDFDocument.load(await readFileAsArrayBuffer(file));
+  return source.getPageCount();
+}
+
 export async function mergePdf(files: File[]): Promise<FileProcessResult> {
   const target = await PDFDocument.create();
 

@@ -5,7 +5,7 @@ import { ToolPageTemplate } from "../../components/ToolPageTemplate";
 import { FileDropzone } from "../../components/FileDropzone";
 import { FileInfo } from "../../components/FileInfo";
 import { DownloadButton } from "../../components/DownloadButton";
-import { splitPdf } from "../../services/pdf/pdfService";
+import { getPdfPageCount, splitPdf } from "../../services/pdf/pdfService";
 import { getRelatedTools } from "../../utils/toolHelpers";
 import { trackEvent } from "../../utils/analytics";
 import { useSeo } from "../../hooks/useSeo";
@@ -15,7 +15,8 @@ import { useLanguage } from "../../context/LanguageContext";
 export function PdfSplitPage(): JSX.Element {
   const { t } = useLanguage();
   const [file, setFile] = useState<File[]>([]);
-  const [ranges, setRanges] = useState("1");
+  const [pageCount, setPageCount] = useState<number | null>(null);
+  const [selectedPages, setSelectedPages] = useState<number[]>([]);
   const [processing, setProcessing] = useState<ProcessingState>("idle");
   const [result, setResult] = useState<FileProcessResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -54,10 +55,19 @@ export function PdfSplitPage(): JSX.Element {
     [t]
   );
 
-  const handleProcess = async () => {
+  const handleFiles = (incoming: File[]): void => {
+    setFile(incoming);
+    setPageCount(null);
+    setSelectedPages([]);
+    setResult(null);
+    setError(null);
+    setProcessing("idle");
+  };
+
+  const validateSource = (): File | null => {
     if (!file[0]) {
       setError(t("error.selectOneFile", { type: t("label.fileType.pdf") }));
-      return;
+      return null;
     }
     const source = file[0];
     const sizeError = validateFileSize(source);
@@ -66,13 +76,47 @@ export function PdfSplitPage(): JSX.Element {
       setError(sizeError?.message ?? mimeError?.message ?? t("error.invalidFile"));
       setProcessing("error");
       trackEvent("process_failed", { tool: "pdf-split" });
-      return;
+      return null;
     }
+    return source;
+  };
+
+  const handleProcess = async () => {
+    const source = validateSource();
+    if (!source) return;
+
     setError(null);
     setProcessing("processing");
     trackEvent("process_start", { tool: "pdf-split" });
     try {
-      const output = await splitPdf(source, ranges);
+      const totalPages = await getPdfPageCount(source);
+      setPageCount(totalPages);
+      setSelectedPages([]);
+      setResult(null);
+      setProcessing("success");
+      trackEvent("process_success", { tool: "pdf-split" });
+    } catch (err) {
+      setError(t("error.processingFailed"));
+      setProcessing("error");
+      trackEvent("process_failed", { tool: "pdf-split" });
+      console.error(err);
+    }
+  };
+
+  const handleExport = async () => {
+    const source = validateSource();
+    if (!source || !selectedPages.length) {
+      if (source && !selectedPages.length) {
+        setError(t("tool.pdf-split.error.noPages"));
+        setProcessing("error");
+      }
+      return;
+    }
+
+    setError(null);
+    setProcessing("processing");
+    try {
+      const output = await splitPdf(source, selectedPages.map((page) => String(page + 1)).join(","));
       setResult(output);
       setProcessing("success");
       trackEvent("process_success", { tool: "pdf-split" });
@@ -95,7 +139,7 @@ export function PdfSplitPage(): JSX.Element {
             <FileDropzone
               label={t("label.dropPdf")}
               accept="application/pdf"
-              onFiles={setFile}
+              onFiles={handleFiles}
               multiple={false}
             />
             <FileInfo files={file} />
@@ -103,13 +147,6 @@ export function PdfSplitPage(): JSX.Element {
         ),
         options: (
           <div className="tool-form">
-            <label>
-              {t("label.pageRanges")}
-              <input
-                value={ranges}
-                onChange={(event) => setRanges(event.target.value)}
-              />
-            </label>
             <button
               type="button"
               className="btn primary"
@@ -119,6 +156,41 @@ export function PdfSplitPage(): JSX.Element {
             >
               {processing === "processing" ? t("button.processing") : t("button.process")}
             </button>
+            {pageCount !== null && (
+              <>
+                <p>{t("tool.pdf-split.pageCount", { count: pageCount })}</p>
+                <fieldset>
+                  <legend>{t("tool.pdf-split.selectPages")}</legend>
+                  <div className="button-row">
+                    {Array.from({ length: pageCount }, (_, page) => (
+                      <label key={page} className="file-btn">
+                        <input
+                          type="checkbox"
+                          checked={selectedPages.includes(page)}
+                          onChange={() =>
+                            setSelectedPages((current) =>
+                              current.includes(page)
+                                ? current.filter((item) => item !== page)
+                                : [...current, page].sort((a, b) => a - b)
+                            )
+                          }
+                        />
+                        {page + 1}
+                      </label>
+                    ))}
+                  </div>
+                </fieldset>
+                <button
+                  type="button"
+                  className="btn primary"
+                  onClick={handleExport}
+                  disabled={processing === "processing" || !selectedPages.length}
+                  aria-busy={processing === "processing"}
+                >
+                  {t("button.export")}
+                </button>
+              </>
+            )}
           </div>
         ),
         result: (
