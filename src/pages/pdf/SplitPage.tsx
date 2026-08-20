@@ -11,6 +11,7 @@ import { trackEvent } from "../../utils/analytics";
 import { useSeo } from "../../hooks/useSeo";
 import { validateFileSize, validateMime } from "../../utils/validation";
 import { useLanguage } from "../../context/LanguageContext";
+import { downloadBlob } from "../../utils/download";
 
 export function PdfSplitPage(): JSX.Element {
   const { t } = useLanguage();
@@ -119,6 +120,8 @@ export function PdfSplitPage(): JSX.Element {
       const output = await splitPdf(source, selectedPages.map((page) => String(page + 1)).join(","));
       setResult(output);
       setProcessing("success");
+      downloadBlob(output.blob, output.fileName);
+      trackEvent("download", { tool: "pdf-split" });
       trackEvent("process_success", { tool: "pdf-split" });
     } catch (err) {
       setError(t("error.processingFailed"));

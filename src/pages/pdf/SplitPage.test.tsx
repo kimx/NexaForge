@@ -5,6 +5,7 @@ import { vi } from "vitest";
 import { PdfSplitPage } from "./SplitPage";
 import * as pdfService from "../../services/pdf/pdfService";
 import { LanguageProvider } from "../../context/LanguageContext";
+import * as download from "../../utils/download";
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -47,6 +48,7 @@ describe("PdfSplitPage", () => {
       mimeType: "application/pdf",
       size: 3,
     });
+    const downloadSpy = vi.spyOn(download, "downloadBlob").mockImplementation(() => {});
 
     const { container } = renderWithRouter(<PdfSplitPage />);
     const input = container.querySelector('input[type="file"]') as HTMLInputElement;
@@ -60,6 +62,7 @@ describe("PdfSplitPage", () => {
     fireEvent.click(screen.getByRole("button", { name: "Export" }));
 
     await waitFor(() => expect(splitSpy).toHaveBeenCalledWith(file, "1,3"));
+    expect(downloadSpy).toHaveBeenCalledWith(expect.any(Blob), "split.pdf");
   });
 
   it("shows error when export fails", async () => {
