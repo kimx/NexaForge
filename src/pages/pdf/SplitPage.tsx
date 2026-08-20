@@ -108,6 +108,7 @@ export function PdfSplitPage(): JSX.Element {
     if (!source || !selectedPages.length) {
       if (source && !selectedPages.length) {
         setError(t("tool.pdf-split.error.noPages"));
+        setProcessing("error");
       }
       return;
     }
