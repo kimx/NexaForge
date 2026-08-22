@@ -4,6 +4,7 @@ import {
   type RefObject,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
@@ -20,40 +21,126 @@ const categoryOrder: ToolDefinition["category"][] = [
   "Text",
 ];
 
-const CATEGORY_ICONS: Record<ToolDefinition["category"], string> = {
-  Image: "▧",
-  PDF: "▤",
-  Data: "▤",
-  Text: "▤",
-  Developer: "</>",
+type SidebarIconName =
+  | "chevron"
+  | "close"
+  | "data"
+  | "developer"
+  | "github"
+  | "home"
+  | "image"
+  | "pdf"
+  | "search"
+  | "text";
+
+const CATEGORY_ICONS: Record<ToolDefinition["category"], SidebarIconName> = {
+  Image: "image",
+  PDF: "pdf",
+  Data: "data",
+  Text: "text",
+  Developer: "developer",
 };
 
-function getToolIcon(toolId: string): string {
+function getToolIcon(toolId: string): SidebarIconName {
   if (toolId === "home") {
-    return "⌂";
+    return "home";
   }
 
   if (toolId.startsWith("image-")) {
-    return "◈";
+    return "image";
   }
 
   if (toolId.startsWith("pdf-")) {
-    return "▭";
+    return "pdf";
   }
 
   if (toolId.startsWith("json") || toolId.startsWith("csv")) {
-    return "◊";
+    return "data";
   }
 
   if (toolId === "base64" || toolId === "hash" || toolId === "uuid" || toolId === "text-diff" || toolId === "markdown-previewer" || toolId === "word-counter" || toolId === "case-converter" || toolId === "remove-duplicate-lines" || toolId === "sort-lines") {
-    return "✎";
+    return "text";
   }
 
   if (toolId.startsWith("jwt-") || toolId === "qr-code") {
-    return "⚙";
+    return "developer";
   }
 
-  return "•";
+  return "data";
+}
+
+function SidebarIcon({ name }: { name: SidebarIconName }): JSX.Element {
+  const paths: Record<SidebarIconName, JSX.Element> = {
+    chevron: <path d="m8.5 10 3.5 3.5 3.5-3.5" />,
+    close: (
+      <>
+        <path d="m8.5 8.5 7 7" />
+        <path d="m15.5 8.5-7 7" />
+      </>
+    ),
+    data: (
+      <>
+        <ellipse cx="12" cy="6" rx="6.5" ry="2.5" />
+        <path d="M5.5 6v6c0 1.4 2.9 2.5 6.5 2.5s6.5-1.1 6.5-2.5V6" />
+        <path d="M5.5 12v6c0 1.4 2.9 2.5 6.5 2.5s6.5-1.1 6.5-2.5v-6" />
+      </>
+    ),
+    developer: (
+      <>
+        <path d="m8.5 8-4 4 4 4" />
+        <path d="m15.5 8 4 4-4 4" />
+        <path d="m13.5 5-3 14" />
+      </>
+    ),
+    github: (
+      <>
+        <path d="M15 21v-3.8c.04-1-.35-1.96-1.1-2.6 3.6-.4 7.4-1.76 7.4-8A6.2 6.2 0 0 0 19.65 2.3 5.7 5.7 0 0 0 19.5-2S18.2-2.4 15 0a15 15 0 0 0-6 0C5.8-2.4 4.5-2 4.5-2a5.7 5.7 0 0 0-.15 4.3A6.2 6.2 0 0 0 2.7 6.6c0 6.23 3.8 7.6 7.4 8-.74.63-1.13 1.58-1.1 2.6V21" transform="translate(0 2) scale(.9)" />
+        <path d="M9 19c-3 .9-3-1.5-4.2-2" />
+      </>
+    ),
+    home: (
+      <>
+        <path d="m4 10 8-6 8 6" />
+        <path d="M6.5 9v10h11V9" />
+        <path d="M10 19v-5h4v5" />
+      </>
+    ),
+    image: (
+      <>
+        <rect x="3.5" y="4.5" width="17" height="15" rx="2" />
+        <circle cx="9" cy="10" r="1.5" />
+        <path d="m5.5 17 4.3-4.2 3.2 3 2.2-2.1 3.3 3.3" />
+      </>
+    ),
+    pdf: (
+      <>
+        <path d="M6 3.5h8l4 4V20.5H6z" />
+        <path d="M14 3.5v4h4" />
+        <path d="M8.5 15.5h7" />
+        <path d="M8.5 12.5h4.5" />
+      </>
+    ),
+    search: (
+      <>
+        <circle cx="10.5" cy="10.5" r="5.5" />
+        <path d="m15 15 4.5 4.5" />
+      </>
+    ),
+    text: (
+      <>
+        <path d="M5 6h14" />
+        <path d="M8 10h8" />
+        <path d="M7 14h10" />
+        <path d="M10 18h4" />
+      </>
+    ),
+  };
+
+  return (
+    <svg className="tool-sidebar__svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      {paths[name]}
+    </svg>
+  );
 }
 
 interface ToolSidebarProps {
@@ -81,6 +168,7 @@ export function ToolSidebar({
   const { t, locale } = useLanguage();
   const localToolMeta = useLocalizedToolMeta();
   const { pathname } = useLocation();
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const activeCategory = FILE_TOOLS.find((tool) => tool.path === stripLocalePrefix(pathname))?.category;
   const [keyword, setKeyword] = useState("");
   const [expandedCategories, setExpandedCategories] = useState<Set<ToolDefinition["category"]>>(
@@ -137,6 +225,11 @@ export function ToolSidebar({
     setKeyword(event.target.value);
   };
 
+  const clearKeyword = () => {
+    setKeyword("");
+    searchInputRef.current?.focus();
+  };
+
   const toggleCategory = (category: ToolDefinition["category"]) => {
     setExpandedCategories((current) => {
       const next = new Set(current);
@@ -187,6 +280,18 @@ export function ToolSidebar({
     return null;
   }
 
+  const brandLink = (
+    <Link to={localizePath("/", locale)} className="tool-sidebar__brand" onClick={isMobile ? onClose : undefined}>
+      <span className="tool-sidebar__brand-mark" aria-hidden="true">
+        NF
+      </span>
+      <span className="tool-sidebar__brand-copy">
+        <strong>NexaForge</strong>
+        <small>Utility File Workspace</small>
+      </span>
+    </Link>
+  );
+
   return (
     <aside
       id="tool-sidebar"
@@ -199,7 +304,7 @@ export function ToolSidebar({
       <div className="tool-sidebar__content">
         {isMobile ? (
           <div className="tool-sidebar__mobile-header">
-            <strong>NexaForge</strong>
+            {brandLink}
             <button
               ref={closeButtonRef}
               type="button"
@@ -207,31 +312,36 @@ export function ToolSidebar({
               aria-label={t("header.closeTools")}
               onClick={onClose}
             >
-              <span aria-hidden="true">×</span>
+              <SidebarIcon name="close" />
             </button>
           </div>
-        ) : null}
-        <Link to={localizePath("/", locale)} className="tool-sidebar__brand" onClick={isMobile ? onClose : undefined}>
-          <span className="tool-sidebar__brand-mark" aria-hidden="true">
-            NF
-          </span>
-          <span className="tool-sidebar__brand-copy">
-            <strong>NexaForge</strong>
-            <small>Utility File Workspace</small>
-          </span>
-        </Link>
+        ) : brandLink}
 
         <div className="tool-sidebar__search-wrap">
-          <label htmlFor="tool-search" className="tool-sidebar__search-label">
+          <label htmlFor="tool-search" className="tool-sidebar__search-label sr-only">
             {t("sidebar.searchLabel")}
           </label>
+          <span className="tool-sidebar__search-icon" aria-hidden="true">
+            <SidebarIcon name="search" />
+          </span>
           <input
+            ref={searchInputRef}
             id="tool-search"
             value={keyword}
             onChange={handleKeywordChange}
             placeholder={t("sidebar.searchPlaceholder")}
             className="tool-sidebar__search-input"
           />
+          {keyword ? (
+            <button
+              type="button"
+              className="tool-sidebar__search-clear"
+              aria-label={t("sidebar.clearSearch")}
+              onClick={clearKeyword}
+            >
+              <SidebarIcon name="close" />
+            </button>
+          ) : null}
         </div>
 
         <nav className="tool-sidebar__nav" aria-label={t("sidebar.navigation")}>
@@ -242,7 +352,7 @@ export function ToolSidebar({
             onClick={isMobile ? onClose : undefined}
           >
             <span className="tool-sidebar__icon" aria-hidden="true">
-              {getToolIcon("home")}
+              <SidebarIcon name={getToolIcon("home")} />
             </span>
             <span className="tool-sidebar__label">{t("sidebar.home")}</span>
           </NavLink>
@@ -260,10 +370,13 @@ export function ToolSidebar({
                   aria-controls={`tool-sidebar-category-${category}`}
                   onClick={() => toggleCategory(category)}
                 >
-                  <span className="tool-sidebar__icon" aria-hidden="true">{CATEGORY_ICONS[category]}</span>
+                  <span className="tool-sidebar__icon" aria-hidden="true"><SidebarIcon name={CATEGORY_ICONS[category]} /></span>
                   <span className="tool-sidebar__label">{localizedCategoryLabel(category, t)} {t("sidebar.toolsSuffix")}</span>
+                  <span className="tool-sidebar__category-count" aria-hidden="true">
+                    {FILE_TOOLS.filter((tool) => tool.category === category).length}
+                  </span>
                   <span className="tool-sidebar__category-chevron" aria-hidden="true">
-                    {expandedCategories.has(category) ? "⌃" : "⌄"}
+                    <SidebarIcon name="chevron" />
                   </span>
                 </button>
                 {expandedCategories.has(category) && (
@@ -276,7 +389,7 @@ export function ToolSidebar({
                           className={({ isActive }) => `tool-sidebar__link ${isActive ? "is-active" : ""}`}
                           onClick={isMobile ? onClose : undefined}
                         >
-                          <span className="tool-sidebar__icon" aria-hidden="true">{getToolIcon(tool.id)}</span>
+                          <span className="tool-sidebar__icon" aria-hidden="true"><SidebarIcon name={getToolIcon(tool.id)} /></span>
                           <span className="tool-sidebar__label">{localToolMeta(tool.id, "title")}</span>
                         </NavLink>
                       </li>
@@ -293,7 +406,7 @@ export function ToolSidebar({
             <section className="tool-sidebar__section" key={category}>
               <h2 className="tool-sidebar__section-title">
                 <span className="tool-sidebar__category-icon" aria-hidden="true">
-                  {CATEGORY_ICONS[category]}
+                  <SidebarIcon name={CATEGORY_ICONS[category]} />
                 </span>
                 <span className="tool-sidebar__label">{localizedCategoryLabel(category, t)}</span>
               </h2>
@@ -307,7 +420,7 @@ export function ToolSidebar({
                       onClick={isMobile ? onClose : undefined}
                     >
                       <span className="tool-sidebar__icon" aria-hidden="true">
-                        {getToolIcon(tool.id)}
+                        <SidebarIcon name={getToolIcon(tool.id)} />
                       </span>
                       <span className="tool-sidebar__label">{localToolMeta(tool.id, "title")}</span>
                     </NavLink>
@@ -323,7 +436,7 @@ export function ToolSidebar({
 
         <nav className="tool-sidebar__footer" aria-label={t("sidebar.resources")}>
           <a className="tool-sidebar__link" href="https://github.com/kimx/NexaForge" target="_blank" rel="noreferrer">
-            <span className="tool-sidebar__icon" aria-hidden="true">⌘</span>
+            <span className="tool-sidebar__icon" aria-hidden="true"><SidebarIcon name="github" /></span>
             <span className="tool-sidebar__label">GitHub</span>
           </a>
         </nav>

@@ -77,4 +77,24 @@ describe("ToolSidebar", () => {
 
     expect(screen.queryByRole("link", { name: /documentation|文件/i })).not.toBeInTheDocument();
   });
+
+  it("clears a tool search and restores category navigation", () => {
+    render(
+      <MemoryRouter>
+        <LanguageProvider>
+          <ToolSidebar />
+        </LanguageProvider>
+      </MemoryRouter>
+    );
+
+    const search = screen.getByRole("textbox", { name: /tool search|工具搜尋/i });
+    fireEvent.change(search, { target: { value: "json" } });
+
+    expect(screen.queryByRole("button", { name: /data.*tools|資料.*工具/i })).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /clear search|清除搜尋/i }));
+
+    expect(search).toHaveValue("");
+    expect(screen.getByRole("button", { name: /data.*tools|資料.*工具/i })).toBeInTheDocument();
+  });
 });
