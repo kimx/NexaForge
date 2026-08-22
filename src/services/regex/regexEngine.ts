@@ -17,6 +17,18 @@ export interface RegexRunResult {
   truncated: boolean;
 }
 
+export function normalizeRegexSyntaxError(message: string): string {
+  const prefix = "Invalid regular expression:";
+  if (!message.startsWith(prefix)) {
+    return message;
+  }
+
+  const detailStart = message.lastIndexOf(": ");
+  return detailStart >= prefix.length
+    ? message.slice(detailStart + 2)
+    : message.slice(prefix.length).trim();
+}
+
 export function runRegex({
   pattern,
   flags,

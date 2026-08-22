@@ -1,4 +1,8 @@
-import { runRegex, type RegexRunRequest } from "./regexEngine";
+import {
+  normalizeRegexSyntaxError,
+  runRegex,
+  type RegexRunRequest,
+} from "./regexEngine";
 import type { RegexWorkerResponse } from "./regexService";
 
 interface RegexWorkerScope {
@@ -16,7 +20,11 @@ workerScope.onmessage = ({ data }) => {
       ok: false,
       error: {
         kind: error instanceof SyntaxError ? "invalid-pattern" : "execution",
-        message: error instanceof Error ? error.message : "Regex execution failed",
+        message: error instanceof SyntaxError
+          ? normalizeRegexSyntaxError(error.message)
+          : error instanceof Error
+            ? error.message
+            : "Regex execution failed",
       },
     });
   }

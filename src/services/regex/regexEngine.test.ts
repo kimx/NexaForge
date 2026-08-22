@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { runRegex } from "./regexEngine";
+import { normalizeRegexSyntaxError, runRegex } from "./regexEngine";
 
 describe("runRegex", () => {
   it("returns global matches with numbered and named capture groups", () => {
@@ -80,5 +80,21 @@ describe("runRegex", () => {
     expect(() =>
       runRegex({ pattern: "(", flags: "g", text: "x", maxMatches: 500 })
     ).toThrow(SyntaxError);
+  });
+});
+
+describe("normalizeRegexSyntaxError", () => {
+  it("removes the browser-generated expression prefix from V8 syntax errors", () => {
+    expect(
+      normalizeRegexSyntaxError(
+        "Invalid regular expression: /(/gi: Unterminated group"
+      )
+    ).toBe("Unterminated group");
+  });
+
+  it("preserves messages from engines that do not use the V8 prefix", () => {
+    expect(normalizeRegexSyntaxError("invalid regexp group")).toBe(
+      "invalid regexp group"
+    );
   });
 });
