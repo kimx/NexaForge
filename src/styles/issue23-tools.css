@@ -45,6 +45,31 @@
   object-fit: contain;
 }
 
+.issue23-form textarea,
+.code-output-panel__textarea {
+  width: 100%;
+  min-height: 14rem;
+  padding: var(--space-3);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  color: var(--text-primary);
+  font: inherit;
+  font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  line-height: 1.55;
+  resize: vertical;
+}
+
+.code-output-panel {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.code-output-panel__status {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
 .qr-reader__video {
   display: block;
   width: 100%;
