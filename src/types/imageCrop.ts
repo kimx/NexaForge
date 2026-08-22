@@ -80,4 +80,9 @@ export interface ImageCropEditorLabels {
   xCoordinate: string;
   yCoordinate: string;
   resizeShape: string;
+  notEnoughPoints: string;
+  closeShapeHint: string;
+  selfIntersection: string;
+  shapeTooSmall: string;
+  outsideImage: string;
 }
