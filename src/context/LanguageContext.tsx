@@ -7,6 +7,7 @@ import {
   useCallback,
   useState,
 } from "react";
+import { localeFromPath } from "../routing/localePaths";
 
 export type Locale = "zh-TW" | "en";
 
@@ -38,22 +39,16 @@ function normalizeLocale(raw: string | null): Locale {
   }
 }
 
-function readInitialLocale(): Locale {
+function readInitialLocale(initialLocale?: Locale): Locale {
+  if (initialLocale) {
+    return normalizeLocale(initialLocale);
+  }
+
   if (typeof window === "undefined") {
     return "zh-TW";
   }
 
-  try {
-    const stored = window.localStorage.getItem(LOCALE_STORAGE_KEY);
-    if (stored) {
-      return normalizeLocale(stored);
-    }
-
-    const browserLocale = window.navigator.language;
-    return normalizeLocale(browserLocale);
-  } catch {
-    return "zh-TW";
-  }
+  return localeFromPath(window.location.pathname);
 }
 
 function persistLocaleState(locale: Locale): void {
@@ -78,8 +73,19 @@ const zhMessages: Record<string, string> = {
 
   "header.title": "NexaForge",
   "header.subtitle": "為有檔案需求的工作流程打造：學生、上班族、創作者、工程師都能直接使用。",
+  "header.tools": "工具",
+  "header.openTools": "開啟工具導覽",
+  "header.closeTools": "關閉工具導覽",
+  "skip.toMain": "跳至主要內容",
+  "route.loading": "正在載入工作區…",
+  "seo.homeTitle": "NexaForge｜本機檔案與開發者工具",
+  "seo.localSuffix": "所有內容都只在你的瀏覽器本機處理，不會上傳到 NexaForge 伺服器。",
+  "notFound.title": "找不到頁面",
+  "notFound.description": "這個網址不存在，請回到 NexaForge 首頁選擇可用工具。",
+  "notFound.returnHome": "返回首頁",
 
   "sidebar.home": "首頁",
+  "sidebar.navigation": "工具導覽",
   "sidebar.searchLabel": "工具搜尋",
   "sidebar.searchPlaceholder": "輸入工具名稱，例如：Image 或 JSON",
   "sidebar.sectionTitle": "全部工具導覽",
@@ -160,8 +166,28 @@ const zhMessages: Record<string, string> = {
   "tool.image-exif-viewer.description": "在瀏覽器本機檢視 JPEG 照片的 EXIF 中繼資料。",
   "tool.image-remove-exif.title": "移除 EXIF",
   "tool.image-remove-exif.description": "移除 JPEG 照片中的 EXIF 中繼資料，不需上傳檔案。",
+  "tool.image-exif.shared.jpegOnly": "EXIF 工具目前僅支援 JPEG 檔案。",
+  "tool.image-exif.shared.noExif": "這張照片中找不到可讀取的 EXIF 中繼資料。",
+  "tool.image-exif-viewer.how.0": "拖放或選擇一張 JPEG 照片。",
+  "tool.image-exif-viewer.how.1": "點擊「處理」在本機檢視 EXIF 標籤。",
+  "tool.image-exif-viewer.how.2": "在結果區查看相機與拍攝資訊。",
+  "tool.image-exif-viewer.faq.0.question": "照片會被上傳嗎？",
+  "tool.image-exif-viewer.faq.0.answer": "不會，EXIF 解析只會在目前的瀏覽器中執行。",
+  "tool.image-exif-viewer.faq.1.question": "支援哪些檔案？",
+  "tool.image-exif-viewer.faq.1.answer": "目前支援含有 EXIF 區段的 JPEG 檔案。",
+  "tool.image-exif-viewer.error.processing": "無法讀取這張照片的 EXIF 中繼資料。",
+  "tool.image-remove-exif.how.0": "拖放或選擇一張 JPEG 照片。",
+  "tool.image-remove-exif.how.1": "點擊「處理」移除 EXIF 中繼資料。",
+  "tool.image-remove-exif.how.2": "下載不含 EXIF 中繼資料的新 JPEG 檔案。",
+  "tool.image-remove-exif.faq.0.question": "這會改變照片內容嗎？",
+  "tool.image-remove-exif.faq.0.answer": "只會移除 JPEG 的 EXIF 區段，不會重新壓縮影像像素。",
+  "tool.image-remove-exif.faq.1.question": "這適合用來保護隱私嗎？",
+  "tool.image-remove-exif.faq.1.answer": "適合，分享前可移除常見的裝置與拍攝時間等中繼資料。",
+  "tool.image-remove-exif.error.processing": "無法移除這張照片的 EXIF 中繼資料。",
+  "tool.image-remove-exif.label.removedBytes": "已移除 {count} 位元組的 EXIF 中繼資料。",
   "tool.pdf-merge.title": "PDF 合併",
   "tool.pdf-merge.description": "整合多個 PDF 為單一檔案。",
+  "tool.pdf-merge.error.minimumFiles": "請至少選擇兩個 PDF 檔案。",
   "pdfMerge.fileOrderLabel": "PDF 檔案順序",
   "pdfMerge.dragHandle": "拖曳以重新排序",
   "pdfMerge.moveUp": "向上移動",
@@ -237,6 +263,7 @@ const zhMessages: Record<string, string> = {
   "tool.text-diff.faq.1.answer": "可用，但較長文字建議以段落分塊比對以維持速度。",
   "tool.markdown-previewer.title": "Markdown 預覽",
   "tool.markdown-previewer.description": "即時輸入並預覽 Markdown 內容，支援標題、清單、連結與程式碼區塊。",
+  "tool.markdown-previewer.sample": "## Markdown 預覽\n\n在這裡輸入 Markdown，即時查看渲染結果。\n\n- 使用清單\n- 加入 **粗體**\n- 加入 `行內程式碼`\n\n```ts\nconsole.log(\"你好\");\n```\n",
   "tool.markdown-previewer.label.input": "Markdown 文字輸入",
   "tool.markdown-previewer.label.preview": "預覽結果",
   "tool.markdown-previewer.label.noOutput": "尚未輸入 Markdown。",
@@ -265,6 +292,8 @@ const zhMessages: Record<string, string> = {
   "tool.json-diff.title": "JSON Diff",
   "tool.json-diff.description": "比較兩份 JSON 並查看差異。",
   "developerTools.input": "輸入",
+  "developerTools.jsonInput": "JSON 輸入",
+  "developerTools.yamlInput": "YAML 輸入",
   "developerTools.leftInput": "左側 JSON",
   "developerTools.rightInput": "右側 JSON",
   "developerTools.output": "輸出",
@@ -291,6 +320,8 @@ const zhMessages: Record<string, string> = {
   "home.eyebrow": "你的檔案工作台",
   "home.primaryCta": "開始處理檔案",
   "home.secondaryCta": "查看熱門工具",
+  "home.primaryJsonCta": "格式化 JSON",
+  "home.allJsonTools": "查看所有 JSON 工具",
   "home.proofLabel": "NexaForge 使用方式",
   "home.proof.local": "檔案不上傳",
   "home.proof.formats": "PDF、圖片、JSON 都能處理",
@@ -304,6 +335,10 @@ const zhMessages: Record<string, string> = {
   "home.searchLabel": "搜尋工具",
   "home.searchPlaceholder": "影像、PDF、JSON...",
   "home.popular": "熱門工具",
+  "home.jsonWorkflows": "JSON 工作流程",
+  "home.jsonWorkflowsSubtitle": "先從最常見的格式化、比較與資料轉換任務開始。",
+  "home.otherTools": "其他工具",
+  "home.searchResults": "搜尋結果",
   "home.open": "開啟工具",
   "home.categories.Image": "影像",
   "home.categories.PDF": "PDF",
@@ -320,6 +355,16 @@ const zhMessages: Record<string, string> = {
   "home.recentTools": "最近使用",
   "home.recentToolsCount": "{count} 個工具",
   "home.clearRecentTools": "清除最近使用",
+  "jsonHub.title": "JSON 工作區",
+  "jsonHub.description": "格式化、驗證、比較與轉換 JSON，從同一個開發者工作區完成。",
+  "jsonHub.eyebrow": "JSON-FIRST 開發者工具",
+  "jsonHub.localTitle": "資料在本機處理",
+  "jsonHub.localDescription": "JSON、CSV 與 YAML 內容不會上傳到 NexaForge 伺服器。",
+  "jsonHub.taskEyebrow": "選擇任務",
+  "jsonHub.taskTitle": "你想對 JSON 做什麼？",
+  "jsonHub.open": "開啟工具",
+  "jsonWorkspace.aria": "JSON 工作區",
+  "jsonWorkspace.kicker": "JSON 工作區",
 
   "toolPage.workspace": "工具工作區",
   "toolPage.options": "設定",
@@ -395,9 +440,17 @@ const zhMessages: Record<string, string> = {
   "label.previewSize": "預覽大小",
   "label.preview": "預覽",
   "jsonTree.ariaLabel": "JSON 樹狀編輯器",
-  "jsonTree.pasteHint": "可直接貼上 JSON",
+  "jsonTree.title": "資料結構",
+  "jsonTree.pasteHint": "在空白處貼上完整 JSON，即可取代目前內容",
   "jsonTree.rootLabel": "JSON",
+  "jsonTree.rootMeta.object": "{count} 個根欄位",
+  "jsonTree.rootMeta.array": "{count} 個根項目",
+  "jsonTree.rootMeta.value": "單一值",
+  "jsonTree.column.key": "欄位",
+  "jsonTree.column.type": "型別",
+  "jsonTree.column.value": "內容",
   "jsonTree.new": "新增",
+  "jsonTree.newItem": "新項目",
   "jsonTree.keyPlaceholder": "欄位名稱",
   "jsonTree.type.string": "字串",
   "jsonTree.type.number": "數字",
@@ -413,7 +466,27 @@ const zhMessages: Record<string, string> = {
   "jsonTree.confirm": "確認",
   "jsonTree.cancel": "取消",
   "jsonTree.add": "新增",
+  "jsonTree.addField": "新增欄位",
+  "jsonTree.addArrayItem": "新增項目",
+  "jsonTree.addFieldTo": "在 {label} 新增欄位",
+  "jsonTree.addItemTo": "在 {label} 新增項目",
   "jsonTree.remove": "移除",
+  "jsonTree.removeNode": "移除 {label}",
+  "jsonTree.fieldCount": "{count} 個欄位",
+  "jsonTree.itemCount": "{count} 個項目",
+  "jsonTree.valueFor": "{label} 的值",
+  "jsonTree.fieldName": "欄位名稱",
+  "jsonTree.typeForNewField": "新欄位的型別",
+  "jsonTree.typeForNewItem": "新項目的型別",
+  "jsonTree.valueForNewField": "新欄位的值",
+  "jsonTree.valueForNewItem": "新項目的值",
+  "jsonTree.saveField": "儲存欄位",
+  "jsonTree.saveItem": "儲存項目",
+  "jsonTree.cancelNew": "取消新增",
+  "jsonTree.removed": "已移除 {label}",
+  "jsonTree.undo": "復原",
+  "jsonTree.expand": "展開 {key}",
+  "jsonTree.collapse": "收合 {key}",
   "label.fileType.image": "圖片",
   "label.fileType.pdf": "PDF",
   "label.fileType.csv": "CSV",
@@ -512,6 +585,8 @@ const zhMessages: Record<string, string> = {
   "tool.json-to-csv.faq.1.answer": "目前會以簡化方式展平巢狀欄位。",
   "tool.json-to-csv.label.inputSourceText": "貼上 / 編輯 JSON 文字",
   "tool.json-to-csv.label.inputSourceFile": "上傳 JSON 檔案",
+  "tool.json-to-csv.validation.invalidJson": "JSON 格式無效，請修正語法後再試一次。",
+  "tool.json-to-csv.validation.arrayRequired": "JSON 最外層必須是物件陣列。",
   "tool.json-formatter.how.0": "選擇輸入來源：貼上 JSON 或上傳 JSON 檔。",
   "tool.json-formatter.how.1": "選擇格式化或最小化。",
   "tool.json-formatter.how.2": "可用文字編輯器或樹狀編輯器調整。",
@@ -521,13 +596,19 @@ const zhMessages: Record<string, string> = {
   "tool.json-formatter.mode.minify": "最小化",
   "tool.json-formatter.parseError": "JSON 解析失敗。\\n行號: {line}\\n欄位: {column}\\n資訊: {message}",
   "tool.json-formatter.faq.0.question": "會顯示什麼錯誤訊息？",
-  "tool.json-formatter.faq.0.answer": "解析失敗時會在錯誤區顯示行數與欄位。",
+  "tool.json-formatter.faq.0.answer": "解析失敗時會顯示解析器回傳的錯誤；若能可靠定位，也會附上行數與欄位。",
   "tool.json-formatter.faq.1.question": "可以直接編輯 JSON 嗎？",
   "tool.json-formatter.faq.1.answer": "可以。文字模式輸入原始 JSON，樹狀模式用節點方式編輯。",
   "tool.json-formatter.label.inputSourceText": "貼上 / 編輯 JSON 文字",
   "tool.json-formatter.label.inputSourceFile": "上傳 JSON 檔案",
   "tool.json-formatter.label.editorText": "文字編輯器",
   "tool.json-formatter.label.editorTree": "樹狀編輯器",
+  "tool.json-formatter.label.jsonInput": "JSON 輸入",
+  "tool.json-formatter.action.loadSample": "載入範例",
+  "tool.json-formatter.validation.invalid": "JSON 格式無效（第 {line} 行、第 {column} 欄）：{message}",
+  "tool.json-formatter.validation.invalidWithoutPosition": "JSON 格式無效：{message}",
+  "tool.json-formatter.validation.largeInput": "大型輸入：將在你按下處理時執行驗證。",
+  "tool.json-formatter.shortcut": "快捷鍵：Ctrl / ⌘ + Enter",
   "tool.json-formatter.label.mode": "模式",
   "tool.json-formatter.label.noPreview": "目前沒有輸出。",
   "tool.json-formatter.label.treeParseError": "樹狀編輯器解析失敗。請切回文字編輯器修正語法後再試。",
@@ -616,6 +697,7 @@ const zhMessages: Record<string, string> = {
   "tool.qr-code.faq.1.answer": "目前第一階段僅提供 PNG 下載。",
   "tool.qr-code.label.noDropzone": "文字輸入工具不需要拖放區。",
   "tool.qr-code.label.noPreview": "完成後可預覽。",
+  "tool.qr-code.label.preview": "QR Code 預覽",
   "tool.qr-code.label.sizePixel": "{size} 像素",
   "tool.qr-code.label.generateButton": "產生",
   "tool.qr-code.label.errorCorrection": "錯誤修正等級",
@@ -646,7 +728,7 @@ const zhMessages: Record<string, string> = {
   "tool.jwt-decoder.faq.1.question": "資料會上傳到伺服器嗎？",
   "tool.jwt-decoder.faq.1.answer": "不會，解析完全在本機完成。",
   "tool.jwt-decoder.error.noToken": "請先輸入 JWT Token。",
-  "tool.jwt-decoder.error.decodeFailed": "解碼失敗，請確認 Token 格式。",
+  "tool.jwt-decoder.error.decodeFailed": "JWT 格式無效，請確認權杖包含標頭、載荷與簽章三個區段。",
   "tool.jwt-decoder.label.token": "JWT 權杖",
   "tool.jwt-decoder.label.decodeButton": "解碼",
   "tool.jwt-decoder.label.expiresAt": "過期時間：{time}（Unix: {unix}）",
@@ -670,8 +752,19 @@ const enMessages: Record<string, string> = {
 
   "header.title": "NexaForge",
   "header.subtitle": "For students, creators, analysts, and builders who process files all day.",
+  "header.tools": "Tools",
+  "header.openTools": "Open tools navigation",
+  "header.closeTools": "Close tools navigation",
+  "skip.toMain": "Skip to main content",
+  "route.loading": "Loading workspace…",
+  "seo.homeTitle": "NexaForge | Private browser file and developer tools",
+  "seo.localSuffix": "Everything is processed locally in your browser and is never uploaded to a NexaForge server.",
+  "notFound.title": "Page not found",
+  "notFound.description": "This address does not exist. Return to NexaForge to choose an available tool.",
+  "notFound.returnHome": "Return home",
 
   "sidebar.home": "Home",
+  "sidebar.navigation": "Tools navigation",
   "sidebar.searchLabel": "Tool search",
   "sidebar.searchPlaceholder": "Search tool name, e.g. Image or JSON",
   "sidebar.sectionTitle": "Tool navigation",
@@ -754,6 +847,7 @@ const enMessages: Record<string, string> = {
   "tool.image-remove-exif.description": "Strip JPEG EXIF metadata without uploading your photo.",
   "tool.pdf-merge.title": "PDF Merge",
   "tool.pdf-merge.description": "Merge many PDF files and download a single file.",
+  "tool.pdf-merge.error.minimumFiles": "Select at least two PDF files.",
   "pdfMerge.fileOrderLabel": "PDF file order",
   "pdfMerge.dragHandle": "Drag to reorder",
   "pdfMerge.moveUp": "Move up",
@@ -829,6 +923,7 @@ const enMessages: Record<string, string> = {
   "tool.text-diff.faq.1.answer": "It works in-browser first; for very large texts, consider chunking before compare.",
   "tool.markdown-previewer.title": "Markdown Preview",
   "tool.markdown-previewer.description": "Preview Markdown in real-time with support for headings, lists, links, and code blocks.",
+  "tool.markdown-previewer.sample": "## Markdown Preview\n\nType some Markdown here and watch it render instantly.\n\n- Use lists\n- Add **bold**\n- Add `inline code`\n\n```ts\nconsole.log(\"hello\");\n```\n",
   "tool.markdown-previewer.label.input": "Markdown input",
   "tool.markdown-previewer.label.preview": "Preview",
   "tool.markdown-previewer.label.noOutput": "No markdown input yet.",
@@ -857,6 +952,8 @@ const enMessages: Record<string, string> = {
   "tool.json-diff.title": "JSON Diff",
   "tool.json-diff.description": "Compare two JSON documents and inspect their changes.",
   "developerTools.input": "Input",
+  "developerTools.jsonInput": "JSON input",
+  "developerTools.yamlInput": "YAML input",
   "developerTools.leftInput": "Left JSON",
   "developerTools.rightInput": "Right JSON",
   "developerTools.output": "Output",
@@ -883,6 +980,8 @@ const enMessages: Record<string, string> = {
   "home.eyebrow": "Your file operations desk",
   "home.primaryCta": "Start with a file",
   "home.secondaryCta": "Explore popular tools",
+  "home.primaryJsonCta": "Format JSON",
+  "home.allJsonTools": "All JSON tools",
   "home.proofLabel": "How NexaForge works",
   "home.proof.local": "Files stay on your device",
   "home.proof.formats": "PDF, image, and JSON workflows",
@@ -896,6 +995,10 @@ const enMessages: Record<string, string> = {
   "home.searchLabel": "Search Tools",
   "home.searchPlaceholder": "Image, PDF, JSON...",
   "home.popular": "Popular Tools",
+  "home.jsonWorkflows": "JSON workflows",
+  "home.jsonWorkflowsSubtitle": "Start with formatting, comparison, and data conversion workflows.",
+  "home.otherTools": "Other tools",
+  "home.searchResults": "Search results",
   "home.open": "Open tool",
   "home.categories.Image": "Image",
   "home.categories.PDF": "PDF",
@@ -912,6 +1015,16 @@ const enMessages: Record<string, string> = {
   "home.recentTools": "Recent Tools",
   "home.recentToolsCount": "{count} tools",
   "home.clearRecentTools": "Clear recent tools",
+  "jsonHub.title": "JSON Workspace",
+  "jsonHub.description": "Format, validate, compare, and convert JSON from one focused developer workspace.",
+  "jsonHub.eyebrow": "JSON-FIRST DEVELOPER TOOLS",
+  "jsonHub.localTitle": "Processed locally",
+  "jsonHub.localDescription": "Your JSON, CSV, and YAML content is never uploaded to a NexaForge server.",
+  "jsonHub.taskEyebrow": "CHOOSE A TASK",
+  "jsonHub.taskTitle": "What do you need to do with JSON?",
+  "jsonHub.open": "Open tool",
+  "jsonWorkspace.aria": "JSON workspace",
+  "jsonWorkspace.kicker": "JSON workspace",
 
   "toolPage.workspace": "Tool Workspace",
   "toolPage.options": "Options",
@@ -986,9 +1099,17 @@ const enMessages: Record<string, string> = {
   "label.noPreviewPlaceholder": "No preview yet.",
   "label.previewSize": "Preview",
   "jsonTree.ariaLabel": "JSON tree editor",
-  "jsonTree.pasteHint": "Paste JSON directly",
+  "jsonTree.title": "Document structure",
+  "jsonTree.pasteHint": "Paste complete JSON on the canvas to replace this document",
   "jsonTree.rootLabel": "JSON",
+  "jsonTree.rootMeta.object": "{count} root fields",
+  "jsonTree.rootMeta.array": "{count} root items",
+  "jsonTree.rootMeta.value": "Single value",
+  "jsonTree.column.key": "Key",
+  "jsonTree.column.type": "Type",
+  "jsonTree.column.value": "Value",
   "jsonTree.new": "New",
+  "jsonTree.newItem": "New item",
   "jsonTree.keyPlaceholder": "Key",
   "jsonTree.type.string": "string",
   "jsonTree.type.number": "number",
@@ -1004,7 +1125,27 @@ const enMessages: Record<string, string> = {
   "jsonTree.confirm": "Confirm",
   "jsonTree.cancel": "Cancel",
   "jsonTree.add": "Add",
+  "jsonTree.addField": "Add field",
+  "jsonTree.addArrayItem": "Add item",
+  "jsonTree.addFieldTo": "Add field to {label}",
+  "jsonTree.addItemTo": "Add item to {label}",
   "jsonTree.remove": "Remove",
+  "jsonTree.removeNode": "Remove {label}",
+  "jsonTree.fieldCount": "{count} fields",
+  "jsonTree.itemCount": "{count} items",
+  "jsonTree.valueFor": "Value for {label}",
+  "jsonTree.fieldName": "Field name",
+  "jsonTree.typeForNewField": "Type for new field",
+  "jsonTree.typeForNewItem": "Type for new item",
+  "jsonTree.valueForNewField": "Value for new field",
+  "jsonTree.valueForNewItem": "Value for new item",
+  "jsonTree.saveField": "Save field",
+  "jsonTree.saveItem": "Save item",
+  "jsonTree.cancelNew": "Cancel new item",
+  "jsonTree.removed": "Removed {label}",
+  "jsonTree.undo": "Undo",
+  "jsonTree.expand": "Expand {key}",
+  "jsonTree.collapse": "Collapse {key}",
   "label.fileType.image": "Image",
   "label.fileType.pdf": "PDF",
   "label.fileType.csv": "CSV",
@@ -1123,6 +1264,8 @@ const enMessages: Record<string, string> = {
   "tool.json-to-csv.faq.1.answer": "Nested values are flattened poorly in this first version.",
   "tool.json-to-csv.label.inputSourceText": "Paste / edit JSON text",
   "tool.json-to-csv.label.inputSourceFile": "Upload JSON file",
+  "tool.json-to-csv.validation.invalidJson": "Invalid JSON. Fix the syntax and try again.",
+  "tool.json-to-csv.validation.arrayRequired": "JSON must be a top-level array of objects.",
   "tool.json-formatter.how.0": "Choose input source: paste JSON text or upload a JSON file.",
   "tool.json-formatter.how.1": "Choose Format or Minify.",
   "tool.json-formatter.how.2": "Use Text or Tree editor for nested JSON editing.",
@@ -1132,13 +1275,19 @@ const enMessages: Record<string, string> = {
   "tool.json-formatter.mode.minify": "Minify",
   "tool.json-formatter.parseError": "JSON parse failed.\\nline: {line}\\ncolumn: {column}\\nmessage: {message}",
   "tool.json-formatter.faq.0.question": "What error detail is shown?",
-  "tool.json-formatter.faq.0.answer": "A parse error shows line and column when parsing fails.",
+  "tool.json-formatter.faq.0.answer": "Parse failures show the parser message and include line and column when a reliable location is available.",
   "tool.json-formatter.faq.1.question": "Can I edit JSON directly?",
   "tool.json-formatter.faq.1.answer": "Yes. Use Text mode for raw JSON or Tree mode for structured node editing.",
   "tool.json-formatter.label.inputSourceText": "Paste / edit JSON text",
   "tool.json-formatter.label.inputSourceFile": "Upload JSON file",
   "tool.json-formatter.label.editorText": "Text editor",
   "tool.json-formatter.label.editorTree": "Tree editor",
+  "tool.json-formatter.label.jsonInput": "JSON input",
+  "tool.json-formatter.action.loadSample": "Load sample",
+  "tool.json-formatter.validation.invalid": "Invalid JSON at line {line}, column {column}: {message}",
+  "tool.json-formatter.validation.invalidWithoutPosition": "Invalid JSON: {message}",
+  "tool.json-formatter.validation.largeInput": "Large input: validation will run when you process.",
+  "tool.json-formatter.shortcut": "Shortcut: Ctrl / ⌘ + Enter",
   "tool.json-formatter.label.mode": "Mode",
   "tool.json-formatter.label.noPreview": "No preview.",
   "tool.json-formatter.label.treeParseError": "Failed to parse JSON text. Please switch to text editor and fix syntax, then retry Tree editor.",
@@ -1227,6 +1376,7 @@ const enMessages: Record<string, string> = {
   "tool.qr-code.faq.1.answer": "First phase supports PNG download only.",
   "tool.qr-code.label.noDropzone": "Dropzone is not required for text input tools.",
   "tool.qr-code.label.noPreview": "Generate to preview.",
+  "tool.qr-code.label.preview": "QR Code preview",
   "tool.qr-code.label.sizePixel": "{size}px",
   "tool.qr-code.label.generateButton": "Generate",
   "tool.qr-code.label.errorCorrection": "Error correction level",
@@ -1257,7 +1407,7 @@ const enMessages: Record<string, string> = {
   "tool.jwt-decoder.faq.1.question": "Will data be uploaded?",
   "tool.jwt-decoder.faq.1.answer": "No. Decoding is fully local.",
   "tool.jwt-decoder.error.noToken": "Please enter JWT token.",
-  "tool.jwt-decoder.error.decodeFailed": "Unable to decode token.",
+  "tool.jwt-decoder.error.decodeFailed": "Invalid JWT format. Make sure the token includes header, payload, and signature segments.",
   "tool.jwt-decoder.label.token": "JWT Token",
   "tool.jwt-decoder.label.decodeButton": "Decode",
   "tool.jwt-decoder.label.expiresAt": "Expires at: {time} (Unix: {unix})",
@@ -1286,10 +1436,23 @@ function renderTemplate(template: string, params?: Record<string, string | numbe
   });
 }
 
+export function translate(
+  locale: Locale,
+  key: string,
+  params?: Record<string, string | number>
+): string {
+  const raw = DICTIONARY[locale][key] ?? DICTIONARY.en[key] ?? key;
+  return renderTemplate(raw, params);
+}
+
 const LanguageContext = createContext<LanguageContextValue | null>(null);
 
-export function LanguageProvider({ children }: PropsWithChildren): JSX.Element {
-  const [locale, setLocaleValue] = useState<Locale>(readInitialLocale);
+interface LanguageProviderProps extends PropsWithChildren {
+  initialLocale?: Locale;
+}
+
+export function LanguageProvider({ children, initialLocale }: LanguageProviderProps): JSX.Element {
+  const [locale, setLocaleValue] = useState<Locale>(() => readInitialLocale(initialLocale));
   const setLocale = useCallback((next: Locale) => {
     const normalized = normalizeLocale(next);
     setLocaleValue(normalized);
@@ -1303,10 +1466,7 @@ export function LanguageProvider({ children }: PropsWithChildren): JSX.Element {
   }, [locale]);
 
   const t = (key: string, params?: Record<string, string | number>) => {
-    const localeDict = DICTIONARY[locale];
-    const nextLocaleDict = DICTIONARY.en;
-    const raw = localeDict[key] ?? nextLocaleDict[key] ?? key;
-    return renderTemplate(raw, params);
+    return translate(locale, key, params);
   };
 
   const value = useMemo(

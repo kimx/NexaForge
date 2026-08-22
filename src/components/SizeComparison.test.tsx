@@ -5,7 +5,7 @@ import { SizeComparison } from "./SizeComparison";
 describe("SizeComparison", () => {
   it("shows original, output, and saved sizes", () => {
     render(
-      <LanguageProvider>
+      <LanguageProvider initialLocale="en">
         <SizeComparison originalSize={2048} outputSize={1024} />
       </LanguageProvider>
     );

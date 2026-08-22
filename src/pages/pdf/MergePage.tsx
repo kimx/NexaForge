@@ -13,9 +13,10 @@ import { useSeo } from "../../hooks/useSeo";
 import { validateFileSize, validateMime } from "../../utils/validation";
 import { useLanguage } from "../../context/LanguageContext";
 import { formatFileSize } from "../../utils/fileSize";
+import { localizePath } from "../../routing/localePaths";
 
 export function PdfMergePage(): JSX.Element {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const [files, setFiles] = useState<File[]>([]);
   const [processing, setProcessing] = useState<ProcessingState>("idle");
   const [result, setResult] = useState<FileProcessResult | null>(null);
@@ -119,8 +120,8 @@ export function PdfMergePage(): JSX.Element {
   };
 
   const handleProcess = async () => {
-    if (!files.length) {
-      setError(t("error.selectOneFile", { type: t("label.fileType.file") }));
+    if (files.length < 2) {
+      setError(t("tool.pdf-merge.error.minimumFiles"));
       return;
     }
     const invalid = files.find((file) => {
@@ -222,7 +223,7 @@ export function PdfMergePage(): JSX.Element {
               type="button"
               className="btn primary"
               onClick={handleProcess}
-              disabled={processing === "processing"}
+              disabled={files.length < 2 || processing === "processing"}
               aria-busy={processing === "processing"}
             >
               {processing === "processing" ? t("button.processing") : t("button.process")}
@@ -236,18 +237,20 @@ export function PdfMergePage(): JSX.Element {
         ),
         nextActions: (
           <>
-            <DownloadButton
-              result={result}
-              disabled={processing === "processing"}
-              onDownloaded={() => {
-                trackEvent("download", { tool: "pdf-merge" });
-                trackEvent("result_action_used", { tool: "pdf-merge", action: "download" });
-              }}
-            />
-            <Link className="btn secondary" to="/pdf/rotate" onClick={() => trackEvent("result_action_used", { tool: "pdf-merge", action: "rotate" })}>
+            {result ? (
+              <DownloadButton
+                result={result}
+                disabled={processing === "processing"}
+                onDownloaded={() => {
+                  trackEvent("download", { tool: "pdf-merge" });
+                  trackEvent("result_action_used", { tool: "pdf-merge", action: "download" });
+                }}
+              />
+            ) : null}
+            <Link className="btn secondary" to={localizePath("/pdf/rotate", locale)} onClick={() => trackEvent("result_action_used", { tool: "pdf-merge", action: "rotate" })}>
               {t("toolPage.nextRotate")}
             </Link>
-            <Link className="btn secondary" to="/pdf/split" onClick={() => trackEvent("result_action_used", { tool: "pdf-merge", action: "split" })}>
+            <Link className="btn secondary" to={localizePath("/pdf/split", locale)} onClick={() => trackEvent("result_action_used", { tool: "pdf-merge", action: "split" })}>
               {t("toolPage.nextSplit")}
             </Link>
           </>

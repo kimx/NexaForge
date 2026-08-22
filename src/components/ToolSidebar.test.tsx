@@ -4,6 +4,19 @@ import { LanguageProvider } from "../context/LanguageContext";
 import { ToolSidebar } from "./ToolSidebar";
 
 describe("ToolSidebar", () => {
+  it("exposes a localized navigation name instead of a raw translation key", () => {
+    render(
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+        <LanguageProvider>
+          <ToolSidebar />
+        </LanguageProvider>
+      </MemoryRouter>
+    );
+
+    expect(screen.getByRole("navigation", { name: /tools navigation|工具導覽/i })).toBeInTheDocument();
+    expect(screen.queryByLabelText("sidebar.navigation")).not.toBeInTheDocument();
+  });
+
   it("expands the category containing the active tool", () => {
     render(
       <MemoryRouter initialEntries={["/data/json-formatter"]}>

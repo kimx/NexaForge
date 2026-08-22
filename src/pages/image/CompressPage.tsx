@@ -148,7 +148,7 @@ export function ImageCompressPage(): JSX.Element {
             <button
               type="button"
               className="btn primary"
-              disabled={processing === "processing"}
+              disabled={!files.length || processing === "processing"}
               aria-busy={processing === "processing"}
               onClick={handleProcess}
             >
@@ -171,11 +171,13 @@ export function ImageCompressPage(): JSX.Element {
             ) : (
               <p>{t("label.noResult")}</p>
             )}
-            <DownloadButton
-              result={result}
-              disabled={processing === "processing"}
-              onDownloaded={() => trackEvent("download", { tool: "image-compress" })}
-            />
+            {result ? (
+              <DownloadButton
+                result={result}
+                disabled={processing === "processing"}
+                onDownloaded={() => trackEvent("download", { tool: "image-compress" })}
+              />
+            ) : null}
           </>
         ),
         howItWorks,

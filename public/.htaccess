@@ -1,8 +1,8 @@
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /
-  RewriteRule ^index\.html$ - [L]
-  RewriteCond %{REQUEST_FILENAME} !-f
-  RewriteCond %{REQUEST_FILENAME} !-d
-  RewriteRule ^.*$ /index.html [L]
+  RewriteRule ^text/base64/?$ /developer/base64 [R=301,L]
+  RewriteRule ^en/text/base64/?$ /en/developer/base64 [R=301,L]
 </IfModule>
+
+ErrorDocument 404 /404.html

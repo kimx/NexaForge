@@ -1,21 +1,17 @@
 import React from "react";
-import ReactDOM from "react-dom/client";
+import { createRoot, hydrateRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import App from "./App";
 import "./styles.css";
 import { LanguageProvider } from "./context/LanguageContext";
+import { canHydratePrerenderedRoot } from "./routing/hydration";
 
-const REDIRECT_KEY = "browser-file-tools:restore-route";
-
-if (typeof window !== "undefined") {
-  const restoreRoute = window.sessionStorage.getItem(REDIRECT_KEY);
-  if (restoreRoute) {
-    window.history.replaceState({}, "", restoreRoute);
-    window.sessionStorage.removeItem(REDIRECT_KEY);
-  }
+const rootElement = document.getElementById("root");
+if (!rootElement) {
+  throw new Error("NexaForge root element was not found.");
 }
 
-ReactDOM.createRoot(document.getElementById("root")!).render(
+const app = (
   <React.StrictMode>
     <BrowserRouter>
       <LanguageProvider>
@@ -24,3 +20,16 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
     </BrowserRouter>
   </React.StrictMode>
 );
+
+if (
+  canHydratePrerenderedRoot({
+    hasContent: rootElement.hasChildNodes(),
+    prerenderPath: rootElement.dataset.prerenderPath,
+    currentPath: window.location.pathname,
+  })
+) {
+  hydrateRoot(rootElement, app);
+} else {
+  rootElement.replaceChildren();
+  createRoot(rootElement).render(app);
+}

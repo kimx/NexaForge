@@ -9,7 +9,7 @@ import { useLanguage } from "../../context/LanguageContext";
 
 export function MarkdownPreviewPage(): JSX.Element {
   const { t } = useLanguage();
-  const [markdown, setMarkdown] = useState("# Markdown Preview\n\nType some Markdown here and watch it render instantly.\n\n- Use lists\n- Add **bold**\n- Add `inline code`\n\n```ts\nconsole.log(\"hello\");\n```\n");
+  const [markdown, setMarkdown] = useState(() => t("tool.markdown-previewer.sample"));
   const [copyError, setCopyError] = useState<string | null>(null);
   const tool = FILE_TOOLS.find((item) => item.id === "markdown-previewer");
   const title = t("tool.markdown-previewer.title");

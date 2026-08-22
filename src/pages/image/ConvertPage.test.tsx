@@ -1,30 +1,34 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
-import type { ReactElement } from "react";
+import { fireEvent, screen, waitFor } from "@testing-library/react";
 import { vi } from "vitest";
 import { ImageConvertPage } from "./ConvertPage";
 import * as imageService from "../../services/image/imageService";
 import type { FileProcessResult } from "../../types/tool";
+import { renderWithProviders } from "../../test/renderWithProviders";
 
 afterEach(() => {
   vi.restoreAllMocks();
 });
 
-function renderWithRouter(ui: ReactElement): ReturnType<typeof render> {
-  return render(
-    <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-      {ui}
-    </MemoryRouter>
-  );
-}
-
 describe("ImageConvertPage", () => {
+  it("enables processing only after an image is selected", () => {
+    const { container } = renderWithProviders(<ImageConvertPage />);
+    const action = screen.getByRole("button", { name: "Process" });
+    expect(action).toBeDisabled();
+
+    fireEvent.change(container.querySelector('input[type="file"]') as HTMLInputElement, {
+      target: { files: [new File(["abc"], "sample.png", { type: "image/png" })] },
+    });
+
+    expect(action).toBeEnabled();
+    expect(screen.queryByRole("button", { name: "Download" })).not.toBeInTheDocument();
+  });
+
   it("disables process button while conversion is in progress", async () => {
     const convertSpy = vi
       .spyOn(imageService, "convertImage")
       .mockImplementation(() => new Promise<FileProcessResult>(() => {}));
 
-    const { container } = renderWithRouter(<ImageConvertPage />);
+    const { container } = renderWithProviders(<ImageConvertPage />);
     const input = container.querySelector('input[type="file"]') as HTMLInputElement;
     const file = new File(["abc"], "sample.png", { type: "image/png" });
     fireEvent.change(input, { target: { files: [file] } });
@@ -44,7 +48,7 @@ describe("ImageConvertPage", () => {
     const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
     vi.spyOn(imageService, "convertImage").mockRejectedValue(new Error("failure"));
 
-    const { container } = renderWithRouter(<ImageConvertPage />);
+    const { container } = renderWithProviders(<ImageConvertPage />);
     const input = container.querySelector('input[type="file"]') as HTMLInputElement;
     const file = new File(["abc"], "sample.png", { type: "image/png" });
     fireEvent.change(input, { target: { files: [file] } });
@@ -57,4 +61,3 @@ describe("ImageConvertPage", () => {
     consoleError.mockRestore();
   });
 });
-

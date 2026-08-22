@@ -1,8 +1,16 @@
-import { ChangeEvent, useEffect, useMemo, useState } from "react";
+import {
+  type ChangeEvent,
+  type KeyboardEvent,
+  type RefObject,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { FILE_TOOLS } from "../data/tools";
 import type { ToolDefinition } from "../types/tool";
 import { localizedCategoryLabel, useLanguage, useLocalizedToolMeta } from "../context/LanguageContext";
+import { localizePath, stripLocalePrefix } from "../routing/localePaths";
 
 const categoryOrder: ToolDefinition["category"][] = [
   "Data",
@@ -48,11 +56,32 @@ function getToolIcon(toolId: string): string {
   return "•";
 }
 
-export function ToolSidebar(): JSX.Element {
-  const { t } = useLanguage();
+interface ToolSidebarProps {
+  isMobile?: boolean;
+  isOpen?: boolean;
+  onClose?: () => void;
+  closeButtonRef?: RefObject<HTMLButtonElement>;
+}
+
+const FOCUSABLE_SELECTOR = [
+  "a[href]",
+  "button:not([disabled])",
+  "input:not([disabled])",
+  "select:not([disabled])",
+  "textarea:not([disabled])",
+  '[tabindex]:not([tabindex="-1"])',
+].join(",");
+
+export function ToolSidebar({
+  isMobile = false,
+  isOpen = true,
+  onClose,
+  closeButtonRef,
+}: ToolSidebarProps): JSX.Element | null {
+  const { t, locale } = useLanguage();
   const localToolMeta = useLocalizedToolMeta();
   const { pathname } = useLocation();
-  const activeCategory = FILE_TOOLS.find((tool) => tool.path === pathname)?.category;
+  const activeCategory = FILE_TOOLS.find((tool) => tool.path === stripLocalePrefix(pathname))?.category;
   const [keyword, setKeyword] = useState("");
   const [expandedCategories, setExpandedCategories] = useState<Set<ToolDefinition["category"]>>(
     () => new Set(activeCategory ? [activeCategory] : [])
@@ -120,10 +149,69 @@ export function ToolSidebar(): JSX.Element {
     });
   };
 
+  const handleKeyDown = (event: KeyboardEvent<HTMLElement>) => {
+    if (!isMobile) {
+      return;
+    }
+
+    if (event.key === "Escape") {
+      event.preventDefault();
+      onClose?.();
+      return;
+    }
+
+    if (event.key !== "Tab") {
+      return;
+    }
+
+    const focusable = Array.from(
+      event.currentTarget.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)
+    ).filter((element) => !element.hidden && element.getAttribute("aria-hidden") !== "true");
+    const first = focusable[0];
+    const last = focusable.at(-1);
+
+    if (!first || !last) {
+      return;
+    }
+
+    if (event.shiftKey && (document.activeElement === first || !event.currentTarget.contains(document.activeElement))) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  };
+
+  if (isMobile && !isOpen) {
+    return null;
+  }
+
   return (
-    <aside className="tool-sidebar" aria-label={t("sidebar.aria")}>
+    <aside
+      id="tool-sidebar"
+      className={`tool-sidebar${isMobile ? " tool-sidebar--drawer tool-sidebar--open" : ""}`}
+      role={isMobile ? "dialog" : undefined}
+      aria-modal={isMobile ? "true" : undefined}
+      aria-label={isMobile ? t("sidebar.navigation") : t("sidebar.aria")}
+      onKeyDown={handleKeyDown}
+    >
       <div className="tool-sidebar__content">
-        <Link to="/" className="tool-sidebar__brand">
+        {isMobile ? (
+          <div className="tool-sidebar__mobile-header">
+            <strong>NexaForge</strong>
+            <button
+              ref={closeButtonRef}
+              type="button"
+              className="tool-sidebar__close"
+              aria-label={t("header.closeTools")}
+              onClick={onClose}
+            >
+              <span aria-hidden="true">×</span>
+            </button>
+          </div>
+        ) : null}
+        <Link to={localizePath("/", locale)} className="tool-sidebar__brand" onClick={isMobile ? onClose : undefined}>
           <span className="tool-sidebar__brand-mark" aria-hidden="true">
             NF
           </span>
@@ -147,7 +235,12 @@ export function ToolSidebar(): JSX.Element {
         </div>
 
         <nav className="tool-sidebar__nav" aria-label={t("sidebar.navigation")}>
-          <NavLink to="/" className={({ isActive }) => `tool-sidebar__link ${isActive ? "is-active" : ""}`}>
+          <NavLink
+            to={localizePath("/", locale)}
+            end
+            className={({ isActive }) => `tool-sidebar__link ${isActive ? "is-active" : ""}`}
+            onClick={isMobile ? onClose : undefined}
+          >
             <span className="tool-sidebar__icon" aria-hidden="true">
               {getToolIcon("home")}
             </span>
@@ -178,9 +271,10 @@ export function ToolSidebar(): JSX.Element {
                     {FILE_TOOLS.filter((tool) => tool.category === category).map((tool) => (
                       <li key={tool.id}>
                         <NavLink
-                          to={tool.path}
+                          to={localizePath(tool.path, locale)}
                           title={localToolMeta(tool.id, "title")}
                           className={({ isActive }) => `tool-sidebar__link ${isActive ? "is-active" : ""}`}
+                          onClick={isMobile ? onClose : undefined}
                         >
                           <span className="tool-sidebar__icon" aria-hidden="true">{getToolIcon(tool.id)}</span>
                           <span className="tool-sidebar__label">{localToolMeta(tool.id, "title")}</span>
@@ -207,9 +301,10 @@ export function ToolSidebar(): JSX.Element {
                 {tools.map((tool) => (
                   <li key={tool.id}>
                     <NavLink
-                      to={tool.path}
+                      to={localizePath(tool.path, locale)}
                       title={localToolMeta(tool.id, "title")}
                       className={({ isActive }) => `tool-sidebar__link ${isActive ? "is-active" : ""}`}
+                      onClick={isMobile ? onClose : undefined}
                     >
                       <span className="tool-sidebar__icon" aria-hidden="true">
                         {getToolIcon(tool.id)}

@@ -1,30 +1,39 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
-import type { ReactElement } from "react";
+import { fireEvent, screen, waitFor } from "@testing-library/react";
 import { vi } from "vitest";
 import { PdfMergePage } from "./MergePage";
 import * as pdfService from "../../services/pdf/pdfService";
 import type { FileProcessResult } from "../../types/tool";
+import { renderWithProviders } from "../../test/renderWithProviders";
 
 afterEach(() => {
   vi.restoreAllMocks();
 });
 
-function renderWithRouter(ui: ReactElement): ReturnType<typeof render> {
-  return render(
-    <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-      {ui}
-    </MemoryRouter>
-  );
-}
-
 describe("PdfMergePage", () => {
+  it("requires at least two PDF files before merging", () => {
+    const { container } = renderWithProviders(<PdfMergePage />);
+    const input = container.querySelector('input[type="file"]') as HTMLInputElement;
+    const action = screen.getByRole("button", { name: "Process" });
+    expect(action).toBeDisabled();
+
+    fireEvent.change(input, {
+      target: { files: [new File(["%PDF-1.4"], "a.pdf", { type: "application/pdf" })] },
+    });
+    expect(action).toBeDisabled();
+
+    fireEvent.change(input, {
+      target: { files: [new File(["%PDF-1.4"], "b.pdf", { type: "application/pdf" })] },
+    });
+    expect(action).toBeEnabled();
+    expect(screen.queryByRole("button", { name: "Download" })).not.toBeInTheDocument();
+  });
+
   it("disables process button while merge is in progress", async () => {
     const mergeSpy = vi
       .spyOn(pdfService, "mergePdf")
       .mockImplementation(() => new Promise<FileProcessResult>(() => {}));
 
-    const { container } = renderWithRouter(<PdfMergePage />);
+    const { container } = renderWithProviders(<PdfMergePage />);
     const input = container.querySelector("input[type=\"file\"]") as HTMLInputElement;
     const fileA = new File(["%PDF-1.4"], "a.pdf", { type: "application/pdf" });
     const fileB = new File(["%PDF-1.4"], "b.pdf", { type: "application/pdf" });
@@ -44,7 +53,7 @@ describe("PdfMergePage", () => {
     const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
     vi.spyOn(pdfService, "mergePdf").mockRejectedValue(new Error("failure"));
 
-    const { container } = renderWithRouter(<PdfMergePage />);
+    const { container } = renderWithProviders(<PdfMergePage />);
     const input = container.querySelector("input[type=\"file\"]") as HTMLInputElement;
     const fileA = new File(["%PDF-1.4"], "a.pdf", { type: "application/pdf" });
     const fileB = new File(["%PDF-1.4"], "b.pdf", { type: "application/pdf" });
@@ -58,4 +67,3 @@ describe("PdfMergePage", () => {
     consoleError.mockRestore();
   });
 });
-

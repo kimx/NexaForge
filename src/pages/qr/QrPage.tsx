@@ -132,7 +132,7 @@ export function QrPage(): JSX.Element {
           <>
             {processing === "error" && error && <p role="alert" className="error">{error}</p>}
             {result ? (
-              <img src={previewUrl} alt={t("label.preview")} />
+              <img src={previewUrl} alt={t("tool.qr-code.label.preview")} />
             ) : (
               <p>{t("tool.qr-code.label.noPreview")}</p>
             )}

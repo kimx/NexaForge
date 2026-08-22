@@ -1,9 +1,20 @@
 {
-  "navigationFallback": {
-    "rewrite": "/index.html",
-    "exclude": [
-      "/assets/*",
-      "/*.{css,js,map,png,jpg,jpeg,gif,svg,webp,ico,woff,woff2,ttf,eot,otf,txt,xml,webmanifest}"
-    ]
+  "routes": [
+    {
+      "route": "/text/base64",
+      "redirect": "/developer/base64",
+      "statusCode": 301
+    },
+    {
+      "route": "/en/text/base64",
+      "redirect": "/en/developer/base64",
+      "statusCode": 301
+    }
+  ],
+  "responseOverrides": {
+    "404": {
+      "rewrite": "/404.html",
+      "statusCode": 404
+    }
   }
 }

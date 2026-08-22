@@ -3,11 +3,23 @@ import { FileDropzone } from "./FileDropzone";
 import { LanguageProvider } from "../context/LanguageContext";
 
 describe("FileDropzone", () => {
+  it("uses the native file input as its only keyboard stop", () => {
+    const { container } = render(
+      <LanguageProvider initialLocale="en">
+        <FileDropzone label="Upload CSV" accept="text/csv" onFiles={vi.fn()} />
+      </LanguageProvider>
+    );
+
+    const dropzone = screen.getByLabelText(/file dropzone|檔案拖放區/i);
+    expect(dropzone).not.toHaveAttribute("tabindex");
+    expect(container.querySelectorAll('[tabindex="0"], input[type="file"]')).toHaveLength(1);
+  });
+
   it("accepts matching files via drop", () => {
     const onFiles = vi.fn();
     const onRejectedFiles = vi.fn();
 
-    render(<LanguageProvider><FileDropzone
+    render(<LanguageProvider initialLocale="en"><FileDropzone
       label="Upload CSV"
       accept="text/csv"
       onFiles={onFiles}
@@ -30,7 +42,7 @@ describe("FileDropzone", () => {
     const onFiles = vi.fn();
     const onRejectedFiles = vi.fn();
 
-    render(<LanguageProvider><FileDropzone
+    render(<LanguageProvider initialLocale="en"><FileDropzone
       label="Upload CSV"
       accept="text/csv"
       onFiles={onFiles}

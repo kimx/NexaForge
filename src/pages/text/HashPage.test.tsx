@@ -13,12 +13,23 @@ afterEach(() => {
 function renderWithRouter(ui: ReactElement): ReturnType<typeof render> {
   return render(
     <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-      <LanguageProvider>{ui}</LanguageProvider>
+      <LanguageProvider initialLocale="en">{ui}</LanguageProvider>
     </MemoryRouter>
   );
 }
 
 describe("HashPage", () => {
+  it("enables processing only after a file is selected", () => {
+    const { container } = renderWithRouter(<HashPage />);
+    const action = screen.getByRole("button", { name: "Process" });
+    expect(action).toBeDisabled();
+
+    fireEvent.change(container.querySelector('input[type="file"]') as HTMLInputElement, {
+      target: { files: [new File(["abc"], "sample.txt", { type: "text/plain" })] },
+    });
+    expect(action).toBeEnabled();
+  });
+
   it("shows error when hashing fails", async () => {
     const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
     vi.spyOn(textService, "hashText").mockRejectedValue(new Error("invalid"));

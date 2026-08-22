@@ -120,7 +120,7 @@ export function HashPage(): JSX.Element {
                 type="button"
                 className="btn primary"
                 onClick={handleProcess}
-                disabled={processing === "processing"}
+                disabled={!files.length || processing === "processing"}
                 aria-busy={processing === "processing"}
               >
                 {processing === "processing" ? t("button.processing") : t("button.process")}

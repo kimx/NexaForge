@@ -7,7 +7,7 @@ import { LanguageProvider } from "../../context/LanguageContext";
 function renderWithRouter(ui: ReactElement): ReturnType<typeof render> {
   return render(
     <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-      <LanguageProvider>{ui}</LanguageProvider>
+      <LanguageProvider initialLocale="en">{ui}</LanguageProvider>
     </MemoryRouter>
   );
 }
@@ -30,9 +30,13 @@ describe("jsonDiff", () => {
 });
 
 describe("DeveloperToolsPage JSON samples", () => {
+  beforeEach(() => {
+    window.localStorage.setItem("nexaforge-locale", "en");
+  });
+
   it("starts JSON to YAML with a processable JSON sample", () => {
     const { container } = renderWithRouter(<DeveloperToolsPage kind="json-yaml" />);
-    const input = screen.getByRole("textbox", { name: "Input" }) as HTMLTextAreaElement;
+    const input = screen.getByRole("textbox", { name: "JSON input" }) as HTMLTextAreaElement;
 
     expect(() => JSON.parse(input.value)).not.toThrow();
 
@@ -54,5 +58,49 @@ describe("DeveloperToolsPage JSON samples", () => {
 
     expect(container.querySelector(".developer-output")).toHaveTextContent("--- left");
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  });
+
+  it("associates invalid JSON-to-YAML input with its editor and clears it on correction", () => {
+    renderWithRouter(<DeveloperToolsPage kind="json-yaml" />);
+    const input = screen.getByRole("textbox", { name: "JSON input" });
+
+    fireEvent.change(input, { target: { value: '{"broken":}' } });
+    fireEvent.click(screen.getByRole("button", { name: "Process" }));
+
+    expect(input).toHaveAttribute("aria-invalid", "true");
+    const errorId = input.getAttribute("aria-describedby");
+    expect(errorId).toBeTruthy();
+    expect(document.getElementById(errorId ?? "")).toHaveTextContent(
+      "The input is invalid"
+    );
+    expect(input).toHaveValue('{"broken":}');
+
+    fireEvent.change(input, { target: { value: '{"fixed":true}' } });
+
+    expect(input).toHaveAttribute("aria-invalid", "false");
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  });
+
+  it("identifies the invalid side of a JSON diff", () => {
+    renderWithRouter(<DeveloperToolsPage kind="json-diff" />);
+    const left = screen.getByRole("textbox", { name: "Left JSON" });
+    const right = screen.getByRole("textbox", { name: "Right JSON" });
+
+    fireEvent.change(right, { target: { value: '{"broken":}' } });
+    fireEvent.click(screen.getByRole("button", { name: "Process" }));
+
+    expect(left).toHaveAttribute("aria-invalid", "false");
+    expect(right).toHaveAttribute("aria-invalid", "true");
+    expect(right).toHaveAttribute("aria-describedby");
+  });
+
+  it("disables the primary action when a required JSON input is empty", () => {
+    renderWithRouter(<DeveloperToolsPage kind="json-yaml" />);
+
+    fireEvent.change(screen.getByRole("textbox", { name: "JSON input" }), {
+      target: { value: "" },
+    });
+
+    expect(screen.getByRole("button", { name: "Process" })).toBeDisabled();
   });
 });

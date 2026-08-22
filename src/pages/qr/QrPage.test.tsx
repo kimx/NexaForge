@@ -1,9 +1,8 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
-import type { ReactElement } from "react";
+import { fireEvent, screen, waitFor } from "@testing-library/react";
 import { vi } from "vitest";
 import { QrPage } from "./QrPage";
 import * as qrService from "../../services/qr/qrService";
+import { renderWithProviders } from "../../test/renderWithProviders";
 
 const urlApi = globalThis.URL as unknown as {
   createObjectURL?: (blob: Blob) => string;
@@ -28,21 +27,13 @@ beforeEach(() => {
   urlApi.revokeObjectURL = vi.fn() as typeof urlApi.revokeObjectURL;
 });
 
-function renderWithRouter(ui: ReactElement): ReturnType<typeof render> {
-  return render(
-    <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-      {ui}
-    </MemoryRouter>
-  );
-}
-
 describe("QrPage", () => {
   it("disables generate button while generating", async () => {
     const generateSpy = vi
       .spyOn(qrService, "generateQrImage")
       .mockImplementation(() => new Promise(() => {}));
 
-    renderWithRouter(<QrPage />);
+    renderWithProviders(<QrPage />);
     fireEvent.click(screen.getByRole("button", { name: "Generate" }));
 
     await waitFor(() => {
@@ -58,7 +49,7 @@ describe("QrPage", () => {
     const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
     vi.spyOn(qrService, "generateQrImage").mockRejectedValue(new Error("failure"));
 
-    renderWithRouter(<QrPage />);
+    renderWithProviders(<QrPage />);
     fireEvent.click(screen.getByRole("button", { name: "Generate" }));
 
     await waitFor(() => {
@@ -76,7 +67,7 @@ describe("QrPage", () => {
       size: 9,
     });
 
-    renderWithRouter(<QrPage />);
+    renderWithProviders(<QrPage />);
     fireEvent.click(screen.getByRole("button", { name: "Generate" }));
 
     await waitFor(() => {

@@ -1,15 +1,53 @@
+import type { RefObject } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useLanguage, type Locale } from "../context/LanguageContext";
-import { Link } from "react-router-dom";
+import { localizePath } from "../routing/localePaths";
 
-export function Header(): JSX.Element {
+interface HeaderProps {
+  showToolsButton?: boolean;
+  toolsOpen?: boolean;
+  onOpenTools?: () => void;
+  toolsButtonRef?: RefObject<HTMLButtonElement>;
+}
+
+export function Header({
+  showToolsButton = false,
+  toolsOpen = false,
+  onOpenTools,
+  toolsButtonRef,
+}: HeaderProps): JSX.Element {
   const { t, locale, setLocale } = useLanguage();
+  const location = useLocation();
+  const navigate = useNavigate();
 
-  const switchLocale = (next: Locale) => setLocale(next);
+  const switchLocale = (next: Locale) => {
+    if (next === locale) {
+      return;
+    }
+    setLocale(next);
+    navigate(
+      localizePath(`${location.pathname}${location.search}${location.hash}`, next)
+    );
+  };
 
   return (
     <header className="site-header">
       <div className="top-banner">
-        <Link to="/" className="top-banner__home">
+        {showToolsButton ? (
+          <button
+            ref={toolsButtonRef}
+            type="button"
+            className="header-tools-button"
+            aria-label={t("header.openTools")}
+            aria-controls="tool-sidebar"
+            aria-expanded={toolsOpen}
+            onClick={onOpenTools}
+          >
+            <span aria-hidden="true">☰</span>
+            <span>{t("header.tools")}</span>
+          </button>
+        ) : null}
+        <Link to={localizePath("/", locale)} className="top-banner__home">
           {t("sidebar.home")}
         </Link>
         <a

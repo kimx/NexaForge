@@ -1,29 +1,31 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
-import type { ReactElement } from "react";
+import { fireEvent, screen, waitFor } from "@testing-library/react";
 import { vi } from "vitest";
 import { CsvViewerPage } from "./CsvViewerPage";
 import * as csvService from "../../services/csv/csvService";
+import { renderWithProviders } from "../../test/renderWithProviders";
 
 afterEach(() => {
   vi.restoreAllMocks();
 });
 
-function renderWithRouter(ui: ReactElement): ReturnType<typeof render> {
-  return render(
-    <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-      {ui}
-    </MemoryRouter>
-  );
-}
-
 describe("CsvViewerPage", () => {
+  it("enables processing only after a CSV is selected", () => {
+    const { container } = renderWithProviders(<CsvViewerPage />);
+    const action = screen.getByRole("button", { name: "Process" });
+    expect(action).toBeDisabled();
+
+    fireEvent.change(container.querySelector('input[type="file"]') as HTMLInputElement, {
+      target: { files: [new File(["name,age\nA,1"], "sample.csv", { type: "text/csv" })] },
+    });
+    expect(action).toBeEnabled();
+  });
+
   it("disables process button while parsing is in progress", async () => {
     const previewSpy = vi
       .spyOn(csvService, "previewCsv")
       .mockImplementation(() => new Promise(() => {}));
 
-    const { container } = renderWithRouter(<CsvViewerPage />);
+    const { container } = renderWithProviders(<CsvViewerPage />);
     const input = container.querySelector("input[type=\"file\"]") as HTMLInputElement;
     const file = new File(["name,age\\nA,1"], "sample.csv", { type: "text/csv" });
     fireEvent.change(input, { target: { files: [file] } });
@@ -42,7 +44,7 @@ describe("CsvViewerPage", () => {
     const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
     vi.spyOn(csvService, "previewCsv").mockRejectedValue(new Error("parse failed"));
 
-    const { container } = renderWithRouter(<CsvViewerPage />);
+    const { container } = renderWithProviders(<CsvViewerPage />);
     const input = container.querySelector("input[type=\"file\"]") as HTMLInputElement;
     const file = new File(["name,age\\nA,1"], "sample.csv", { type: "text/csv" });
     fireEvent.change(input, { target: { files: [file] } });
@@ -62,7 +64,7 @@ describe("CsvViewerPage", () => {
       totalRows: 2,
     });
 
-    const { container } = renderWithRouter(<CsvViewerPage />);
+    const { container } = renderWithProviders(<CsvViewerPage />);
     const input = container.querySelector("input[type=\"file\"]") as HTMLInputElement;
     const file = new File(["name,age\\nA,1\\nB,2"], "sample.csv", { type: "text/csv" });
     fireEvent.change(input, { target: { files: [file] } });

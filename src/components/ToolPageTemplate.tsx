@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useId, useRef } from "react";
 import { Link } from "react-router-dom";
 import { PrivacyNotice } from "./PrivacyNotice";
 import { AdSlot } from "./AdSlot";
@@ -6,12 +6,15 @@ import type { ToolMeta, ToolDefinition, ToolWorkflow } from "../types/tool";
 import { useLanguage, useLocalizedToolMeta } from "../context/LanguageContext";
 import { trackEvent } from "../utils/analytics";
 import { ProcessingStatus } from "./ProcessingStatus";
+import { JsonWorkspaceNav } from "./JsonWorkspaceNav";
+import { localizePath } from "../routing/localePaths";
 
 interface ToolPageTemplateProps {
   tool: ToolDefinition;
   meta: ToolMeta;
   breadcrumb: string[];
   workflow?: ToolWorkflow;
+  layout?: "default" | "split";
   children: {
     workspace: JSX.Element;
     options: JSX.Element | null;
@@ -28,11 +31,14 @@ export function ToolPageTemplate({
   meta,
   breadcrumb,
   workflow,
+  layout = "default",
   children,
 }: ToolPageTemplateProps): JSX.Element {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const localToolMeta = useLocalizedToolMeta();
   const resultRef = useRef<HTMLElement | null>(null);
+  const previousWorkflowState = useRef(workflow?.state);
+  const resultHeadingId = useId();
 
   const toolTitle = localToolMeta(tool.id, "title");
   const toolDescription = localToolMeta(tool.id, "description");
@@ -52,12 +58,32 @@ export function ToolPageTemplate({
   }, [tool.id]);
 
   useEffect(() => {
-    if (workflow?.state !== "success") {
+    const previousState = previousWorkflowState.current;
+    const nextState = workflow?.state;
+    previousWorkflowState.current = nextState;
+
+    if ((nextState !== "success" && nextState !== "error") || previousState === nextState) {
       return;
     }
 
     const timer = window.setTimeout(() => {
-      resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      const result = resultRef.current;
+      if (!result) {
+        return;
+      }
+
+      const bounds = result.getBoundingClientRect();
+      const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+      const isOutsideViewport = bounds.top < 0 || bounds.bottom > viewportHeight;
+      if (!isOutsideViewport) {
+        return;
+      }
+
+      const prefersReducedMotion =
+        typeof window.matchMedia === "function" &&
+        window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      result.scrollIntoView({ behavior: prefersReducedMotion ? "auto" : "smooth", block: "start" });
+      result.focus({ preventScroll: true });
     }, 120);
 
     return () => {
@@ -66,10 +92,10 @@ export function ToolPageTemplate({
   }, [workflow?.state]);
 
   const showResultContent = !workflow || workflow.state === "success";
-  const showResultSection = !workflow || workflow.state !== "idle";
+  const showResultSection = layout === "split" || !workflow || workflow.state !== "idle";
 
   return (
-    <main className={`tool-page tool-page--${tool.id}`}>
+    <div className={`tool-page tool-page--${tool.id} tool-page--layout-${layout}`}>
       <div className="tool-container">
         <nav className="breadcrumb tool-page__breadcrumb" aria-label={t("breadcrumb.aria")}>
           {localizedBreadcrumb.map((item, index) => (
@@ -85,38 +111,46 @@ export function ToolPageTemplate({
           <PrivacyNotice inline />
         </div>
         <p className="short-description tool-page__description">{toolDescription}</p>
+        <JsonWorkspaceNav />
 
-        <div className={`tool-page__duo${children.options ? "" : " tool-page__duo--single"}`}>
-          <section className="tool-card tool-page__panel tool-page__panel--workspace">
-            <h2>{t("toolPage.workspace")}</h2>
-            {children.workspace}
-          </section>
-          {children.options ? (
-            <section className="tool-card tool-page__panel tool-page__panel--options">
-              <h2>{t("toolPage.options")}</h2>
-              {children.options}
+        <div className={`tool-page__workbench tool-page__workbench--${layout}`}>
+          <div className={`tool-page__duo${children.options ? "" : " tool-page__duo--single"}`}>
+            <section className="tool-card tool-page__panel tool-page__panel--workspace">
+              <h2>{t("toolPage.workspace")}</h2>
+              {children.workspace}
+            </section>
+            {children.options ? (
+              <section className="tool-card tool-page__panel tool-page__panel--options">
+                <h2>{t("toolPage.options")}</h2>
+                {children.options}
+              </section>
+            ) : null}
+          </div>
+
+          {showResultSection ? (
+            <section
+              className={`tool-card tool-page__result${workflow ? ` tool-page__result--${workflow.state}` : ""}`}
+              ref={resultRef}
+              aria-labelledby={resultHeadingId}
+              tabIndex={-1}
+            >
+              <h2 id={resultHeadingId}>{t("toolPage.result")}</h2>
+              {workflow ? <ProcessingStatus {...workflow} /> : null}
+              {showResultContent ? children.result : null}
+              {workflow?.state === "success" && children.nextActions ? (
+                <div className="next-actions">
+                  <h3>{t("toolPage.nextActions")}</h3>
+                  <div className="next-actions__row">{children.nextActions}</div>
+                  {workflow.onReprocess ? (
+                    <button type="button" className="btn secondary" onClick={workflow.onReprocess}>
+                      {t("toolPage.reprocess")}
+                    </button>
+                  ) : null}
+                </div>
+              ) : null}
             </section>
           ) : null}
         </div>
-
-        {showResultSection ? (
-          <section className={`tool-card tool-page__result${workflow ? ` tool-page__result--${workflow.state}` : ""}`} ref={resultRef}>
-            <h2>{t("toolPage.result")}</h2>
-            {workflow ? <ProcessingStatus {...workflow} /> : null}
-            {showResultContent ? children.result : null}
-            {workflow?.state === "success" && children.nextActions ? (
-              <div className="next-actions">
-                <h3>{t("toolPage.nextActions")}</h3>
-                <div className="next-actions__row">{children.nextActions}</div>
-                {workflow.onReprocess ? (
-                  <button type="button" className="btn secondary" onClick={workflow.onReprocess}>
-                    {t("toolPage.reprocess")}
-                  </button>
-                ) : null}
-              </div>
-            ) : null}
-          </section>
-        ) : null}
 
         <AdSlot
           position="tool-result"
@@ -151,12 +185,12 @@ export function ToolPageTemplate({
           <ul className="related-tools">
             {children.relatedTools.map((relatedTool) => (
               <li key={relatedTool.id}>
-                <Link to={relatedTool.path}>{localToolMeta(relatedTool.id, "title")}</Link>
+                <Link to={localizePath(relatedTool.path, locale)}>{localToolMeta(relatedTool.id, "title")}</Link>
               </li>
             ))}
           </ul>
         </section>
       </div>
-    </main>
+    </div>
   );
 }

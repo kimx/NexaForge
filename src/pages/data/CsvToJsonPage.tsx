@@ -54,6 +54,14 @@ export function CsvToJsonPage(): JSX.Element {
     [t]
   );
 
+  const handleFiles = (nextFiles: File[]) => {
+    setFiles(nextFiles);
+    setResult(null);
+    setPreview("");
+    setError(null);
+    setProcessing(nextFiles.length ? "ready" : "idle");
+  };
+
   const handleProcess = async () => {
     const source = files[0];
     if (!source) {
@@ -104,7 +112,7 @@ export function CsvToJsonPage(): JSX.Element {
               label={t("label.dropCsv")}
               accept="text/csv"
               multiple={false}
-              onFiles={setFiles}
+              onFiles={handleFiles}
             />
             <FileInfo files={files} />
           </>
@@ -115,7 +123,7 @@ export function CsvToJsonPage(): JSX.Element {
               type="button"
               className="btn primary"
               onClick={handleProcess}
-              disabled={processing === "processing"}
+              disabled={!files.length || processing === "processing"}
               aria-busy={processing === "processing"}
             >
               {processing === "processing" ? t("button.processing") : t("button.process")}
@@ -130,11 +138,13 @@ export function CsvToJsonPage(): JSX.Element {
             ) : (
               <p>{t("tool.csv-to-json.label.preview")}</p>
             )}
-            <DownloadButton
-              result={result}
-              disabled={processing === "processing"}
-              onDownloaded={() => trackEvent("download", { tool: "csv-to-json" })}
-            />
+            {result ? (
+              <DownloadButton
+                result={result}
+                disabled={processing === "processing"}
+                onDownloaded={() => trackEvent("download", { tool: "csv-to-json" })}
+              />
+            ) : null}
           </>
         ),
         howItWorks,

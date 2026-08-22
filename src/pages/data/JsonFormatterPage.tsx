@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useId, useMemo, useState } from "react";
 import { ProcessingState, ToolMeta } from "../../types/tool";
 import { FILE_TOOLS } from "../../data/tools";
 import { ToolPageTemplate } from "../../components/ToolPageTemplate";
@@ -16,8 +16,8 @@ import { JsonTreeEditor, type JsonValue } from "../../components/JsonTreeEditor"
 import { useLanguage } from "../../context/LanguageContext";
 
 interface ParseError {
-  line: number;
-  column: number;
+  line: number | null;
+  column: number | null;
   message: string;
 }
 
@@ -26,6 +26,8 @@ const JSON_FORMATTER_SAMPLE: JsonValue = {
   active: true,
   tags: ["json", "sample"],
 };
+
+const AUTOMATIC_VALIDATION_LIMIT = 250_000;
 
 function extractParseError(text: string, message: string): ParseError {
   const lineMatch = /line (\d+)\s+column (\d+)/i.exec(message);
@@ -40,8 +42,8 @@ function extractParseError(text: string, message: string): ParseError {
   const positionMatch = /position (\d+)/i.exec(message);
   if (!positionMatch) {
     return {
-      line: 1,
-      column: 1,
+      line: null,
+      column: null,
       message,
     };
   }
@@ -66,10 +68,11 @@ export function JsonFormatterPage(): JSX.Element {
   const { t } = useLanguage();
   const [files, setFiles] = useState<File[]>([]);
   const [inputSource, setInputSource] = useState<"text" | "file">("text");
-  const [editorMode, setEditorMode] = useState<"text" | "tree">("tree");
-  const [jsonInput, setJsonInput] = useState(() => JSON.stringify(JSON_FORMATTER_SAMPLE, null, 2));
+  const [editorMode, setEditorMode] = useState<"text" | "tree">("text");
+  const [jsonInput, setJsonInput] = useState("");
   const [jsonTree, setJsonTree] = useState<JsonValue>(JSON_FORMATTER_SAMPLE);
   const [treeError, setTreeError] = useState<string | null>(null);
+  const [validationError, setValidationError] = useState<ParseError | null>(null);
   const [mode, setMode] = useState<"format" | "minify">("format");
   const [processing, setProcessing] = useState<ProcessingState>("idle");
   const [result, setResult] = useState<FileProcessResult | null>(null);
@@ -79,6 +82,39 @@ export function JsonFormatterPage(): JSX.Element {
   const [errorColumn, setErrorColumn] = useState<number | null>(null);
   const [parseMessage, setParseMessage] = useState<string | null>(null);
   const [copyError, setCopyError] = useState<string | null>(null);
+  const validationErrorId = useId();
+  const largeInputHintId = useId();
+
+  const isLargeInput =
+    inputSource === "text" && jsonInput.length >= AUTOMATIC_VALIDATION_LIMIT;
+  const canProcess =
+    inputSource === "text"
+      ? Boolean(jsonInput.trim()) && !validationError
+      : files.length > 0;
+
+  useEffect(() => {
+    if (inputSource !== "text" || editorMode !== "text") {
+      setValidationError(null);
+      return;
+    }
+
+    if (!jsonInput.trim() || jsonInput.length >= AUTOMATIC_VALIDATION_LIMIT) {
+      setValidationError(null);
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      try {
+        JSON.parse(jsonInput);
+        setValidationError(null);
+      } catch (validationFailure) {
+        const message = getParseMessageFromError(validationFailure);
+        setValidationError(extractParseError(jsonInput, message));
+      }
+    }, 350);
+
+    return () => window.clearTimeout(timer);
+  }, [editorMode, inputSource, jsonInput]);
 
   const tool = FILE_TOOLS.find((item) => item.id === "json-formatter");
   const title = t("tool.json-formatter.title");
@@ -116,6 +152,31 @@ export function JsonFormatterPage(): JSX.Element {
     [t]
   );
 
+  const resetOutput = () => {
+    setProcessing("idle");
+    setResult(null);
+    setPreview("");
+    setError(null);
+    setErrorLine(null);
+    setErrorColumn(null);
+    setParseMessage(null);
+    setCopyError(null);
+  };
+
+  const handleJsonInputChange = (next: string) => {
+    setJsonInput(next);
+    resetOutput();
+  };
+
+  const loadSample = () => {
+    const sampleText = JSON.stringify(JSON_FORMATTER_SAMPLE, null, 2);
+    setJsonInput(sampleText);
+    setJsonTree(JSON_FORMATTER_SAMPLE);
+    setTreeError(null);
+    setValidationError(null);
+    resetOutput();
+  };
+
   const syncTreeFromText = () => {
     if (!jsonInput.trim()) {
       setTreeError(t("error.enterJsonText"));
@@ -136,16 +197,22 @@ export function JsonFormatterPage(): JSX.Element {
   const handleTreeChange = (next: JsonValue) => {
     setJsonTree(next);
     setJsonInput(JSON.stringify(next, null, 2));
+    setValidationError(null);
+    resetOutput();
   };
 
   const handleTreePaste = (next: JsonValue) => {
     setJsonTree(next);
     setJsonInput(JSON.stringify(next, null, 2));
     setTreeError(null);
+    setValidationError(null);
+    resetOutput();
   };
 
   const handleInputSourceChange = (next: "text" | "file") => {
     setInputSource(next);
+    setValidationError(null);
+    resetOutput();
     if (next === "file") {
       setEditorMode("text");
       setTreeError(null);
@@ -166,6 +233,10 @@ export function JsonFormatterPage(): JSX.Element {
   };
 
   const handleProcess = async () => {
+    if (!canProcess || processing === "processing") {
+      return;
+    }
+
     setError(null);
     setErrorLine(null);
     setErrorColumn(null);
@@ -210,6 +281,7 @@ export function JsonFormatterPage(): JSX.Element {
         size: blob.size,
       });
       setPreview(output);
+      setValidationError(null);
       setProcessing("success");
       trackEvent("process_success", { tool: "json-formatter" });
     } catch (err) {
@@ -225,6 +297,14 @@ export function JsonFormatterPage(): JSX.Element {
         setErrorColumn(parse.column);
         setParseMessage(parse.message);
         setError(t("error.processingFailed"));
+
+        if (inputSource === "text") {
+          try {
+            JSON.parse(sourceText);
+          } catch {
+            setValidationError(parse);
+          }
+        }
       }
       setProcessing("error");
       trackEvent("process_failed", { tool: "json-formatter" });
@@ -261,12 +341,58 @@ export function JsonFormatterPage(): JSX.Element {
               </select>
             </label>
             {editorMode === "text" ? (
-              <textarea
-                rows={12}
-                value={jsonInput}
-                placeholder='{"name":"value"}'
-                onChange={(event) => setJsonInput(event.target.value)}
-              />
+              <div className="json-formatter-editor">
+                <div className="json-formatter-editor__heading">
+                  <label htmlFor="json-formatter-input">
+                    {t("tool.json-formatter.label.jsonInput")}
+                  </label>
+                  <button type="button" className="btn secondary" onClick={loadSample}>
+                    {t("tool.json-formatter.action.loadSample")}
+                  </button>
+                </div>
+                <textarea
+                  id="json-formatter-input"
+                  rows={16}
+                  value={jsonInput}
+                  placeholder='{"name":"value"}'
+                  aria-invalid={Boolean(validationError)}
+                  aria-describedby={
+                    validationError
+                      ? validationErrorId
+                      : isLargeInput
+                        ? largeInputHintId
+                        : undefined
+                  }
+                  onChange={(event) => handleJsonInputChange(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
+                      event.preventDefault();
+                      void handleProcess();
+                    }
+                  }}
+                />
+                {validationError ? (
+                  <p id={validationErrorId} role="alert" className="error json-formatter-editor__feedback">
+                    {validationError.line !== null && validationError.column !== null
+                      ? t("tool.json-formatter.validation.invalid", {
+                          line: validationError.line,
+                          column: validationError.column,
+                          message: validationError.message,
+                        })
+                      : t("tool.json-formatter.validation.invalidWithoutPosition", {
+                          message: validationError.message,
+                        })}
+                  </p>
+                ) : null}
+                {isLargeInput ? (
+                  <p id={largeInputHintId} role="status" className="json-formatter-editor__feedback">
+                    {t("tool.json-formatter.validation.largeInput")}
+                  </p>
+                ) : null}
+                <p className="json-formatter-editor__shortcut">
+                  {t("tool.json-formatter.shortcut")}
+                </p>
+              </div>
             ) : (
               <>
                 {treeError ? (
@@ -289,14 +415,34 @@ export function JsonFormatterPage(): JSX.Element {
         )}
       </div>
     ),
-    [editorMode, files, inputSource, jsonInput, jsonTree, treeError, t]
+    [
+      editorMode,
+      files,
+      inputSource,
+      isLargeInput,
+      jsonInput,
+      jsonTree,
+      largeInputHintId,
+      mode,
+      processing,
+      t,
+      treeError,
+      validationError,
+      validationErrorId,
+    ]
   );
 
   return (
       <ToolPageTemplate
         tool={tool ?? FILE_TOOLS[0]}
         meta={toolMeta}
-      breadcrumb={["Home", t("tool.json-formatter.title")]}
+        breadcrumb={["Home", t("tool.json-formatter.title")]}
+        layout="split"
+        workflow={{
+          state: processing,
+          error: processing === "error" ? error : null,
+          onRetry: canProcess ? () => void handleProcess() : undefined,
+        }}
         children={{
         workspace: workspaceNode,
         options: (
@@ -312,7 +458,7 @@ export function JsonFormatterPage(): JSX.Element {
               type="button"
               className="btn primary"
               onClick={handleProcess}
-              disabled={processing === "processing"}
+              disabled={!canProcess || processing === "processing"}
             >
               {processing === "processing" ? t("button.processing") : t("button.process")}
             </button>
@@ -320,40 +466,30 @@ export function JsonFormatterPage(): JSX.Element {
         ),
         result: (
           <>
-            {processing === "error" && error && <p role="alert" className="error">{error}</p>}
             {copyError && <p role="alert" className="error">{copyError}</p>}
-            {(errorLine !== null && errorColumn !== null) ? (
-              <pre className="error-block">
-                {t("tool.json-formatter.parseError", {
-                  line: errorLine,
-                  column: errorColumn,
-                  message: parseMessage ?? t("error.unableParse"),
-                })}
-              </pre>
+            <pre className="json-formatter-result">{preview}</pre>
+            {preview ? (
+              <div className="tool-actions">
+                <button
+                  type="button"
+                  className="btn secondary"
+                  onClick={async () => {
+                    try {
+                      await navigator.clipboard.writeText(preview);
+                      setCopyError(null);
+                    } catch {
+                      setCopyError(t("error.copyFailed"));
+                    }
+                  }}
+                >
+                  {t("button.copy")}
+                </button>
+                <DownloadButton
+                  result={result}
+                  onDownloaded={() => trackEvent("download", { tool: "json-formatter" })}
+                />
+              </div>
             ) : null}
-            <pre>{preview || t("tool.json-formatter.label.noPreview")}</pre>
-            <div className="tool-actions">
-              <button
-                type="button"
-                className="btn secondary"
-                disabled={!preview || processing === "processing"}
-                onClick={async () => {
-                  try {
-                    await navigator.clipboard.writeText(preview);
-                    setCopyError(null);
-                  } catch {
-                    setCopyError(t("error.copyFailed"));
-                  }
-                }}
-              >
-                {t("button.copy")}
-              </button>
-              <DownloadButton
-                result={result}
-                disabled={processing === "processing"}
-                onDownloaded={() => trackEvent("download", { tool: "json-formatter" })}
-              />
-            </div>
           </>
         ),
         howItWorks,

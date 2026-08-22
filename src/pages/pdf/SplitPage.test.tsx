@@ -14,12 +14,24 @@ afterEach(() => {
 function renderWithRouter(ui: ReactElement): ReturnType<typeof render> {
   return render(
     <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-      <LanguageProvider>{ui}</LanguageProvider>
+      <LanguageProvider initialLocale="en">{ui}</LanguageProvider>
     </MemoryRouter>
   );
 }
 
 describe("PdfSplitPage", () => {
+  it("requires a PDF before inspecting pages and hides download until export", () => {
+    const { container } = renderWithRouter(<PdfSplitPage />);
+    const action = screen.getByRole("button", { name: "Process" });
+    expect(action).toBeDisabled();
+    expect(screen.queryByRole("button", { name: "Download" })).not.toBeInTheDocument();
+
+    fireEvent.change(container.querySelector('input[type="file"]') as HTMLInputElement, {
+      target: { files: [new File(["%PDF-1.4"], "sample.pdf", { type: "application/pdf" })] },
+    });
+    expect(action).toBeEnabled();
+  });
+
   it("disables process button while splitting is in progress", async () => {
     const countSpy = vi
       .spyOn(pdfService, "getPdfPageCount")

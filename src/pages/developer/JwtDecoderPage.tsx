@@ -123,11 +123,7 @@ export function JwtDecoderPage(): JSX.Element {
     } catch (err) {
       setProcessing("error");
       setDecodedText("");
-      setError(
-        err instanceof Error
-          ? err.message
-          : t("tool.jwt-decoder.error.decodeFailed")
-      );
+      setError(t("tool.jwt-decoder.error.decodeFailed"));
       trackEvent("process_failed", { tool: "jwt-decoder" });
       console.error(err);
     }

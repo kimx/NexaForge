@@ -14,7 +14,7 @@ afterEach(() => {
 function renderWithRouter(ui: ReactElement): ReturnType<typeof render> {
   return render(
     <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-      <LanguageProvider>{ui}</LanguageProvider>
+      <LanguageProvider initialLocale="en">{ui}</LanguageProvider>
     </MemoryRouter>
   );
 }
@@ -28,6 +28,10 @@ function selectFileInput(container: HTMLElement, file: File): void {
 }
 
 describe("JsonToCsvPage", () => {
+  beforeEach(() => {
+    window.localStorage.setItem("nexaforge-locale", "en");
+  });
+
   it("starts with an editable JSON array sample that can be converted", async () => {
     renderWithRouter(<JsonToCsvPage />);
 
@@ -95,5 +99,37 @@ describe("JsonToCsvPage", () => {
     await waitFor(() => {
       expect(convertSpy).toHaveBeenCalledWith(file, false);
     });
+  });
+
+  it("associates malformed JSON with the editor and clears the error after correction", async () => {
+    renderWithRouter(<JsonToCsvPage />);
+    const input = screen.getByRole("textbox", {
+      name: "Paste / edit JSON text",
+    });
+
+    fireEvent.change(input, { target: { value: '[{"broken":}]' } });
+    fireEvent.click(screen.getByRole("button", { name: "Process" }));
+
+    await waitFor(() => expect(input).toHaveAttribute("aria-invalid", "true"));
+    const errorId = input.getAttribute("aria-describedby");
+    expect(errorId).toBeTruthy();
+    expect(document.getElementById(errorId ?? "")).toHaveTextContent("Invalid JSON");
+    expect(input).toHaveValue('[{"broken":}]');
+
+    fireEvent.change(input, { target: { value: '[{"fixed":true}]' } });
+
+    expect(input).toHaveAttribute("aria-invalid", "false");
+    expect(screen.queryByText(/Invalid JSON/)).not.toBeInTheDocument();
+  });
+
+  it("disables processing when the selected input source is empty", () => {
+    renderWithRouter(<JsonToCsvPage />);
+    const input = screen.getByRole("textbox", {
+      name: "Paste / edit JSON text",
+    });
+
+    fireEvent.change(input, { target: { value: "" } });
+
+    expect(screen.getByRole("button", { name: "Process" })).toBeDisabled();
   });
 });

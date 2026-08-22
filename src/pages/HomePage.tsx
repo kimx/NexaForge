@@ -8,8 +8,9 @@ import {
   useLanguage,
   useLocalizedToolMeta,
 } from "../context/LanguageContext";
-import { ToolSidebar } from "../components/ToolSidebar";
 import { AdSlot } from "../components/AdSlot";
+import { isJsonTool, JSON_TOOLS } from "../utils/toolPaths";
+import { localizePath } from "../routing/localePaths";
 
 const categoryOrder: ToolDefinition["category"][] = [
   "Image",
@@ -50,7 +51,7 @@ const TOOL_VISUALS: Record<string, { label: string; tone: string }> = {
 };
 
 function ToolCard({ tool, onOpen, className = "" }: { tool: ToolDefinition; onOpen?: (toolId: string) => void; className?: string }): JSX.Element {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const localToolMeta = useLocalizedToolMeta();
   const visual = TOOL_VISUALS[tool.id] ?? { label: "FILE", tone: "blue" };
 
@@ -68,7 +69,7 @@ function ToolCard({ tool, onOpen, className = "" }: { tool: ToolDefinition; onOp
           <p>{localToolMeta(tool.id, "description")}</p>
         </div>
       </div>
-      <Link to={tool.path} className="btn secondary home-tool-card__action" onClick={() => onOpen?.(tool.id)}>
+      <Link to={localizePath(tool.path, locale)} className="btn secondary home-tool-card__action" onClick={() => onOpen?.(tool.id)}>
         {t("home.open")}
         <span aria-hidden="true">→</span>
       </Link>
@@ -77,22 +78,12 @@ function ToolCard({ tool, onOpen, className = "" }: { tool: ToolDefinition; onOp
 }
 
 export function HomePage(): JSX.Element {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const toolMeta = useLocalizedToolMeta();
   const [keyword, setKeyword] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<"All" | ToolDefinition["category"]>("All");
-  const [recentToolIds, setRecentToolIds] = useState<string[]>(() => {
-    if (typeof window === "undefined") {
-      return [];
-    }
-    try {
-      const stored = window.localStorage.getItem("nexaforge-recent-tools");
-      const parsed = stored ? JSON.parse(stored) : [];
-      return Array.isArray(parsed) ? parsed.filter((id): id is string => typeof id === "string").slice(0, 6) : [];
-    } catch {
-      return [];
-    }
-  });
+  const [recentToolIds, setRecentToolIds] = useState<string[]>([]);
+  const [recentToolsLoaded, setRecentToolsLoaded] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
   const homeAdSlotId = import.meta.env.VITE_ADSENSE_SLOT_HOME;
   const homeMeta: ToolMeta = {
@@ -105,15 +96,39 @@ export function HomePage(): JSX.Element {
 
   useEffect(() => {
     try {
+      const stored = window.localStorage.getItem("nexaforge-recent-tools");
+      const parsed = stored ? JSON.parse(stored) : [];
+      setRecentToolIds(
+        Array.isArray(parsed)
+          ? parsed.filter((id): id is string => typeof id === "string").slice(0, 6)
+          : []
+      );
+    } catch {
+      setRecentToolIds([]);
+    } finally {
+      setRecentToolsLoaded(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!recentToolsLoaded) {
+      return;
+    }
+    try {
       window.localStorage.setItem("nexaforge-recent-tools", JSON.stringify(recentToolIds));
     } catch {
       // Recent tools are best-effort when storage is unavailable.
     }
-  }, [recentToolIds]);
+  }, [recentToolIds, recentToolsLoaded]);
 
   useEffect(() => {
     const handleShortcut = (event: KeyboardEvent) => {
       const target = event.target as HTMLElement | null;
+      if (event.key === "Escape") {
+        setKeyword("");
+        setCategoryFilter("All");
+        return;
+      }
       if (event.key === "/" && !event.metaKey && !event.ctrlKey && !event.altKey && target?.tagName !== "INPUT" && target?.tagName !== "TEXTAREA" && !target?.isContentEditable) {
         event.preventDefault();
         searchRef.current?.focus();
@@ -149,6 +164,11 @@ export function HomePage(): JSX.Element {
     [recentToolIds]
   );
 
+  const isFilterActive = keyword.trim().length > 0 || categoryFilter !== "All";
+  const displayedTools = isFilterActive
+    ? filteredTools
+    : filteredTools.filter((tool) => !isJsonTool(tool.id));
+
   const categoryCounts = categoryOrder.reduce(
     (counts, category) => {
       counts[category] = FILE_TOOLS.filter((tool) => tool.category === category).length;
@@ -165,11 +185,7 @@ export function HomePage(): JSX.Element {
   };
 
   return (
-    <main className="home-page">
-      <div className="home-dashboard">
-        <ToolSidebar />
-
-        <section className="home-workspace">
+    <div className="home-page">
           <section className="home-hero">
             <img className="home-hero__visual" src="/nexaforge-hero.png" alt="" aria-hidden="true" />
             <div className="home-hero__content">
@@ -179,12 +195,12 @@ export function HomePage(): JSX.Element {
               </h1>
               <p>{t("home.subtitle")}</p>
               <div className="home-hero__actions">
-                <Link to="/image/resize" className="btn">
-                  {t("home.primaryCta")}
+                <Link to={localizePath("/data/json-formatter", locale)} className="btn">
+                  {t("home.primaryJsonCta")}
                 </Link>
-                <a href="#popular-tools" className="btn secondary">
-                  {t("home.secondaryCta")}
-                </a>
+                <Link to={localizePath("/json", locale)} className="btn secondary">
+                  {t("jsonHub.title")}
+                </Link>
               </div>
               <div className="home-hero__proof" aria-label={t("home.proofLabel")}>
                 <span>{t("home.proof.local")}</span>
@@ -235,8 +251,28 @@ export function HomePage(): JSX.Element {
             ))}
           </div>
 
-          {recentTools.length > 0 ? (
-            <div className="workspace-section recent-tools-section">
+          {!isFilterActive ? (
+            <section className="workspace-section home-json-workflows" data-testid="json-workflows">
+              <div className="workspace-section__heading home-json-workflows__heading">
+                <div>
+                  <h3>{t("home.jsonWorkflows")}</h3>
+                  <p>{t("home.jsonWorkflowsSubtitle")}</p>
+                </div>
+                <Link to={localizePath("/json", locale)} className="text-button">
+                  {t("home.allJsonTools")}
+                  <span aria-hidden="true"> →</span>
+                </Link>
+              </div>
+              <div className="tool-grid home-tool-grid home-tool-grid--json">
+                {JSON_TOOLS.map((tool) => (
+                  <ToolCard key={tool.id} tool={tool} onOpen={rememberTool} />
+                ))}
+              </div>
+            </section>
+          ) : null}
+
+          {!isFilterActive && recentTools.length > 0 ? (
+            <div className="workspace-section recent-tools-section" data-testid="recent-tools">
               <div className="workspace-section__heading">
                 <h3>{t("home.recentTools")}</h3>
                 <div className="recent-tools-section__meta">
@@ -254,12 +290,12 @@ export function HomePage(): JSX.Element {
 
           <div className="workspace-section" id="popular-tools">
             <div className="workspace-section__heading">
-              <h3>{t("home.popular")}</h3>
-              <span>{t("sidebar.resultCount", { count: filteredTools.length })}</span>
+              <h3>{t(isFilterActive ? "home.searchResults" : "home.otherTools")}</h3>
+              <span>{t("sidebar.resultCount", { count: displayedTools.length })}</span>
             </div>
-            {filteredTools.length > 0 ? (
+            {displayedTools.length > 0 ? (
               <div className="tool-grid home-tool-grid">
-                {filteredTools.map((tool) => <ToolCard key={tool.id} tool={tool} onOpen={rememberTool} />)}
+                {displayedTools.map((tool) => <ToolCard key={tool.id} tool={tool} onOpen={rememberTool} />)}
               </div>
             ) : (
               <div className="finder-empty" role="status">
@@ -272,7 +308,8 @@ export function HomePage(): JSX.Element {
             )}
           </div>
 
-          <div className="workspace-section category-section">
+          {!isFilterActive ? (
+          <div className="workspace-section category-section" data-testid="category-browser">
             <div className="workspace-section__heading">
               <div>
                 <h3>{t("home.browseCategories")}</h3>
@@ -299,10 +336,9 @@ export function HomePage(): JSX.Element {
               ))}
             </div>
           </div>
-        </section>
-      </div>
+          ) : null}
 
       <AdSlot position="home" adSlotId={homeAdSlotId} />
-    </main>
+    </div>
   );
 }

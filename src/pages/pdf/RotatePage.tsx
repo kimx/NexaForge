@@ -139,7 +139,7 @@ export function PdfRotatePage(): JSX.Element {
               type="button"
               className="btn primary"
               onClick={handleProcess}
-              disabled={processing === "processing"}
+              disabled={!files.length || processing === "processing"}
               aria-busy={processing === "processing"}
             >
               {processing === "processing" ? t("button.processing") : t("button.process")}
@@ -158,11 +158,13 @@ export function PdfRotatePage(): JSX.Element {
                 {t("tool.pdf-rotate.label.outputSize", { size: (result.size / 1024).toFixed(2) })}
               </p>
             )}
-            <DownloadButton
-              result={result}
-              disabled={processing === "processing"}
-              onDownloaded={() => trackEvent("download", { tool: "pdf-rotate" })}
-            />
+            {result ? (
+              <DownloadButton
+                result={result}
+                disabled={processing === "processing"}
+                onDownloaded={() => trackEvent("download", { tool: "pdf-rotate" })}
+              />
+            ) : null}
           </>
         ),
         howItWorks,

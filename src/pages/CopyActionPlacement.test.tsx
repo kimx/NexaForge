@@ -12,7 +12,7 @@ import { TextToolsPage } from "./text/TextToolsPage";
 function renderPage(ui: ReactElement): ReturnType<typeof render> {
   return render(
     <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-      <LanguageProvider>{ui}</LanguageProvider>
+      <LanguageProvider initialLocale="en">{ui}</LanguageProvider>
     </MemoryRouter>
   );
 }

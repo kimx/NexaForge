@@ -156,22 +156,10 @@ export function FileDropzone({
   return (
     <section
       className={`file-dropzone${isDragging ? " file-dropzone--dragging" : ""}`}
-      tabIndex={0}
       onDragOver={handleDragOver}
       onDragEnter={handleDragEnter}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
-      onClick={(event) => {
-        if (event.target !== inputRef.current) {
-          inputRef.current?.click();
-        }
-      }}
-      onKeyDown={(event) => {
-        if (event.key === "Enter" || event.key === " ") {
-          event.preventDefault();
-          inputRef.current?.click();
-        }
-      }}
       aria-label={t("fileDropzone.aria")}
       aria-describedby={`${inputId}-help`}
     >

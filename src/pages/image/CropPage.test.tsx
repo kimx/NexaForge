@@ -35,10 +35,13 @@ const canvasContext = {
   lineWidth: 1,
 };
 
-function renderWithRouter(ui: ReactElement): ReturnType<typeof render> {
+function renderWithRouter(
+  ui: ReactElement,
+  locale: "en" | "zh-TW" = "en"
+): ReturnType<typeof render> {
   return render(
     <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-      <LanguageProvider>{ui}</LanguageProvider>
+      <LanguageProvider initialLocale={locale}>{ui}</LanguageProvider>
     </MemoryRouter>
   );
 }
@@ -59,8 +62,10 @@ function loadCropSource(width = 1200, height = 800): void {
   fireEvent.load(image);
 }
 
-function renderCropPageWithSelectedFile(): ReturnType<typeof render> {
-  const rendered = renderWithRouter(<ImageCropPage />);
+function renderCropPageWithSelectedFile(
+  locale: "en" | "zh-TW" = "en"
+): ReturnType<typeof render> {
+  const rendered = renderWithRouter(<ImageCropPage />, locale);
   selectFile(rendered);
   loadCropSource();
   return rendered;
@@ -85,6 +90,19 @@ afterEach(() => {
 });
 
 describe("ImageCropPage", () => {
+  it("keeps crop disabled until an image is decoded", () => {
+    const rendered = renderWithRouter(<ImageCropPage />);
+    const action = screen.getByRole("button", { name: "Crop image" });
+    expect(action).toBeDisabled();
+
+    selectFile(rendered);
+    expect(action).toBeDisabled();
+    loadCropSource();
+
+    expect(action).toBeEnabled();
+    expect(screen.queryByRole("button", { name: "Download" })).not.toBeInTheDocument();
+  });
+
   it("shows a live editor after selecting an image", () => {
     renderCropPageWithSelectedFile();
 
@@ -103,8 +121,7 @@ describe("ImageCropPage", () => {
   });
 
   it("provides the crop workflow in Traditional Chinese", () => {
-    window.localStorage.setItem("nexaforge-locale", "zh-TW");
-    renderCropPageWithSelectedFile();
+    renderCropPageWithSelectedFile("zh-TW");
 
     expect(screen.getByRole("heading", { name: "影像裁切", level: 1 })).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "圓形" }));

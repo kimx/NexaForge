@@ -1,202 +1,290 @@
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
-import { useEffect } from "react";
-import { HomePage } from "./pages/HomePage";
-import { ImageResizePage } from "./pages/image/ResizePage";
-import { ImageCropPage } from "./pages/image/CropPage";
-import { ImageCompressPage } from "./pages/image/CompressPage";
-import { ImageConvertPage } from "./pages/image/ConvertPage";
-import { ExifPage } from "./pages/image/ExifPage";
-import { PdfMergePage } from "./pages/pdf/MergePage";
-import { PdfSplitPage } from "./pages/pdf/SplitPage";
-import { PdfRotatePage } from "./pages/pdf/RotatePage";
-import { JsonFormatterPage } from "./pages/data/JsonFormatterPage";
-import { CsvViewerPage } from "./pages/data/CsvViewerPage";
-import { CsvToJsonPage } from "./pages/data/CsvToJsonPage";
-import { JsonToCsvPage } from "./pages/data/JsonToCsvPage";
-import { Base64Page } from "./pages/text/Base64Page";
-import { HashPage } from "./pages/text/HashPage";
-import { UuidPage } from "./pages/text/UuidPage";
-import { HtmlEncoderPage } from "./pages/text/HtmlEncoderPage";
-import { TextDiffPage } from "./pages/text/TextDiffPage";
-import { MarkdownPreviewPage } from "./pages/text/MarkdownPreviewPage";
-import { TextToolsPage } from "./pages/text/TextToolsPage";
-import { QrPage } from "./pages/qr/QrPage";
-import { JwtDecoderPage } from "./pages/developer/JwtDecoderPage";
-import { JwtKeyGeneratorPage } from "./pages/developer/JwtKeyGeneratorPage";
-import { DeveloperToolsPage } from "./pages/developer/DeveloperToolsPage";
 import { Footer } from "./components/Footer";
 import { Header } from "./components/Header";
 import { ToolSidebar } from "./components/ToolSidebar";
+import { useLanguage } from "./context/LanguageContext";
 import { FILE_TOOLS } from "./data/tools";
-import { useLanguage, useLocalizedToolMeta } from "./context/LanguageContext";
+import { useMediaQuery } from "./hooks/useMediaQuery";
+import { NotFoundPage } from "./pages/NotFoundPage";
+import {
+  localeFromPath,
+  localizePath,
+  stripLocalePrefix,
+} from "./routing/localePaths";
 
-function ScrollToTop(): JSX.Element | null {
+const HomePage = lazy(() =>
+  import("./pages/HomePage").then((module) => ({ default: module.HomePage }))
+);
+const JsonHubPage = lazy(() =>
+  import("./pages/json/JsonHubPage").then((module) => ({ default: module.JsonHubPage }))
+);
+const CsvToJsonPage = lazy(() =>
+  import("./pages/data/CsvToJsonPage").then((module) => ({ default: module.CsvToJsonPage }))
+);
+const CsvViewerPage = lazy(() =>
+  import("./pages/data/CsvViewerPage").then((module) => ({ default: module.CsvViewerPage }))
+);
+const JsonFormatterPage = lazy(() =>
+  import("./pages/data/JsonFormatterPage").then((module) => ({ default: module.JsonFormatterPage }))
+);
+const JsonToCsvPage = lazy(() =>
+  import("./pages/data/JsonToCsvPage").then((module) => ({ default: module.JsonToCsvPage }))
+);
+const DeveloperToolsPage = lazy(() =>
+  import("./pages/developer/DeveloperToolsPage").then((module) => ({ default: module.DeveloperToolsPage }))
+);
+const JwtDecoderPage = lazy(() =>
+  import("./pages/developer/JwtDecoderPage").then((module) => ({ default: module.JwtDecoderPage }))
+);
+const JwtKeyGeneratorPage = lazy(() =>
+  import("./pages/developer/JwtKeyGeneratorPage").then((module) => ({ default: module.JwtKeyGeneratorPage }))
+);
+const ImageCompressPage = lazy(() =>
+  import("./pages/image/CompressPage").then((module) => ({ default: module.ImageCompressPage }))
+);
+const ImageConvertPage = lazy(() =>
+  import("./pages/image/ConvertPage").then((module) => ({ default: module.ImageConvertPage }))
+);
+const ImageCropPage = lazy(() =>
+  import("./pages/image/CropPage").then((module) => ({ default: module.ImageCropPage }))
+);
+const ExifPage = lazy(() =>
+  import("./pages/image/ExifPage").then((module) => ({ default: module.ExifPage }))
+);
+const ImageResizePage = lazy(() =>
+  import("./pages/image/ResizePage").then((module) => ({ default: module.ImageResizePage }))
+);
+const PdfMergePage = lazy(() =>
+  import("./pages/pdf/MergePage").then((module) => ({ default: module.PdfMergePage }))
+);
+const PdfRotatePage = lazy(() =>
+  import("./pages/pdf/RotatePage").then((module) => ({ default: module.PdfRotatePage }))
+);
+const PdfSplitPage = lazy(() =>
+  import("./pages/pdf/SplitPage").then((module) => ({ default: module.PdfSplitPage }))
+);
+const QrPage = lazy(() =>
+  import("./pages/qr/QrPage").then((module) => ({ default: module.QrPage }))
+);
+const Base64Page = lazy(() =>
+  import("./pages/text/Base64Page").then((module) => ({ default: module.Base64Page }))
+);
+const HashPage = lazy(() =>
+  import("./pages/text/HashPage").then((module) => ({ default: module.HashPage }))
+);
+const HtmlEncoderPage = lazy(() =>
+  import("./pages/text/HtmlEncoderPage").then((module) => ({ default: module.HtmlEncoderPage }))
+);
+const MarkdownPreviewPage = lazy(() =>
+  import("./pages/text/MarkdownPreviewPage").then((module) => ({ default: module.MarkdownPreviewPage }))
+);
+const TextDiffPage = lazy(() =>
+  import("./pages/text/TextDiffPage").then((module) => ({ default: module.TextDiffPage }))
+);
+const TextToolsPage = lazy(() =>
+  import("./pages/text/TextToolsPage").then((module) => ({ default: module.TextToolsPage }))
+);
+const UuidPage = lazy(() =>
+  import("./pages/text/UuidPage").then((module) => ({ default: module.UuidPage }))
+);
+
+interface AppRoute {
+  path: string;
+  element: JSX.Element;
+}
+
+const APP_ROUTES: AppRoute[] = [
+  { path: "/", element: <HomePage /> },
+  { path: "/json", element: <JsonHubPage /> },
+  { path: "/image/resize", element: <ImageResizePage /> },
+  { path: "/image/crop", element: <ImageCropPage /> },
+  { path: "/image/compress", element: <ImageCompressPage /> },
+  { path: "/image/convert", element: <ImageConvertPage /> },
+  { path: "/image/exif-viewer", element: <ExifPage kind="image-exif-viewer" /> },
+  { path: "/image/remove-exif", element: <ExifPage kind="image-remove-exif" /> },
+  { path: "/pdf/merge", element: <PdfMergePage /> },
+  { path: "/pdf/split", element: <PdfSplitPage /> },
+  { path: "/pdf/rotate", element: <PdfRotatePage /> },
+  { path: "/data/json-formatter", element: <JsonFormatterPage /> },
+  { path: "/data/csv-viewer", element: <CsvViewerPage /> },
+  { path: "/data/csv-to-json", element: <CsvToJsonPage /> },
+  { path: "/data/json-to-csv", element: <JsonToCsvPage /> },
+  { path: "/text/hash", element: <HashPage /> },
+  { path: "/text/uuid", element: <UuidPage /> },
+  { path: "/text/word-counter", element: <TextToolsPage kind="word-counter" /> },
+  { path: "/text/case-converter", element: <TextToolsPage kind="case-converter" /> },
+  { path: "/text/remove-duplicate-lines", element: <TextToolsPage kind="remove-duplicate-lines" /> },
+  { path: "/text/sort-lines", element: <TextToolsPage kind="sort-lines" /> },
+  { path: "/text/diff", element: <TextDiffPage /> },
+  { path: "/text/html-encoder", element: <HtmlEncoderPage /> },
+  { path: "/text/markdown", element: <MarkdownPreviewPage /> },
+  { path: "/developer/base64", element: <Base64Page /> },
+  { path: "/developer/jwt-key", element: <JwtKeyGeneratorPage /> },
+  { path: "/developer/jwt-decoder", element: <JwtDecoderPage /> },
+  { path: "/developer/url-encoder", element: <DeveloperToolsPage kind="url-encoder" /> },
+  { path: "/developer/unix-timestamp", element: <DeveloperToolsPage kind="unix-timestamp" /> },
+  { path: "/developer/json-yaml", element: <DeveloperToolsPage kind="json-yaml" /> },
+  { path: "/developer/json-diff", element: <DeveloperToolsPage kind="json-diff" /> },
+  { path: "/qr-code", element: <QrPage /> },
+];
+
+function RouteLocaleSync(): null {
+  const { pathname } = useLocation();
+  const { locale, setLocale } = useLanguage();
+  const routeLocale = localeFromPath(pathname);
+
+  useEffect(() => {
+    if (locale !== routeLocale) {
+      setLocale(routeLocale);
+    }
+  }, [locale, routeLocale, setLocale]);
+
+  return null;
+}
+
+function ScrollToTop(): null {
   const { pathname } = useLocation();
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
-    }
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
   }, [pathname]);
 
   return null;
 }
 
-function formatRouteLabel(pathname: string, t: (key: string) => string): string {
-  const parts = pathname.split("/").filter(Boolean);
-  if (parts.length === 0) {
-    return t("sidebar.home");
-  }
+function RouteLoading(): JSX.Element {
+  const { t } = useLanguage();
 
-  const words = parts
-    .map((part) =>
-      part
-        .split("-")
-        .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
-        .join(" ")
-    );
-
-  return words.join(" ");
+  return (
+    <div className="route-loading" role="status" aria-live="polite">
+      <span className="route-loading__spinner" aria-hidden="true" />
+      <span>{t("route.loading")}</span>
+    </div>
+  );
 }
-
-const TOOL_VISUALS: Record<string, { label: string; tone: string }> = {
-  "image-resize": { label: "IMG", tone: "blue" },
-  "image-crop": { label: "✂", tone: "violet" },
-  "image-compress": { label: "↘", tone: "mint" },
-  "image-convert": { label: "IMG", tone: "sky" },
-  "image-exif-viewer": { label: "EXIF", tone: "amber" },
-  "image-remove-exif": { label: "META", tone: "violet" },
-  "pdf-merge": { label: "PDF", tone: "red" },
-  "pdf-split": { label: "✂", tone: "violet" },
-  "pdf-rotate": { label: "PDF", tone: "red" },
-  "json-formatter": { label: "{}", tone: "blue" },
-  "csv-viewer": { label: "CSV", tone: "mint" },
-  "csv-to-json": { label: "CSV", tone: "mint" },
-  "json-to-csv": { label: "{}", tone: "blue" },
-  "base64": { label: "64", tone: "amber" },
-  "word-counter": { label: "TXT", tone: "mint" },
-  "case-converter": { label: "Aa", tone: "amber" },
-  "remove-duplicate-lines": { label: "≡", tone: "violet" },
-  "sort-lines": { label: "AZ", tone: "sky" },
-  "text-diff": { label: "≠", tone: "violet" },
-  "markdown-previewer": { label: "MD", tone: "sky" },
-  "html-encoder": { label: "HTML", tone: "blue" },
-  hash: { label: "#", tone: "violet" },
-  uuid: { label: "ID", tone: "sky" },
-  "jwt-key": { label: "KEY", tone: "violet" },
-  "jwt-decoder": { label: "JWT", tone: "blue" },
-  "url-encoder": { label: "URL", tone: "sky" },
-  "unix-timestamp": { label: "TIME", tone: "mint" },
-  "json-yaml": { label: "YAML", tone: "amber" },
-  "json-diff": { label: "DIFF", tone: "violet" },
-  "qr-code": { label: "QR", tone: "blue" },
-};
 
 function ToolFrame({ children }: { children: JSX.Element }): JSX.Element {
   const { pathname } = useLocation();
   const { t } = useLanguage();
-  const localToolMeta = useLocalizedToolMeta();
-  const isHome = pathname === "/";
-  const routeLabel = formatRouteLabel(pathname, t);
-  const currentTool = FILE_TOOLS.find((tool) => tool.path === pathname);
-  const landingTitle = currentTool ? localToolMeta(currentTool.id, "title") : routeLabel;
-  const landingDescription = currentTool ? localToolMeta(currentTool.id, "description") : t("home.subtitle");
-  const landingVisual = currentTool ? TOOL_VISUALS[currentTool.id] : undefined;
+  const basePath = stripLocalePrefix(pathname);
+  const isHome = basePath === "/";
+  const currentTool = FILE_TOOLS.find((tool) => tool.path === basePath);
+  const isNarrowViewport = useMediaQuery("(max-width: 900px)");
+  const [isToolsOpen, setToolsOpen] = useState(false);
+  const toolsButtonRef = useRef<HTMLButtonElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+
+  const closeTools = useCallback(() => {
+    setToolsOpen(false);
+    window.setTimeout(() => toolsButtonRef.current?.focus(), 0);
+  }, []);
 
   useEffect(() => {
-    if (!currentTool || pathname === "/") {
+    setToolsOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!isNarrowViewport || !isToolsOpen) {
+      return;
+    }
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const timer = window.setTimeout(() => closeButtonRef.current?.focus(), 0);
+
+    return () => {
+      window.clearTimeout(timer);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isNarrowViewport, isToolsOpen]);
+
+  useEffect(() => {
+    if (!currentTool || isHome) {
       return;
     }
     try {
       const stored = window.localStorage.getItem("nexaforge-recent-tools");
       const previous = stored ? JSON.parse(stored) : [];
-      const recent = Array.isArray(previous) ? previous.filter((id): id is string => typeof id === "string") : [];
+      const recent = Array.isArray(previous)
+        ? previous.filter((id): id is string => typeof id === "string")
+        : [];
       window.localStorage.setItem(
         "nexaforge-recent-tools",
-        JSON.stringify([currentTool.id, ...recent.filter((id) => id !== currentTool.id)].slice(0, 6))
+        JSON.stringify([
+          currentTool.id,
+          ...recent.filter((id) => id !== currentTool.id),
+        ].slice(0, 6))
       );
     } catch {
       // Recent tools are best-effort when storage is unavailable.
     }
-  }, [currentTool, pathname]);
+  }, [currentTool, isHome]);
 
   return (
     <div className="site-shell">
       <ScrollToTop />
-      <Header />
-      {isHome ? (
-        children
-      ) : (
-        <>
-          <section className="page-landing">
-            <p className="page-landing__kicker">{t("pageLanding.kicker")}</p>
-            <h1 className="page-landing__title">{landingTitle}</h1>
-            <p className="page-landing__description">{landingDescription}</p>
-            {landingVisual ? (
-              <div className={`page-landing__visual page-landing__visual--${landingVisual.tone}`} aria-hidden="true">
-                <span className="page-landing__visual-grid" />
-                <span className="page-landing__visual-orbit page-landing__visual-orbit--one" />
-                <span className="page-landing__visual-orbit page-landing__visual-orbit--two" />
-                <span className={`page-landing__icon page-landing__icon--${landingVisual.tone}`}>
-                  {landingVisual.label}
-                </span>
-              </div>
-            ) : null}
-          </section>
-          <div className="site-content">
-            <ToolSidebar />
-            <div className="content-shell">
-              <div className="tool-page-shell">{children}</div>
-            </div>
-          </div>
-        </>
-      )}
+      <a className="skip-link" href="#main-content">
+        {t("skip.toMain")}
+      </a>
+      <Header
+        showToolsButton={isNarrowViewport}
+        toolsOpen={isToolsOpen}
+        onOpenTools={() => setToolsOpen(true)}
+        toolsButtonRef={toolsButtonRef}
+      />
+      <div className={isHome ? "home-dashboard" : "site-content"}>
+        <ToolSidebar
+          isMobile={isNarrowViewport}
+          isOpen={!isNarrowViewport || isToolsOpen}
+          onClose={closeTools}
+          closeButtonRef={closeButtonRef}
+        />
+        <main
+          id="main-content"
+          className={isHome ? "home-workspace" : "content-shell"}
+          tabIndex={-1}
+        >
+          <Suspense fallback={<RouteLoading />}>
+            {isHome ? children : <div className="tool-page-shell">{children}</div>}
+          </Suspense>
+        </main>
+      </div>
+      {isNarrowViewport && isToolsOpen ? (
+        <button
+          type="button"
+          className="tool-sidebar-backdrop"
+          aria-label={t("header.closeTools")}
+          tabIndex={-1}
+          onClick={closeTools}
+        />
+      ) : null}
       <Footer />
     </div>
   );
 }
 
-export default function App() {
+export default function App(): JSX.Element {
   return (
-    <Routes>
-      <Route path="/" element={<ToolFrame><HomePage /></ToolFrame>} />
-      <Route path="/image/resize" element={<ToolFrame><ImageResizePage /></ToolFrame>} />
-      <Route path="/image/crop" element={<ToolFrame><ImageCropPage /></ToolFrame>} />
-      <Route path="/image/compress" element={<ToolFrame><ImageCompressPage /></ToolFrame>} />
-      <Route path="/image/convert" element={<ToolFrame><ImageConvertPage /></ToolFrame>} />
-      <Route path="/image/exif-viewer" element={<ToolFrame><ExifPage kind="image-exif-viewer" /></ToolFrame>} />
-      <Route path="/image/remove-exif" element={<ToolFrame><ExifPage kind="image-remove-exif" /></ToolFrame>} />
-
-      <Route path="/pdf/merge" element={<ToolFrame><PdfMergePage /></ToolFrame>} />
-      <Route path="/pdf/split" element={<ToolFrame><PdfSplitPage /></ToolFrame>} />
-      <Route path="/pdf/rotate" element={<ToolFrame><PdfRotatePage /></ToolFrame>} />
-
-      <Route path="/data/json-formatter" element={<ToolFrame><JsonFormatterPage /></ToolFrame>} />
-      <Route path="/data/csv-viewer" element={<ToolFrame><CsvViewerPage /></ToolFrame>} />
-      <Route path="/data/csv-to-json" element={<ToolFrame><CsvToJsonPage /></ToolFrame>} />
-      <Route path="/data/json-to-csv" element={<ToolFrame><JsonToCsvPage /></ToolFrame>} />
-
-      <Route path="/text/base64" element={<Navigate to="/developer/base64" replace />} />
-      <Route path="/text/hash" element={<ToolFrame><HashPage /></ToolFrame>} />
-      <Route path="/text/uuid" element={<ToolFrame><UuidPage /></ToolFrame>} />
-      <Route path="/text/word-counter" element={<ToolFrame><TextToolsPage kind="word-counter" /></ToolFrame>} />
-      <Route path="/text/case-converter" element={<ToolFrame><TextToolsPage kind="case-converter" /></ToolFrame>} />
-      <Route path="/text/remove-duplicate-lines" element={<ToolFrame><TextToolsPage kind="remove-duplicate-lines" /></ToolFrame>} />
-      <Route path="/text/sort-lines" element={<ToolFrame><TextToolsPage kind="sort-lines" /></ToolFrame>} />
-      <Route path="/text/diff" element={<ToolFrame><TextDiffPage /></ToolFrame>} />
-      <Route path="/text/html-encoder" element={<ToolFrame><HtmlEncoderPage /></ToolFrame>} />
-      <Route path="/text/markdown" element={<ToolFrame><MarkdownPreviewPage /></ToolFrame>} />
-      <Route path="/developer/base64" element={<ToolFrame><Base64Page /></ToolFrame>} />
-      <Route path="/developer/jwt-key" element={<ToolFrame><JwtKeyGeneratorPage /></ToolFrame>} />
-      <Route path="/developer/jwt-decoder" element={<ToolFrame><JwtDecoderPage /></ToolFrame>} />
-      <Route path="/developer/url-encoder" element={<ToolFrame><DeveloperToolsPage kind="url-encoder" /></ToolFrame>} />
-      <Route path="/developer/unix-timestamp" element={<ToolFrame><DeveloperToolsPage kind="unix-timestamp" /></ToolFrame>} />
-      <Route path="/developer/json-yaml" element={<ToolFrame><DeveloperToolsPage kind="json-yaml" /></ToolFrame>} />
-      <Route path="/developer/json-diff" element={<ToolFrame><DeveloperToolsPage kind="json-diff" /></ToolFrame>} />
-
-      <Route path="/qr-code" element={<ToolFrame><QrPage /></ToolFrame>} />
-
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+    <>
+      <RouteLocaleSync />
+      <Routes>
+        {APP_ROUTES.flatMap(({ path, element }) => [
+          <Route
+            key={`zh-TW:${path}`}
+            path={path}
+            element={<ToolFrame>{element}</ToolFrame>}
+          />,
+          <Route
+            key={`en:${path}`}
+            path={localizePath(path, "en")}
+            element={<ToolFrame>{element}</ToolFrame>}
+          />,
+        ])}
+        <Route path="/text/base64" element={<Navigate to="/developer/base64" replace />} />
+        <Route path="/en/text/base64" element={<Navigate to="/en/developer/base64" replace />} />
+        <Route path="*" element={<ToolFrame><NotFoundPage /></ToolFrame>} />
+      </Routes>
+    </>
   );
 }

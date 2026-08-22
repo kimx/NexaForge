@@ -1,21 +1,12 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
-import type { ReactElement } from "react";
+import { fireEvent, screen, waitFor } from "@testing-library/react";
 import { vi } from "vitest";
 import { UuidPage } from "./UuidPage";
 import * as textService from "../../services/text/textService";
+import { renderWithProviders } from "../../test/renderWithProviders";
 
 afterEach(() => {
   vi.restoreAllMocks();
 });
-
-function renderWithRouter(ui: ReactElement): ReturnType<typeof render> {
-  return render(
-    <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-      {ui}
-    </MemoryRouter>
-  );
-}
 
 describe("UuidPage", () => {
   it("shows error when generator fails", async () => {
@@ -24,7 +15,7 @@ describe("UuidPage", () => {
       throw new Error("failure");
     });
 
-    renderWithRouter(<UuidPage />);
+    renderWithProviders(<UuidPage />);
     fireEvent.click(screen.getByRole("button", { name: "Generate" }));
 
     await waitFor(() => {
@@ -36,7 +27,7 @@ describe("UuidPage", () => {
 
   it("generates uuids and renders output", async () => {
     vi.spyOn(textService, "generateUuids").mockReturnValue(["111", "222"]);
-    const { container } = renderWithRouter(<UuidPage />);
+    const { container } = renderWithProviders(<UuidPage />);
     fireEvent.click(screen.getByRole("button", { name: "Generate" }));
     const result = container.querySelector("pre");
     expect(result).not.toBeNull();

@@ -1,30 +1,35 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
-import type { ReactElement } from "react";
+import { fireEvent, screen, waitFor } from "@testing-library/react";
 import { vi } from "vitest";
 import { ImageResizePage } from "./ResizePage";
 import * as imageService from "../../services/image/imageService";
 import type { FileProcessResult } from "../../types/tool";
+import { renderWithProviders } from "../../test/renderWithProviders";
 
 afterEach(() => {
   vi.restoreAllMocks();
 });
 
-function renderWithRouter(ui: ReactElement): ReturnType<typeof render> {
-  return render(
-    <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-      {ui}
-    </MemoryRouter>
-  );
-}
-
 describe("ImageResizePage", () => {
+  it("enables processing only after an image is selected", () => {
+    const { container } = renderWithProviders(<ImageResizePage />);
+    const action = screen.getByRole("button", { name: "Process" });
+    expect(action).toBeDisabled();
+
+    const input = container.querySelector('input[type="file"]') as HTMLInputElement;
+    fireEvent.change(input, {
+      target: { files: [new File(["abc"], "sample.png", { type: "image/png" })] },
+    });
+
+    expect(action).toBeEnabled();
+    expect(screen.queryByRole("button", { name: "Download" })).not.toBeInTheDocument();
+  });
+
   it("disables process button while resize is in progress", async () => {
     const resizeSpy = vi
       .spyOn(imageService, "resizeImage")
       .mockImplementation(() => new Promise<FileProcessResult>(() => {}));
 
-    const { container } = renderWithRouter(<ImageResizePage />);
+    const { container } = renderWithProviders(<ImageResizePage />);
     const input = container.querySelector('input[type="file"]') as HTMLInputElement;
     const file = new File(["abc"], "sample.png", { type: "image/png" });
     fireEvent.change(input, { target: { files: [file] } });
@@ -45,7 +50,7 @@ describe("ImageResizePage", () => {
     const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
     vi.spyOn(imageService, "resizeImage").mockRejectedValue(new Error("failure"));
 
-    const { container } = renderWithRouter(<ImageResizePage />);
+    const { container } = renderWithProviders(<ImageResizePage />);
     const input = container.querySelector('input[type="file"]') as HTMLInputElement;
     const file = new File(["abc"], "sample.png", { type: "image/png" });
     fireEvent.change(input, { target: { files: [file] } });
@@ -60,4 +65,3 @@ describe("ImageResizePage", () => {
     consoleError.mockRestore();
   });
 });
-

@@ -5,7 +5,7 @@ import { ProcessingStatus } from "./ProcessingStatus";
 describe("ProcessingStatus", () => {
   it("exposes determinate processing progress", () => {
     render(
-      <LanguageProvider>
+      <LanguageProvider initialLocale="en">
         <ProcessingStatus state="processing" progress={42} />
       </LanguageProvider>
     );

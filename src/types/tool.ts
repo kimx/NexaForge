@@ -60,6 +60,7 @@ export interface ToolMeta {
   description: string;
   canonical: string;
   h1: string;
+  noIndex?: boolean;
 }
 
 export interface ValidationError {

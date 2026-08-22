@@ -184,7 +184,7 @@ export function ImageResizePage(): JSX.Element {
             <button
               className="btn primary"
               type="button"
-              disabled={processing === "processing"}
+              disabled={!hasSelection || processing === "processing"}
               aria-busy={processing === "processing"}
               onClick={handleProcess}
             >
@@ -207,11 +207,13 @@ export function ImageResizePage(): JSX.Element {
             ) : (
               <p>{t("label.noResult")}</p>
             )}
-            <DownloadButton
-              result={result}
-              disabled={processing === "processing"}
-              onDownloaded={() => trackEvent("download", { tool: "image-resize" })}
-            />
+            {result ? (
+              <DownloadButton
+                result={result}
+                disabled={processing === "processing"}
+                onDownloaded={() => trackEvent("download", { tool: "image-resize" })}
+              />
+            ) : null}
           </>
         ),
         howItWorks,

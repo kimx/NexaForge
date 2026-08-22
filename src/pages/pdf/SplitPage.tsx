@@ -154,7 +154,7 @@ export function PdfSplitPage(): JSX.Element {
               type="button"
               className="btn primary"
               onClick={handleProcess}
-              disabled={processing === "processing"}
+              disabled={!file.length || processing === "processing"}
               aria-busy={processing === "processing"}
             >
               {processing === "processing" ? t("button.processing") : t("button.process")}
@@ -242,11 +242,13 @@ export function PdfSplitPage(): JSX.Element {
             ) : (
               <p>{t("label.noResult")}</p>
             )}
-            <DownloadButton
-              result={result}
-              disabled={processing === "processing"}
-              onDownloaded={() => trackEvent("download", { tool: "pdf-split" })}
-            />
+            {result ? (
+              <DownloadButton
+                result={result}
+                disabled={processing === "processing"}
+                onDownloaded={() => trackEvent("download", { tool: "pdf-split" })}
+              />
+            ) : null}
           </>
         ),
         howItWorks,

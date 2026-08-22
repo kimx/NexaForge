@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useId, useMemo, useState } from "react";
 import { ProcessingState, ToolMeta, FileProcessResult } from "../../types/tool";
 import { FILE_TOOLS } from "../../data/tools";
 import { ToolPageTemplate } from "../../components/ToolPageTemplate";
@@ -26,6 +26,10 @@ export function JsonToCsvPage(): JSX.Element {
   const [processing, setProcessing] = useState<ProcessingState>("idle");
   const [result, setResult] = useState<FileProcessResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [inputError, setInputError] = useState<string | null>(null);
+  const inputErrorId = useId();
+  const canProcess =
+    inputSource === "text" ? Boolean(jsonInput.trim()) : files.length > 0;
 
   const tool = FILE_TOOLS.find((item) => item.id === "json-to-csv");
   const title = t("tool.json-to-csv.title");
@@ -65,7 +69,20 @@ export function JsonToCsvPage(): JSX.Element {
     let source: File;
     if (inputSource === "text") {
       if (!jsonInput.trim()) {
-        setError(t("error.enterJsonText"));
+        setInputError(t("error.enterJsonText"));
+        setProcessing("error");
+        return;
+      }
+
+      try {
+        const parsed = JSON.parse(jsonInput);
+        if (!Array.isArray(parsed)) {
+          setInputError(t("tool.json-to-csv.validation.arrayRequired"));
+          setProcessing("error");
+          return;
+        }
+      } catch {
+        setInputError(t("tool.json-to-csv.validation.invalidJson"));
         setProcessing("error");
         return;
       }
@@ -87,6 +104,7 @@ export function JsonToCsvPage(): JSX.Element {
       source = selectedFile;
     }
     setError(null);
+    setInputError(null);
     setProcessing("processing");
     trackEvent("process_start", { tool: "json-to-csv" });
     try {
@@ -114,27 +132,56 @@ export function JsonToCsvPage(): JSX.Element {
               {t("label.inputSource")}
               <select
                 value={inputSource}
-                onChange={(event) => setInputSource(event.target.value as "text" | "file")}
+                onChange={(event) => {
+                  const nextSource = event.target.value as "text" | "file";
+                  setInputSource(nextSource);
+                  setInputError(null);
+                  setError(null);
+                  setResult(null);
+                  setProcessing(nextSource === "text" && jsonInput.trim() ? "ready" : "idle");
+                }}
               >
                 <option value="text">{t("tool.json-to-csv.label.inputSourceText")}</option>
                 <option value="file">{t("tool.json-to-csv.label.inputSourceFile")}</option>
               </select>
             </label>
             {inputSource === "text" ? (
-              <label>
-                {t("tool.json-to-csv.label.inputSourceText")}
+              <div className="tool-field">
+                <label htmlFor="json-to-csv-input">
+                  {t("tool.json-to-csv.label.inputSourceText")}
+                </label>
                 <textarea
+                  id="json-to-csv-input"
                   rows={12}
                   value={jsonInput}
-                  onChange={(event) => setJsonInput(event.target.value)}
+                  aria-invalid={Boolean(inputError)}
+                  aria-describedby={inputError ? inputErrorId : undefined}
+                  onChange={(event) => {
+                    const nextInput = event.target.value;
+                    setJsonInput(nextInput);
+                    setInputError(null);
+                    setError(null);
+                    setResult(null);
+                    setProcessing(nextInput.trim() ? "ready" : "idle");
+                  }}
                 />
-              </label>
+                {inputError ? (
+                  <p id={inputErrorId} role="alert" className="error">
+                    {inputError}
+                  </p>
+                ) : null}
+              </div>
             ) : (
               <>
                 <FileDropzone
                   label={t("label.dropJson")}
                   accept="application/json,text/plain"
-                  onFiles={setFiles}
+                  onFiles={(nextFiles) => {
+                    setFiles(nextFiles);
+                    setError(null);
+                    setResult(null);
+                    setProcessing(nextFiles.length ? "ready" : "idle");
+                  }}
                   multiple={false}
                 />
                 <FileInfo files={files} />
@@ -156,7 +203,7 @@ export function JsonToCsvPage(): JSX.Element {
               type="button"
               className="btn primary"
               onClick={handleProcess}
-              disabled={processing === "processing"}
+              disabled={!canProcess || processing === "processing"}
               aria-busy={processing === "processing"}
             >
               {processing === "processing" ? t("button.processing") : t("button.process")}
@@ -166,11 +213,13 @@ export function JsonToCsvPage(): JSX.Element {
         result: (
           <>
             {processing === "error" && error && <p role="alert" className="error">{error}</p>}
-            <DownloadButton
-              result={result}
-              disabled={processing === "processing"}
-              onDownloaded={() => trackEvent("download", { tool: "json-to-csv" })}
-            />
+            {result ? (
+              <DownloadButton
+                result={result}
+                disabled={processing === "processing"}
+                onDownloaded={() => trackEvent("download", { tool: "json-to-csv" })}
+              />
+            ) : null}
           </>
         ),
         howItWorks,
