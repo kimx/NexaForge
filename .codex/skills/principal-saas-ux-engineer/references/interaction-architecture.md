@@ -10,7 +10,7 @@ Produce an operation model precise enough that implementation does not have to i
 
 | Decision | Determine | Produce |
 |---|---|---|
-| Actor and job | Role, trigger, frequency, desired outcome, error cost | One primary actor/job statement; secondary roles separate |
+| Actor and job | Role, trigger, frequency, desired outcome, error cost | Exactly one primary product role/job; choose the most frequent or representative role and list others as secondary |
 | Entry and orientation | Route, page identity, scope, prior context, back path | Entry points, persistent context, return behavior |
 | Primary path | Minimum decisions/actions, defaults, latency | Ordered steps with system feedback |
 | Exceptions | Validation, conflict, partial failure, permission, cancellation, retry, undo | Branch and recovery for each consequential failure |

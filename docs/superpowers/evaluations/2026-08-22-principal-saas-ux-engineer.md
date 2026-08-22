@@ -62,8 +62,62 @@ The failures are omissions and output-shape problems, not agents knowingly bypas
 
 ## Skill-guided results
 
-To be completed only after the skill exists. Guided samples use the same scenario and unchanged rubric.
+Five fresh-context agents read the completed skill and only the references it routed for the fixed scenario. The rubric and scenario remained unchanged.
+
+| Sample | Task | Flow | Layout | Responsive | A11y | Implementation | Verification | Total |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| Guided 1 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 14 |
+| Guided 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 14 |
+| Guided 3 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 14 |
+| Guided 4 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 14 |
+| Guided 5 | 1 | 2 | 2 | 2 | 2 | 2 | 2 | 13 |
+
+Initial guided median: **14/14**.
+
+### Manual observations
+
+**Guided 1 — 14/14.** Names `Workspace Owner` as primary and Admin/Viewer as secondary, distinguishes supplied evidence from uninspected repository/API/design-system evidence, and closes with a ten-row observable acceptance table pairing fixtures and inputs with actions and results.
+
+**Guided 2 — 14/14.** Names `Admin responsible for day-to-day user access` as primary. Its acceptance fixtures cover data scale, long content, Viewer capability, protected rows, conflict, partial failure, keyboard, and network failure with explicit actions and expected results.
+
+**Guided 3 — 14/14.** Names `Workspace Owner managing access` as primary and makes fallback layout values conditional on missing product tokens. Its verification table links each risk to an interface rule and observable check.
+
+**Guided 4 — 14/14.** Names `workspace Admin responsible for routine user access management` as primary and clearly separates Owner and Viewer. It supplies ten acceptance scenarios plus a decision-trace table.
+
+**Guided 5 — 13/14.** Improves verification completely but uses a compound primary actor: “an organization Owner or Admin.” This violates the skill's intended single-role task model and exposed wording variance despite a strong median.
+
+### Evidence-based refactor
+
+The entrypoint and interaction reference were narrowed to require this positive slot:
+
+```text
+Primary actor: exactly one product role. When roles share the job, choose the most frequent or representative role and list the rest as secondary.
+```
+
+A new fresh-context sample then named `Admin` as the sole primary actor and `Owner and Viewer` as secondary actors. It retained all other rubric dimensions and scored **14/14**. No rationalization table or red-flag section was added because the defect was output shape, not deliberate noncompliance.
+
+### Baseline comparison
+
+| Measure | No skill | Guided after refactor |
+|---|---:|---:|
+| Median total | 12/14 | 14/14 |
+| Primary-actor median | 1/2 | 2/2 |
+| Verification median | 1/2 | 2/2 |
+| Flow, layout, responsive, a11y, implementation medians | 2/2 | 2/2 |
+
+The skill corrects the two repeated baseline omissions without regressing the five dimensions that baseline agents already handled well.
 
 ## Collaboration test
 
-To be completed after the skill exists using the conflict scenario defined in the implementation plan.
+Scenario: `senior-ux-designer` recommends replacing a 10,000-user management table with profile cards because cards feel more approachable; operations evidence says admins compare roles/statuses and perform bulk actions daily.
+
+Result: **Pass**.
+
+- Preserved the valid goal: “users should feel like people, not database records.”
+- Recorded `Decision | Agreement | Conflict | Evidence | Resolution` for primary collection, visual tone, profile content, bulk interaction, responsive behavior, and validation.
+- Resolved the primary view to a semantic table because aligned comparison and bulk scope are observed daily jobs.
+- Reused the card goal in a profile-detail surface and a stronger identity cell rather than dismissing it.
+- Explicitly stated that taste or role title does not outweigh task evidence.
+- Produced implementable table, bulk, server-contract, accessibility, and verification direction.
+
+This demonstrates complementary collaboration rather than silent override or role competition.

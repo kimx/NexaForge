@@ -28,7 +28,7 @@ Skip references outside the task's scope.
 
 Inspect the product surface and repository when available. State:
 
-- one **primary actor** for the main job, with secondary roles separate;
+- **primary actor: exactly one product role** for the main job; when roles share it, choose the most frequent or representative role and list the rest as secondary;
 - **trigger, job, success, frequency, and error cost**;
 - policy, permission, data/API, brand, device, and technical **constraints**;
 - **evidence**: user input, repository, research/analytics, or design system;
@@ -65,7 +65,7 @@ Preserve each skill's independent assessment before synthesis. Record `Decision 
 
 Apply relevant gates only:
 
-- Name one primary actor, job, success condition, and consequential constraint.
+- Name exactly one primary actor role, plus the job, success condition, and consequential constraint.
 - Make primary and destructive actions unambiguous; model applicable permissions and states.
 - Preserve hierarchy, comparison, and scanning in dense or responsive layouts.
 - Reuse existing tokens/components unless evidence supports a targeted deviation.
