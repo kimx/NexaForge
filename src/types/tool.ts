@@ -21,7 +21,7 @@ export interface ImageCompressOptions {
 }
 
 export interface ImageConvertOptions {
-  format: "jpeg" | "png" | "webp";
+  format: "jpeg" | "png" | "webp" | "avif";
 }
 
 export interface HashOptions {

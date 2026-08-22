@@ -12,9 +12,11 @@
     "test": "vitest"
   },
   "dependencies": {
+    "@jsquash/avif": "^2.1.1",
     "@zxing/browser": "^0.2.1",
     "bwip-js": "^4.11.4",
     "fflate": "^0.8.3",
+    "heic-to": "^1.5.2",
     "papaparse": "^5.4.1",
     "pdf-lib": "^1.17.1",
     "qrcode": "^1.5.4",

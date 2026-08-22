@@ -14,12 +14,12 @@ import { validateFileSize, validateMime } from "../../utils/validation";
 import { useLanguage } from "../../context/LanguageContext";
 import { SizeComparison } from "../../components/SizeComparison";
 
-const IMAGE_ACCEPT = "image/jpeg,image/png,image/webp";
+const IMAGE_ACCEPT = "image/jpeg,image/png,image/webp,image/avif,.avif";
 
 export function ImageConvertPage(): JSX.Element {
   const { t } = useLanguage();
   const [files, setFiles] = useState<File[]>([]);
-  const [format, setFormat] = useState<"jpeg" | "png" | "webp">("png");
+  const [format, setFormat] = useState<"jpeg" | "png" | "webp" | "avif">("png");
   const [processing, setProcessing] = useState<ProcessingState>("idle");
   const [result, setResult] = useState<FileProcessResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -125,11 +125,12 @@ export function ImageConvertPage(): JSX.Element {
               {t("label.targetFormat")}
               <select
                 value={format}
-                onChange={(event) => setFormat(event.target.value as "jpeg" | "png" | "webp")}
+                onChange={(event) => setFormat(event.target.value as "jpeg" | "png" | "webp" | "avif")}
               >
                 <option value="jpeg">JPG</option>
                 <option value="png">PNG</option>
                 <option value="webp">WebP</option>
+                <option value="avif">AVIF</option>
               </select>
             </label>
             <button

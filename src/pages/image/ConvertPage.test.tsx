@@ -10,6 +10,11 @@ afterEach(() => {
 });
 
 describe("ImageConvertPage", () => {
+  it("offers AVIF as an input and output format", () => {
+    const { container } = renderWithProviders(<ImageConvertPage />);
+    expect(screen.getByRole("option", { name: "AVIF" })).toBeInTheDocument();
+    expect(container.querySelector('input[type="file"]')).toHaveAttribute("accept", expect.stringContaining("image/avif"));
+  });
   it("enables processing only after an image is selected", () => {
     const { container } = renderWithProviders(<ImageConvertPage />);
     const action = screen.getByRole("button", { name: "Process" });

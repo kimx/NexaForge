@@ -4,7 +4,7 @@ export function useBlobUrl(blob: Blob | null | undefined): string {
   const [url, setUrl] = useState("");
 
   useEffect(() => {
-    if (!blob) {
+    if (!blob || typeof URL.createObjectURL !== "function") {
       setUrl("");
       return;
     }

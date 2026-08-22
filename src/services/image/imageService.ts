@@ -4,6 +4,7 @@ import type {
   ImageConvertOptions,
   ImageResizeOptions,
 } from "../../types/tool";
+import { decodeAvif, encodeAvif } from "./avifService";
 
 const mimeMap: Record<ImageResizeOptions["format"], string> = {
   jpeg: "image/jpeg",
@@ -27,6 +28,11 @@ function resolveFileExtension(format: ImageResizeOptions["format"]): string {
 function filenameWithExtension(fileName: string, extension: string): string {
   const baseName = fileName.replace(/\.[^/.]+$/, "");
   return `${baseName}${extension}`;
+}
+
+function convertFormatDetails(format: ImageConvertOptions["format"]): { mime: string; extension: string } {
+  if (format === "avif") return { mime: "image/avif", extension: ".avif" };
+  return { mime: mimeMap[format], extension: resolveFileExtension(format) };
 }
 
 function clampPercent(v: number): number {
@@ -99,7 +105,7 @@ export async function resizeImage(file: File, options: ImageResizeOptions): Prom
 }
 
 export async function convertImage(file: File, options: ImageConvertOptions): Promise<FileProcessResult> {
-  return withCanvasImageBitmap(file, async (bitmap) => {
+  const drawBitmap = async (bitmap: ImageBitmap): Promise<FileProcessResult> => {
     const canvas = document.createElement("canvas");
     canvas.width = bitmap.width;
     canvas.height = bitmap.height;
@@ -109,14 +115,40 @@ export async function convertImage(file: File, options: ImageConvertOptions): Pr
     }
     context.drawImage(bitmap, 0, 0);
 
-    const blob = await toBlobPromise(canvas, mimeMap[options.format], 0.92);
+    const details = convertFormatDetails(options.format);
+    let blob: Blob;
+    if (options.format === "avif") {
+      try {
+        const native = await toBlobPromise(canvas, details.mime, 0.82);
+        blob = native.type === details.mime ? native : await encodeAvif(context.getImageData(0, 0, canvas.width, canvas.height), 82);
+      } catch {
+        blob = await encodeAvif(context.getImageData(0, 0, canvas.width, canvas.height), 82);
+      }
+    } else {
+      blob = await toBlobPromise(canvas, details.mime, 0.92);
+    }
     return {
       blob,
-      fileName: filenameWithExtension(file.name, resolveFileExtension(options.format)),
-      mimeType: mimeMap[options.format],
+      fileName: filenameWithExtension(file.name, details.extension),
+      mimeType: details.mime,
       size: blob.size,
     };
-  });
+  };
+
+  try {
+    return await withCanvasImageBitmap(file, drawBitmap);
+  } catch (cause) {
+    if (file.type !== "image/avif" && !/\.avif$/i.test(file.name)) throw cause;
+    const image = await decodeAvif(file);
+    const canvas = document.createElement("canvas");
+    canvas.width = image.width; canvas.height = image.height;
+    const context = canvas.getContext("2d");
+    if (!context) throw new Error("Canvas context unavailable.");
+    context.putImageData(image, 0, 0);
+    const details = convertFormatDetails(options.format);
+    const blob = options.format === "avif" ? await encodeAvif(image, 82) : await toBlobPromise(canvas, details.mime, 0.92);
+    return { blob, fileName: filenameWithExtension(file.name, details.extension), mimeType: details.mime, size: blob.size };
+  }
 }
 
 export async function compressImage(file: File, options: ImageCompressOptions): Promise<FileProcessResult> {
