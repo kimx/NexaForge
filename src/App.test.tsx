@@ -20,7 +20,11 @@ const ROUTE_HEADINGS: Record<string, string> = {
   "/data/csv-viewer": "CSV Viewer",
   "/data/csv-to-json": "CSV to JSON",
   "/data/json-to-csv": "JSON to CSV",
+  "/data/json-xml": "JSON ↔ XML",
+  "/data/xml-formatter": "XML Formatter",
   "/developer/base64": "Base64",
+  "/developer/json-to-csharp": "JSON → C# Class",
+  "/developer/json-to-typescript": "JSON → TypeScript Interface",
   "/developer/regex-tester": "Regex Tester",
   "/text/hash": "Hash Generator",
   "/text/uuid": "UUID Generator",
@@ -75,6 +79,19 @@ describe("App routes", () => {
       "/barcode/generator",
       "/qr-code/wifi",
       "/qr-code/vcard",
+    ];
+    paths.forEach((path) => {
+      expect(BASE_INDEXABLE_ROUTES).toContain(path);
+      expect(INDEXABLE_ROUTES).toContain(`/en${path}`);
+    });
+  });
+
+  it("publishes every structured data route in both locales", () => {
+    const paths = [
+      "/developer/json-to-csharp",
+      "/developer/json-to-typescript",
+      "/data/json-xml",
+      "/data/xml-formatter",
     ];
     paths.forEach((path) => {
       expect(BASE_INDEXABLE_ROUTES).toContain(path);

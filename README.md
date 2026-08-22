@@ -41,6 +41,8 @@ NexaForge 將常見工具集中到一個站點，從圖片到 PDF、從 JSON 到
 - **CSV Viewer**：檢視與快速預覽 CSV
 - **CSV → JSON**：CSV 轉 JSON
 - **JSON → CSV**：JSON 轉 CSV
+- **JSON ↔ XML**：依 @attribute、#text 與陣列規則雙向轉換
+- **XML Formatter**：驗證、格式化與壓縮 XML
 
 ### 文字工具
 - **Word Counter**：統計文字、字元與行數
@@ -54,6 +56,8 @@ NexaForge 將常見工具集中到一個站點，從圖片到 PDF、從 JSON 到
 - **Base64**：文字與檔案的 Base64 互轉
 - **JWT Decoder / JWT Key Generator**：開發驗證流程輔助
 - **Regex Tester**：安全測試 JavaScript 正則表達式、旗標與擷取群組
+- **JSON → C# Class**：產生巢狀類別、可空型別與 JSON 欄位對應
+- **JSON → TypeScript Interface**：產生 interface、聯集與可選欄位
 
 ### QR 與條碼工具
 - **QR Code Generator / Reader**：建立 QR 圖片，或從圖片與相機辨識 QR

@@ -33,6 +33,19 @@ describe("buildPageSeo", () => {
     ]));
   });
 
+  it("classifies code generation and XML routes with localized canonicals", () => {
+    const csharp = buildPageSeo("/developer/json-to-csharp", "en");
+    const xml = buildPageSeo("/data/json-xml", "en");
+
+    expect(csharp.title).toContain("JSON → C# Class");
+    expect(csharp.canonical).toBe("https://nexaforge.kimx.info/en/developer/json-to-csharp");
+    expect(csharp.jsonLd).toEqual(expect.arrayContaining([
+      expect.objectContaining({ applicationCategory: "DeveloperApplication" }),
+    ]));
+    expect(xml.title).toContain("JSON ↔ XML");
+    expect(xml.alternates["zh-Hant"]).toBe("https://nexaforge.kimx.info/data/json-xml");
+  });
+
   it("builds production bilingual URLs and structured data for a JSON tool", () => {
     const seo = buildPageSeo("/data/json-formatter", "en");
 

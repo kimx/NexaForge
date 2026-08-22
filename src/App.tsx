@@ -31,11 +31,23 @@ const JsonFormatterPage = lazy(() =>
 const JsonToCsvPage = lazy(() =>
   import("./pages/data/JsonToCsvPage").then((module) => ({ default: module.JsonToCsvPage }))
 );
+const JsonXmlPage = lazy(() =>
+  import("./pages/data/JsonXmlPage").then((module) => ({ default: module.JsonXmlPage }))
+);
+const XmlFormatterPage = lazy(() =>
+  import("./pages/data/XmlFormatterPage").then((module) => ({ default: module.XmlFormatterPage }))
+);
 const DeveloperToolsPage = lazy(() =>
   import("./pages/developer/DeveloperToolsPage").then((module) => ({ default: module.DeveloperToolsPage }))
 );
 const RegexTesterPage = lazy(() =>
   import("./pages/developer/RegexTesterPage").then((module) => ({ default: module.RegexTesterPage }))
+);
+const JsonToCSharpPage = lazy(() =>
+  import("./pages/developer/JsonToCSharpPage").then((module) => ({ default: module.JsonToCSharpPage }))
+);
+const JsonToTypeScriptPage = lazy(() =>
+  import("./pages/developer/JsonToTypeScriptPage").then((module) => ({ default: module.JsonToTypeScriptPage }))
 );
 const JwtDecoderPage = lazy(() =>
   import("./pages/developer/JwtDecoderPage").then((module) => ({ default: module.JwtDecoderPage }))
@@ -125,6 +137,8 @@ const APP_ROUTES: AppRoute[] = [
   { path: "/data/csv-viewer", element: <CsvViewerPage /> },
   { path: "/data/csv-to-json", element: <CsvToJsonPage /> },
   { path: "/data/json-to-csv", element: <JsonToCsvPage /> },
+  { path: "/data/json-xml", element: <JsonXmlPage /> },
+  { path: "/data/xml-formatter", element: <XmlFormatterPage /> },
   { path: "/text/hash", element: <HashPage /> },
   { path: "/text/uuid", element: <UuidPage /> },
   { path: "/text/word-counter", element: <TextToolsPage kind="word-counter" /> },
@@ -142,6 +156,8 @@ const APP_ROUTES: AppRoute[] = [
   { path: "/developer/json-yaml", element: <DeveloperToolsPage kind="json-yaml" /> },
   { path: "/developer/json-diff", element: <DeveloperToolsPage kind="json-diff" /> },
   { path: "/developer/regex-tester", element: <RegexTesterPage /> },
+  { path: "/developer/json-to-csharp", element: <JsonToCSharpPage /> },
+  { path: "/developer/json-to-typescript", element: <JsonToTypeScriptPage /> },
   { path: "/qr-code", element: <QrPage /> },
   { path: "/qr-code/reader", element: <QrReaderPage /> },
   { path: "/barcode/generator", element: <BarcodeGeneratorPage /> },
