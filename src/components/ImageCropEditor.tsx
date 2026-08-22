@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { KeyboardEvent, PointerEvent } from "react";
+import type { CSSProperties, KeyboardEvent, PointerEvent } from "react";
 import type {
   CropBounds,
   CropPoint,
@@ -40,6 +40,21 @@ const HANDLE_DIRECTIONS: ResizeDirection[] = [
   "west",
   "northwest",
 ];
+
+function getHandlePosition(bounds: CropBounds, direction: ResizeDirection): CSSProperties {
+  const left = direction.includes("west")
+    ? bounds.x
+    : direction.includes("east")
+      ? bounds.x + bounds.width
+      : bounds.x + bounds.width / 2;
+  const top = direction.includes("north")
+    ? bounds.y
+    : direction.includes("south")
+      ? bounds.y + bounds.height
+      : bounds.y + bounds.height / 2;
+
+  return { left: `${left * 100}%`, top: `${top * 100}%` };
+}
 
 function stable(value: number): number {
   return Math.round(value * 1_000_000) / 1_000_000;
@@ -415,6 +430,7 @@ export function ImageCropEditor({
     setDraftPoints(null);
     onChange(createDefaultCropSettings());
   };
+  const presetBounds = value.shape.bounds;
 
   return (
     <div className="image-crop-editor">
@@ -455,12 +471,13 @@ export function ImageCropEditor({
           onPointerUp={stopCanvasPointer}
           onPointerCancel={stopCanvasPointer}
         />
-        {PRESET_KINDS.includes(value.shape.kind) && value.shape.bounds
+        {PRESET_KINDS.includes(value.shape.kind) && presetBounds
           ? HANDLE_DIRECTIONS.map((direction) => (
               <button
                 key={direction}
                 type="button"
                 className={`image-crop-editor__handle image-crop-editor__handle--${direction}`}
+                style={getHandlePosition(presetBounds, direction)}
                 aria-label={`${labels.resizeShape} ${direction}`}
                 onKeyDown={(event) => handleResizeKey(event, direction)}
                 onPointerDown={(event) => handleResizePointerDown(event, direction)}

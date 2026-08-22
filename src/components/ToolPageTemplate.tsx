@@ -69,7 +69,7 @@ export function ToolPageTemplate({
   const showResultSection = !workflow || workflow.state !== "idle";
 
   return (
-    <main className={`tool-page ${tool.id === "json-formatter" ? "tool-page--json-formatter" : ""}`}>
+    <main className={`tool-page tool-page--${tool.id}`}>
       <div className="tool-container">
         <nav className="breadcrumb tool-page__breadcrumb" aria-label={t("breadcrumb.aria")}>
           {localizedBreadcrumb.map((item, index) => (

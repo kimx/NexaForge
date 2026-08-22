@@ -6,6 +6,7 @@ import { LanguageProvider } from "./context/LanguageContext";
 const ROUTE_HEADINGS: Record<string, string> = {
   "/": "NexaForge",
   "/image/resize": "Image Resize",
+  "/image/crop": "Image Crop",
   "/image/convert": "Image Converter",
   "/image/compress": "Image Compress",
   "/image/exif-viewer": "EXIF Viewer",

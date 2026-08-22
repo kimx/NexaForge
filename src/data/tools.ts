@@ -11,6 +11,15 @@ export const FILE_TOOLS: ToolDefinition[] = [
     keywords: ["photo", "image", "jpeg", "png", "webp"],
   },
   {
+    id: "image-crop",
+    title: "Image Crop",
+    description: "Crop images into rectangles, circles, presets, or custom shapes with live preview.",
+    path: "/image/crop",
+    category: "Image",
+    aliases: ["crop image", "circle crop", "custom shape crop", "freehand crop"],
+    keywords: ["photo", "image", "crop", "mask", "circle", "polygon", "transparent png"],
+  },
+  {
     id: "image-compress",
     title: "Image Compress",
     description: "Compress with quality control and compare file sizes.",

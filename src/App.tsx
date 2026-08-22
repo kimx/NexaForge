@@ -2,6 +2,7 @@ import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { useEffect } from "react";
 import { HomePage } from "./pages/HomePage";
 import { ImageResizePage } from "./pages/image/ResizePage";
+import { ImageCropPage } from "./pages/image/CropPage";
 import { ImageCompressPage } from "./pages/image/CompressPage";
 import { ImageConvertPage } from "./pages/image/ConvertPage";
 import { ExifPage } from "./pages/image/ExifPage";
@@ -60,6 +61,7 @@ function formatRouteLabel(pathname: string, t: (key: string) => string): string 
 
 const TOOL_VISUALS: Record<string, { label: string; tone: string }> = {
   "image-resize": { label: "IMG", tone: "blue" },
+  "image-crop": { label: "✂", tone: "violet" },
   "image-compress": { label: "↘", tone: "mint" },
   "image-convert": { label: "IMG", tone: "sky" },
   "image-exif-viewer": { label: "EXIF", tone: "amber" },
@@ -159,6 +161,7 @@ export default function App() {
     <Routes>
       <Route path="/" element={<ToolFrame><HomePage /></ToolFrame>} />
       <Route path="/image/resize" element={<ToolFrame><ImageResizePage /></ToolFrame>} />
+      <Route path="/image/crop" element={<ToolFrame><ImageCropPage /></ToolFrame>} />
       <Route path="/image/compress" element={<ToolFrame><ImageCompressPage /></ToolFrame>} />
       <Route path="/image/convert" element={<ToolFrame><ImageConvertPage /></ToolFrame>} />
       <Route path="/image/exif-viewer" element={<ToolFrame><ExifPage kind="image-exif-viewer" /></ToolFrame>} />

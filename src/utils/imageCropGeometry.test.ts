@@ -170,7 +170,15 @@ describe("image crop geometry", () => {
       moveTo: (x: number, y: number) => calls.push(["moveTo", x, y]),
       lineTo: (x: number, y: number) => calls.push(["lineTo", x, y]),
       bezierCurveTo: (...values: number[]) => calls.push(["bezierCurveTo", ...values]),
-      ellipse: (...values: number[]) => calls.push(["ellipse", ...values]),
+      ellipse: (
+        x: number,
+        y: number,
+        radiusX: number,
+        radiusY: number,
+        rotation: number,
+        startAngle: number,
+        endAngle: number
+      ) => calls.push(["ellipse", x, y, radiusX, radiusY, rotation, startAngle, endAngle]),
       rect: (...values: number[]) => calls.push(["rect", ...values]),
       closePath: () => calls.push(["closePath"]),
     };

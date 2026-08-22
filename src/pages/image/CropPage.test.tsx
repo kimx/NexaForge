@@ -92,6 +92,15 @@ describe("ImageCropPage", () => {
     expect(screen.getByRole("button", { name: "Crop image" })).toBeEnabled();
   });
 
+  it("provides the crop workflow in Traditional Chinese", () => {
+    window.localStorage.setItem("nexaforge-locale", "zh-TW");
+    renderCropPageWithSelectedFile();
+
+    expect(screen.getByRole("heading", { name: "影像裁切", level: 1 })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "圓形" }));
+    expect(screen.getByText("透明 PNG")).toBeInTheDocument();
+  });
+
   it("disables processing and explains an invalid polygon", () => {
     renderCropPageWithSelectedFile();
 
