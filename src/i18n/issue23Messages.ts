@@ -1,6 +1,12 @@
 export const ISSUE_23_ZH_MESSAGES: Record<string, string> = {
   "category.QR & Barcode": "QR 與條碼",
   "status.copied": "已複製。",
+  "batch.progress": "已完成 {completed} / {total}",
+  "batch.success": "成功",
+  "batch.downloadFile": "下載 {name}",
+  "batch.downloadZip": "下載 ZIP",
+  "batch.creatingZip": "正在建立 ZIP…",
+  "batch.zipError": "無法建立 ZIP 檔案。",
 
   "tool.qr-reader.title": "QR Code Reader",
   "tool.qr-reader.description": "從圖片或相機在瀏覽器本機讀取 QR Code，內容不會上傳。",
@@ -154,6 +160,12 @@ export const ISSUE_23_ZH_MESSAGES: Record<string, string> = {
 export const ISSUE_23_EN_MESSAGES: Record<string, string> = {
   "category.QR & Barcode": "QR & Barcode",
   "status.copied": "Copied.",
+  "batch.progress": "{completed} of {total} completed",
+  "batch.success": "Success",
+  "batch.downloadFile": "Download {name}",
+  "batch.downloadZip": "Download ZIP",
+  "batch.creatingZip": "Creating ZIP…",
+  "batch.zipError": "Unable to create the ZIP archive.",
 
   "tool.qr-reader.title": "QR Code Reader",
   "tool.qr-reader.description": "Read QR codes from an image or camera locally in your browser without uploads.",

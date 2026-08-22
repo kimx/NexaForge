@@ -1,189 +1,60 @@
-import { useMemo, useState } from "react";
-import { ProcessingState, ToolMeta, FileProcessResult } from "../../types/tool";
+import { useMemo, useRef, useState } from "react";
 import { ToolPageTemplate } from "../../components/ToolPageTemplate";
-import { FILE_TOOLS } from "../../data/tools";
 import { FileDropzone } from "../../components/FileDropzone";
 import { FileInfo } from "../../components/FileInfo";
-import { DownloadButton } from "../../components/DownloadButton";
+import { BatchFileResults } from "../../components/BatchFileResults";
+import { DownloadCollectionButton } from "../../components/DownloadCollectionButton";
+import { SizeComparison } from "../../components/SizeComparison";
+import { FILE_TOOLS } from "../../data/tools";
+import { useBlobUrl } from "../../hooks/useBlobUrl";
+import { useLanguage } from "../../context/LanguageContext";
+import { useSeo } from "../../hooks/useSeo";
 import { compressImage } from "../../services/image/imageService";
+import { MAX_FILE_BYTES, runBatch, validateImageBatch, type BatchItem } from "../../services/batch/batchService";
 import { getRelatedTools } from "../../utils/toolHelpers";
 import { trackEvent } from "../../utils/analytics";
-import { useSeo } from "../../hooks/useSeo";
-import { useBlobUrl } from "../../hooks/useBlobUrl";
-import { validateFileSize, validateMime } from "../../utils/validation";
-import { useLanguage } from "../../context/LanguageContext";
-import { SizeComparison } from "../../components/SizeComparison";
+import type { ProcessingState, ToolMeta } from "../../types/tool";
 
 const IMAGE_ACCEPT = "image/jpeg,image/png,image/webp";
 
 export function ImageCompressPage(): JSX.Element {
   const { t } = useLanguage();
   const [files, setFiles] = useState<File[]>([]);
+  const [items, setItems] = useState<BatchItem[]>([]);
+  const [completed, setCompleted] = useState(0);
   const [quality, setQuality] = useState(80);
   const [format, setFormat] = useState<"jpeg" | "png" | "webp">("jpeg");
   const [processing, setProcessing] = useState<ProcessingState>("idle");
-  const [result, setResult] = useState<FileProcessResult | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [originalSize, setOriginalSize] = useState<number>(0);
-
-  const tool = FILE_TOOLS.find((item) => item.id === "image-compress");
+  const [selectionValid, setSelectionValid] = useState(true);
+  const operationRef = useRef(0);
+  const tool = FILE_TOOLS.find((item) => item.id === "image-compress") ?? FILE_TOOLS[0];
   const title = t("tool.image-compress.title");
-  const description = t("tool.image-compress.description");
-  const toolMeta: ToolMeta = {
-    title: `${title} - ${t("header.title")}`,
-    description,
-    canonical: "/image/compress",
-    h1: title,
+  const meta: ToolMeta = { title: `${title} - ${t("header.title")}`, description: t("tool.image-compress.description"), canonical: "/image/compress", h1: title };
+  useSeo(meta);
+  const successes = items.flatMap((item) => item.status === "success" ? [item.result] : []);
+  const singleResult = files.length === 1 ? successes[0] : undefined;
+  const previewUrl = useBlobUrl(singleResult?.blob);
+  const clearOutputs = (): void => { operationRef.current += 1; setItems([]); setCompleted(0); setError(null); setProcessing("idle"); };
+  const selectFiles = (next: File[]): void => { clearOutputs(); setFiles(next); const validation = validateImageBatch(next); setSelectionValid(!validation.length); if (validation[0]) { setError(validation[0].message); setProcessing("error"); } };
+  const clearSelection = (): void => { clearOutputs(); setFiles([]); setSelectionValid(true); };
+  const process = async (): Promise<void> => {
+    if (!files.length || !selectionValid) return;
+    const operation = operationRef.current + 1; operationRef.current = operation;
+    setItems([]); setCompleted(0); setError(null); setProcessing("processing"); trackEvent("process_start", { tool: "image-compress" });
+    const batch = await runBatch(files, (file) => compressImage(file, { quality: quality / 100, format }), { concurrency: 2, onProgress: (done) => { if (operationRef.current === operation) setCompleted(done); } });
+    if (operationRef.current !== operation) return;
+    setItems(batch.items);
+    if (!batch.successful) { setError(t("error.processingFailed")); setProcessing("error"); trackEvent("process_failed", { tool: "image-compress" }); }
+    else { setProcessing("success"); trackEvent("process_success", { tool: "image-compress" }); }
   };
-  useSeo(toolMeta);
-
-  const relatedTools = getRelatedTools("image-compress");
-  const previewUrl = useBlobUrl(result?.blob);
-
-  const howItWorks = useMemo(
-    () => [
-      t("tool.image-compress.how.0"),
-      t("tool.image-compress.how.1"),
-      t("tool.image-compress.how.2"),
-      t("tool.image-compress.how.3"),
-    ],
-    [t]
-  );
-
-  const faq = useMemo(
-    () => [
-      {
-        q: t("tool.image-compress.faq.0.question"),
-        a: t("tool.image-compress.faq.0.answer"),
-      },
-      {
-        q: t("tool.image-compress.faq.1.question"),
-        a: t("tool.image-compress.faq.1.answer"),
-      },
-    ],
-    [t]
-  );
-
-  const handleProcess = async () => {
-    if (!files[0]) {
-      setError(t("error.selectOneFile", { type: t("label.fileType.image") }));
-      return;
-    }
-    const source = files[0];
-    const mimeError = validateMime(source, IMAGE_ACCEPT);
-    const sizeError = validateFileSize(source);
-    if (mimeError || sizeError) {
-      setError(mimeError?.message ?? sizeError?.message ?? t("error.invalidFile"));
-      setProcessing("error");
-      trackEvent("process_failed", { tool: "image-compress" });
-      return;
-    }
-
-    setOriginalSize(source.size);
-    setError(null);
-    setProcessing("processing");
-    trackEvent("process_start", { tool: "image-compress" });
-    try {
-      const output = await compressImage(source, {
-        quality: quality / 100,
-        format,
-      });
-      setResult(output);
-      setProcessing("success");
-      trackEvent("process_success", { tool: "image-compress" });
-    } catch (err) {
-      setError(t("error.processingFailed"));
-      setProcessing("error");
-      trackEvent("process_failed", { tool: "image-compress" });
-      console.error(err);
-    }
-  };
-
-  const clearSelection = (): void => {
-    setFiles([]);
-    setResult(null);
-    setOriginalSize(0);
-    setError(null);
-    setProcessing("idle");
-  };
-
-  return (
-      <ToolPageTemplate
-        tool={tool ?? FILE_TOOLS[0]}
-        meta={toolMeta}
-        breadcrumb={["Home", t("tool.image-compress.title")]}
-        workflow={{ state: processing, error, onRetry: handleProcess, onReprocess: handleProcess }}
-        children={{
-        workspace: (
-          <>
-            <FileDropzone
-              label={t("label.dropImage")}
-              accept={IMAGE_ACCEPT}
-              onFiles={setFiles}
-              multiple={false}
-            />
-            <FileInfo files={files} onClear={clearSelection} />
-          </>
-        ),
-        options: (
-          <div className="tool-form">
-            <label>
-              {t("label.outputFormat")}
-              <select value={format} onChange={(event) => setFormat(event.target.value as "jpeg" | "png" | "webp")}>
-                <option value="jpeg">JPG</option>
-                <option value="png">PNG</option>
-                <option value="webp">WebP</option>
-              </select>
-            </label>
-            <label>
-              {t("label.quality")}: {quality}
-              <input
-                type="range"
-                min={1}
-                max={100}
-                value={quality}
-                onChange={(event) => setQuality(Number(event.target.value))}
-              />
-            </label>
-            <button
-              type="button"
-              className="btn primary"
-              disabled={!files.length || processing === "processing"}
-              aria-busy={processing === "processing"}
-              onClick={handleProcess}
-            >
-              {processing === "processing" ? t("button.processing") : t("button.process")}
-            </button>
-          </div>
-        ),
-        result: (
-          <>
-            {processing === "error" && error && (
-              <p role="alert" className="error">
-                {error}
-              </p>
-            )}
-            {result ? (
-              <div>
-                <SizeComparison originalSize={originalSize} outputSize={result.size} />
-                <img src={previewUrl} alt={t("label.preview")} className="preview-image" />
-              </div>
-            ) : (
-              <p>{t("label.noResult")}</p>
-            )}
-            {result ? (
-              <DownloadButton
-                result={result}
-                disabled={processing === "processing"}
-                onDownloaded={() => trackEvent("download", { tool: "image-compress" })}
-              />
-            ) : null}
-          </>
-        ),
-        howItWorks,
-        faq,
-        relatedTools,
-      }}
-    />
-  );
+  const howItWorks = useMemo(() => [0, 1, 2, 3].map((index) => t(`tool.image-compress.how.${index}`)), [t]);
+  const faq = useMemo(() => [0, 1].map((index) => ({ q: t(`tool.image-compress.faq.${index}.question`), a: t(`tool.image-compress.faq.${index}.answer`) })), [t]);
+  return <ToolPageTemplate tool={tool} meta={meta} breadcrumb={["Home", title]}
+    workflow={{ state: processing, error, progress: files.length ? (completed / files.length) * 100 : 0, onRetry: process, onReprocess: process }} children={{
+      workspace: <><FileDropzone label={t("label.dropImage")} accept={IMAGE_ACCEPT} onFiles={selectFiles} onRejectedFiles={(rejections) => { setError(rejections[0]?.message ?? t("error.invalidFile")); setProcessing("error"); setSelectionValid(false); }} multiple maxSize={MAX_FILE_BYTES} /><FileInfo files={files} onClear={clearSelection} /></>,
+      options: <div className="tool-form"><label>{t("label.outputFormat")}<select value={format} onChange={(event) => { setFormat(event.target.value as "jpeg" | "png" | "webp"); clearOutputs(); }}><option value="jpeg">JPG</option><option value="png">PNG</option><option value="webp">WebP</option></select></label><label>{t("label.quality")}: {quality}<input type="range" min={1} max={100} value={quality} onChange={(event) => { setQuality(Number(event.target.value)); clearOutputs(); }} /></label><button type="button" className="btn primary" disabled={!files.length || !selectionValid || processing === "processing"} aria-busy={processing === "processing"} onClick={process}>{processing === "processing" ? t("button.processing") : t("button.process")}</button></div>,
+      result: <>{items.length ? <><p>{t("batch.progress", { completed: items.length, total: files.length })}</p><BatchFileResults items={items} />{singleResult ? <><SizeComparison originalSize={files[0]?.size ?? 0} outputSize={singleResult.size} /><img src={previewUrl} alt={t("label.preview")} className="preview-image" /></> : null}<DownloadCollectionButton results={successes} fileName="compressed-images.zip" disabled={processing === "processing"} /></> : <p>{t("label.noResult")}</p>}</>,
+      howItWorks, faq, relatedTools: getRelatedTools("image-compress"),
+    }} />;
 }

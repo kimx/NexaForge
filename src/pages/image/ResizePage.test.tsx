@@ -64,4 +64,20 @@ describe("ImageResizePage", () => {
 
     consoleError.mockRestore();
   });
+
+  it("processes multiple files in order and keeps partial failures", async () => {
+    vi.spyOn(imageService, "resizeImage").mockImplementation(async (file) => {
+      if (file.name === "bad.png") throw new Error("broken image");
+      return { blob: new Blob(["ok"]), fileName: "good-small.png", mimeType: "image/png", size: 2 };
+    });
+    const { container } = renderWithProviders(<ImageResizePage />);
+    fireEvent.change(container.querySelector('input[type="file"]') as HTMLInputElement, {
+      target: { files: [new File(["a"], "good.png", { type: "image/png" }), new File(["b"], "bad.png", { type: "image/png" })] },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Process" }));
+
+    expect(await screen.findByText("2 of 2 completed")).toBeInTheDocument();
+    expect(screen.getByText("broken image")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Download ZIP" })).toBeEnabled();
+  });
 });

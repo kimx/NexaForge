@@ -70,6 +70,35 @@
   color: var(--text-secondary);
 }
 
+.batch-file-results {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0 0 var(--space-4);
+  padding: 0;
+  list-style: none;
+}
+
+.batch-file-results__item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+}
+
+.batch-file-results__name {
+  overflow-wrap: anywhere;
+  font-weight: var(--font-weight-semibold);
+}
+
+@media (max-width: 640px) {
+  .batch-file-results__item {
+    grid-template-columns: 1fr;
+  }
+}
+
 .qr-reader__video {
   display: block;
   width: 100%;

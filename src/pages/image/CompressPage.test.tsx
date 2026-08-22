@@ -59,4 +59,15 @@ describe("ImageCompressPage", () => {
 
     consoleError.mockRestore();
   });
+
+  it("accepts multiple files and reports aggregate completion", async () => {
+    vi.spyOn(imageService, "compressImage").mockImplementation(async (file) => ({ blob: new Blob(["ok"]), fileName: file.name, mimeType: "image/png", size: 2 }));
+    const { container } = renderWithProviders(<ImageCompressPage />);
+    fireEvent.change(container.querySelector('input[type="file"]') as HTMLInputElement, {
+      target: { files: [new File(["a"], "a.png", { type: "image/png" }), new File(["b"], "b.png", { type: "image/png" })] },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Process" }));
+    expect(await screen.findByText("2 of 2 completed")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Download ZIP" })).toBeEnabled();
+  });
 });
