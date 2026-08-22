@@ -61,7 +61,7 @@ export function UuidPage(): JSX.Element {
     try {
       const normalized = Math.min(1000, Math.max(1, count));
       const uuids = generateUuids(normalized);
-      const output = uuids.join("\\n");
+      const output = uuids.join("\n");
       setResultText(output);
       const blob = new Blob([output], { type: "text/plain" });
       setResult({
