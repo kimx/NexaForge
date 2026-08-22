@@ -88,18 +88,15 @@ export function MarkdownPreviewPage(): JSX.Element {
         options: (
           <div className="tool-form">
             <div className="tool-actions">
-              <button type="button" className="btn secondary" onClick={handleCopy}>
-                {t("tool.markdown-previewer.button.copy")}
-              </button>
               <button type="button" className="btn secondary" onClick={handleClear}>
                 {t("tool.markdown-previewer.button.clear")}
               </button>
             </div>
-            {copyError && <p role="alert" className="error">{copyError}</p>}
           </div>
         ),
         result: (
           <>
+            {copyError && <p role="alert" className="error">{copyError}</p>}
             <h3 className="markdown-preview__title">{t("tool.markdown-previewer.label.preview")}</h3>
             {markdown ? (
               <article className="markdown-preview">
@@ -108,6 +105,11 @@ export function MarkdownPreviewPage(): JSX.Element {
             ) : (
               <p>{t("tool.markdown-previewer.label.noOutput")}</p>
             )}
+            <div className="tool-actions">
+              <button type="button" className="btn secondary" onClick={handleCopy}>
+                {t("tool.markdown-previewer.button.copy")}
+              </button>
+            </div>
           </>
         ),
         howItWorks,

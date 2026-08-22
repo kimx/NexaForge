@@ -5,6 +5,7 @@ import { vi } from "vitest";
 import { JsonToCsvPage } from "./JsonToCsvPage";
 import * as csvService from "../../services/csv/csvService";
 import type { FileProcessResult } from "../../types/tool";
+import { LanguageProvider } from "../../context/LanguageContext";
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -13,21 +14,41 @@ afterEach(() => {
 function renderWithRouter(ui: ReactElement): ReturnType<typeof render> {
   return render(
     <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-      {ui}
+      <LanguageProvider>{ui}</LanguageProvider>
     </MemoryRouter>
   );
 }
 
+function selectFileInput(container: HTMLElement, file: File): void {
+  fireEvent.change(screen.getByRole("combobox", { name: "Input source" }), {
+    target: { value: "file" },
+  });
+  const input = container.querySelector("input[type=\"file\"]") as HTMLInputElement;
+  fireEvent.change(input, { target: { files: [file] } });
+}
+
 describe("JsonToCsvPage", () => {
+  it("starts with an editable JSON array sample that can be converted", async () => {
+    renderWithRouter(<JsonToCsvPage />);
+
+    const input = screen.getByRole("textbox", { name: "Paste / edit JSON text" }) as HTMLTextAreaElement;
+    expect(Array.isArray(JSON.parse(input.value))).toBe(true);
+
+    fireEvent.click(screen.getByRole("button", { name: "Process" }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: "Download" })).toBeEnabled();
+    });
+  });
+
   it("disables process button while converting is in progress", async () => {
     const convertSpy = vi
       .spyOn(csvService, "jsonToCsv")
       .mockImplementation(() => new Promise<FileProcessResult>(() => {}));
 
     const { container } = renderWithRouter(<JsonToCsvPage />);
-    const input = container.querySelector("input[type=\"file\"]") as HTMLInputElement;
     const file = new File(["[{\"name\":\"A\"}]"], "sample.json", { type: "application/json" });
-    fireEvent.change(input, { target: { files: [file] } });
+    selectFileInput(container, file);
     fireEvent.click(screen.getByRole("button", { name: "Process" }));
 
     await waitFor(() => {
@@ -44,9 +65,8 @@ describe("JsonToCsvPage", () => {
     vi.spyOn(csvService, "jsonToCsv").mockRejectedValue(new Error("convert failed"));
 
     const { container } = renderWithRouter(<JsonToCsvPage />);
-    const input = container.querySelector("input[type=\"file\"]") as HTMLInputElement;
     const file = new File(["[{\"name\":\"A\"}]"], "sample.json", { type: "application/json" });
-    fireEvent.change(input, { target: { files: [file] } });
+    selectFileInput(container, file);
     fireEvent.click(screen.getByRole("button", { name: "Process" }));
 
     await waitFor(() => {
@@ -65,11 +85,10 @@ describe("JsonToCsvPage", () => {
     });
 
     const { container } = renderWithRouter(<JsonToCsvPage />);
-    const input = container.querySelector("input[type=\"file\"]") as HTMLInputElement;
     const file = new File(["[{\"name\":\"A\"}]"], "sample.json", { type: "application/json" });
     const checkbox = container.querySelector("input[type=\"checkbox\"]") as HTMLInputElement;
 
-    fireEvent.change(input, { target: { files: [file] } });
+    selectFileInput(container, file);
     fireEvent.click(checkbox);
     fireEvent.click(screen.getByRole("button", { name: "Process" }));
 

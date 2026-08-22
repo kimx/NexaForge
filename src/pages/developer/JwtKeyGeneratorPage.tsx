@@ -84,15 +84,6 @@ export function JwtKeyGeneratorPage(): JSX.Element {
         workspace: (
           <div className="tool-form">
             <label>
-              {t("tool.jwt-key.label.generatedKey")}
-              <textarea rows={2} value={secretKey} readOnly />
-            </label>
-            <p>{t("tool.jwt-key.label.keyNotice")}</p>
-          </div>
-        ),
-        options: (
-          <div className="tool-form">
-            <label>
               {t("tool.jwt-key.label.secretLength")}
               <select
                 value={secretLength}
@@ -105,6 +96,10 @@ export function JwtKeyGeneratorPage(): JSX.Element {
                 <option value={64}>64</option>
               </select>
             </label>
+          </div>
+        ),
+        options: (
+          <div className="tool-form">
             <div className="tool-actions">
               <button
                 type="button"
@@ -115,6 +110,26 @@ export function JwtKeyGeneratorPage(): JSX.Element {
               >
                 {processing === "processing" ? t("button.generating") : t("tool.jwt-key.label.generateButton")}
               </button>
+            </div>
+          </div>
+        ),
+        result: (
+          <>
+            {processing === "error" && error && <p role="alert" className="error">{error}</p>}
+            {copyError && <p role="alert" className="error">{copyError}</p>}
+            <div className="tool-form">
+              <label>
+                {t("tool.jwt-key.label.generatedKey")}
+                <textarea
+                  rows={2}
+                  value={secretKey}
+                  placeholder={t("tool.jwt-key.label.noOutput")}
+                  readOnly
+                />
+              </label>
+              <p>{t("tool.jwt-key.label.keyNotice")}</p>
+            </div>
+            <div className="tool-actions">
               <button
                 type="button"
                 className="btn secondary"
@@ -124,11 +139,8 @@ export function JwtKeyGeneratorPage(): JSX.Element {
                 {t("tool.jwt-key.label.copyButton")}
               </button>
             </div>
-            {error && <p role="alert" className="error">{error}</p>}
-            {copyError && <p role="alert" className="error">{copyError}</p>}
-          </div>
+          </>
         ),
-        result: <p>{t("tool.jwt-key.label.noOutput")}</p>,
         howItWorks,
         faq,
         relatedTools,

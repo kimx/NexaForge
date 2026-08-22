@@ -161,25 +161,29 @@ export function TextToolsPage({ kind }: { kind: TextToolKind }): JSX.Element {
             </button>
           </div>
         ),
-        result: kind === "word-counter" ? (
-          stats ? (
-            <dl className="tool-form">
-              <div><dt><strong>{t("tool.word-counter.label.characters")}</strong></dt><dd>{stats.characters}</dd></div>
-              <div><dt><strong>{t("tool.word-counter.label.charactersNoSpaces")}</strong></dt><dd>{stats.charactersNoSpaces}</dd></div>
-              <div><dt><strong>{t("tool.word-counter.label.words")}</strong></dt><dd>{stats.words}</dd></div>
-              <div><dt><strong>{t("tool.word-counter.label.lines")}</strong></dt><dd>{stats.lines}</dd></div>
-              <div><dt><strong>{t("tool.word-counter.label.nonEmptyLines")}</strong></dt><dd>{stats.nonEmptyLines}</dd></div>
-            </dl>
-          ) : (
-            <p>{t("tool.word-counter.label.noOutput")}</p>
-          )
-        ) : (
-          <pre>{output || t(`tool.${kind}.label.noOutput`)}</pre>
-        ),
-        nextActions: (
-          <button type="button" className="btn primary" onClick={copyResult}>
-            {t("button.copy")}
-          </button>
+        result: (
+          <>
+            {kind === "word-counter" ? (
+              stats ? (
+                <dl className="tool-form">
+                  <div><dt><strong>{t("tool.word-counter.label.characters")}</strong></dt><dd>{stats.characters}</dd></div>
+                  <div><dt><strong>{t("tool.word-counter.label.charactersNoSpaces")}</strong></dt><dd>{stats.charactersNoSpaces}</dd></div>
+                  <div><dt><strong>{t("tool.word-counter.label.words")}</strong></dt><dd>{stats.words}</dd></div>
+                  <div><dt><strong>{t("tool.word-counter.label.lines")}</strong></dt><dd>{stats.lines}</dd></div>
+                  <div><dt><strong>{t("tool.word-counter.label.nonEmptyLines")}</strong></dt><dd>{stats.nonEmptyLines}</dd></div>
+                </dl>
+              ) : (
+                <p>{t("tool.word-counter.label.noOutput")}</p>
+              )
+            ) : (
+              <pre>{output || t(`tool.${kind}.label.noOutput`)}</pre>
+            )}
+            <div className="tool-actions">
+              <button type="button" className="btn secondary" onClick={copyResult}>
+                {t("button.copy")}
+              </button>
+            </div>
+          </>
         ),
         howItWorks,
         faq,

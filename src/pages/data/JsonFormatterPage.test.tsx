@@ -5,6 +5,7 @@ import { vi } from "vitest";
 import { JsonFormatterPage } from "./JsonFormatterPage";
 import * as fileService from "../../services/file/fileService";
 import * as jsonService from "../../services/json/jsonService";
+import { LanguageProvider } from "../../context/LanguageContext";
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -13,12 +14,25 @@ afterEach(() => {
 function renderWithRouter(ui: ReactElement): ReturnType<typeof render> {
   return render(
     <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-      {ui}
+      <LanguageProvider>{ui}</LanguageProvider>
     </MemoryRouter>
   );
 }
 
 describe("JsonFormatterPage", () => {
+  it("starts with an editable, non-empty JSON object sample", () => {
+    renderWithRouter(<JsonFormatterPage />);
+
+    fireEvent.change(screen.getByRole("combobox", { name: "Editor mode" }), {
+      target: { value: "text" },
+    });
+
+    const sample = screen.getByRole("textbox") as HTMLTextAreaElement;
+    const parsed = JSON.parse(sample.value) as Record<string, unknown>;
+
+    expect(Object.keys(parsed).length).toBeGreaterThan(0);
+  });
+
   it("disables process button while formatting is in progress", async () => {
     const readSpy = vi
       .spyOn(fileService, "readFileAsText")
@@ -51,9 +65,9 @@ describe("JsonFormatterPage", () => {
 
     const { container } = renderWithRouter(<JsonFormatterPage />);
     const sourceSelect = screen.getByRole("combobox", { name: "Input source" });
-    const input = container.querySelector("input[type=\"file\"]") as HTMLInputElement;
     const file = new File(["{invalid"], "sample.json", { type: "application/json" });
     fireEvent.change(sourceSelect, { target: { value: "file" } });
+    const input = container.querySelector("input[type=\"file\"]") as HTMLInputElement;
     fireEvent.change(input, { target: { files: [file] } });
     fireEvent.click(screen.getByRole("button", { name: "Process" }));
 
@@ -73,9 +87,9 @@ describe("JsonFormatterPage", () => {
     const { container } = renderWithRouter(<JsonFormatterPage />);
     const sourceSelect = screen.getByRole("combobox", { name: "Input source" });
     const modeSelect = screen.getByRole("combobox", { name: "Mode" });
-    const input = container.querySelector("input[type=\"file\"]") as HTMLInputElement;
     const file = new File(["{\"a\":1}"], "sample.json", { type: "application/json" });
     fireEvent.change(sourceSelect, { target: { value: "file" } });
+    const input = container.querySelector("input[type=\"file\"]") as HTMLInputElement;
     fireEvent.change(input, { target: { files: [file] } });
     fireEvent.change(modeSelect, { target: { value: "minify" } });
     fireEvent.click(screen.getByRole("button", { name: "Process" }));

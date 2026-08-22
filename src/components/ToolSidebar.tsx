@@ -1,5 +1,5 @@
-import { ChangeEvent, useMemo, useState } from "react";
-import { Link, NavLink } from "react-router-dom";
+import { ChangeEvent, useEffect, useMemo, useState } from "react";
+import { Link, NavLink, useLocation } from "react-router-dom";
 import { FILE_TOOLS } from "../data/tools";
 import type { ToolDefinition } from "../types/tool";
 import { localizedCategoryLabel, useLanguage, useLocalizedToolMeta } from "../context/LanguageContext";
@@ -51,8 +51,28 @@ function getToolIcon(toolId: string): string {
 export function ToolSidebar(): JSX.Element {
   const { t } = useLanguage();
   const localToolMeta = useLocalizedToolMeta();
+  const { pathname } = useLocation();
+  const activeCategory = FILE_TOOLS.find((tool) => tool.path === pathname)?.category;
   const [keyword, setKeyword] = useState("");
-  const [expandedCategories, setExpandedCategories] = useState<Set<ToolDefinition["category"]>>(new Set());
+  const [expandedCategories, setExpandedCategories] = useState<Set<ToolDefinition["category"]>>(
+    () => new Set(activeCategory ? [activeCategory] : [])
+  );
+
+  useEffect(() => {
+    if (!activeCategory) {
+      return;
+    }
+
+    setExpandedCategories((current) => {
+      if (current.has(activeCategory)) {
+        return current;
+      }
+
+      const next = new Set(current);
+      next.add(activeCategory);
+      return next;
+    });
+  }, [activeCategory]);
 
   const keywordNormalized = keyword.trim().toLowerCase();
 

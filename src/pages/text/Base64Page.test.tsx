@@ -1,9 +1,10 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import type { ReactElement } from "react";
 import { vi } from "vitest";
 import { Base64Page } from "./Base64Page";
 import * as textService from "../../services/text/textService";
+import { LanguageProvider } from "../../context/LanguageContext";
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -12,12 +13,37 @@ afterEach(() => {
 function renderWithRouter(ui: ReactElement): ReturnType<typeof render> {
   return render(
     <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-      {ui}
+      <LanguageProvider>{ui}</LanguageProvider>
     </MemoryRouter>
   );
 }
 
 describe("Base64Page", () => {
+  it("places the copy action below the result instead of in options", () => {
+    renderWithRouter(<Base64Page />);
+
+    const options = screen.getByRole("heading", { name: "Options" }).closest("section");
+    const result = screen.getByRole("heading", { name: "Result" }).closest("section");
+
+    expect(options).not.toBeNull();
+    expect(result).not.toBeNull();
+    expect(within(options as HTMLElement).queryByRole("button", { name: "Copy" })).not.toBeInTheDocument();
+    expect(within(result as HTMLElement).getByRole("button", { name: "Copy" })).toBeInTheDocument();
+  });
+
+  it("places the text input in the workspace", () => {
+    renderWithRouter(<Base64Page />);
+
+    const workspace = screen.getByRole("heading", { name: /Tool Workspace|工具工作區/i }).closest("section");
+
+    expect(workspace).not.toBeNull();
+    expect(
+      within(workspace as HTMLElement).getByRole("textbox", {
+        name: /Enter text in the field below|請在下方輸入文字/i,
+      })
+    ).toBeInTheDocument();
+  });
+
   it("shows processing state for file-to-base64 flow", async () => {
     const neverResolve = new Promise<string>(() => {});
     const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});

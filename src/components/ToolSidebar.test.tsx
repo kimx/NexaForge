@@ -4,6 +4,20 @@ import { LanguageProvider } from "../context/LanguageContext";
 import { ToolSidebar } from "./ToolSidebar";
 
 describe("ToolSidebar", () => {
+  it("expands the category containing the active tool", () => {
+    render(
+      <MemoryRouter initialEntries={["/data/json-formatter"]}>
+        <LanguageProvider>
+          <ToolSidebar />
+        </LanguageProvider>
+      </MemoryRouter>
+    );
+
+    const dataCategory = screen.getByRole("button", { name: /data.*tools|資料.*工具/i });
+    expect(dataCategory).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByRole("link", { name: /json formatter|json 格式化/i })).toHaveClass("is-active");
+  });
+
   it("expands a category to show its tools", () => {
     render(
       <MemoryRouter>

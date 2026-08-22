@@ -266,14 +266,6 @@ export function TextDiffPage(): JSX.Element {
               <button type="button" className="btn secondary" onClick={handleClear}>
                 {t("tool.text-diff.button.clear")}
               </button>
-              <button
-                type="button"
-                className="btn secondary"
-                onClick={handleCopy}
-                disabled={!diffText || processing === "processing"}
-              >
-                {t("tool.text-diff.button.copy")}
-              </button>
             </div>
           </div>
         ),
@@ -331,7 +323,17 @@ export function TextDiffPage(): JSX.Element {
                     );
                   })}
                 </div>
-              )}
+                )}
+            </div>
+            <div className="tool-actions">
+              <button
+                type="button"
+                className="btn secondary"
+                onClick={handleCopy}
+                disabled={!diffText || processing === "processing"}
+              >
+                {t("tool.text-diff.button.copy")}
+              </button>
             </div>
           </>
         ),

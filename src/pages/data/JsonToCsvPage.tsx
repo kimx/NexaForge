@@ -12,9 +12,16 @@ import { useSeo } from "../../hooks/useSeo";
 import { validateFileSize, validateMime } from "../../utils/validation";
 import { useLanguage } from "../../context/LanguageContext";
 
+const JSON_TO_CSV_SAMPLE = JSON.stringify([
+  { name: "Alice", email: "alice@example.com", active: true },
+  { name: "Bob", email: "bob@example.com", active: false },
+], null, 2);
+
 export function JsonToCsvPage(): JSX.Element {
   const { t } = useLanguage();
   const [files, setFiles] = useState<File[]>([]);
+  const [inputSource, setInputSource] = useState<"text" | "file">("text");
+  const [jsonInput, setJsonInput] = useState(JSON_TO_CSV_SAMPLE);
   const [includeHeader, setIncludeHeader] = useState(true);
   const [processing, setProcessing] = useState<ProcessingState>("idle");
   const [result, setResult] = useState<FileProcessResult | null>(null);
@@ -55,18 +62,29 @@ export function JsonToCsvPage(): JSX.Element {
   );
 
   const handleProcess = async () => {
-    const source = files[0];
-    if (!source) {
-      setError(t("error.selectOneFile", { type: t("label.fileType.json") }));
-      return;
-    }
-    const mimeError = validateMime(source, "application/json,text/plain");
-    const sizeError = validateFileSize(source);
-    if (mimeError || sizeError) {
-      setError(mimeError?.message ?? sizeError?.message ?? t("error.invalidFile"));
-      setProcessing("error");
-      trackEvent("process_failed", { tool: "json-to-csv" });
-      return;
+    let source: File;
+    if (inputSource === "text") {
+      if (!jsonInput.trim()) {
+        setError(t("error.enterJsonText"));
+        setProcessing("error");
+        return;
+      }
+      source = new File([jsonInput], "sample.json", { type: "application/json" });
+    } else {
+      const selectedFile = files[0];
+      if (!selectedFile) {
+        setError(t("error.selectOneFile", { type: t("label.fileType.json") }));
+        return;
+      }
+      const mimeError = validateMime(selectedFile, "application/json,text/plain");
+      const sizeError = validateFileSize(selectedFile);
+      if (mimeError || sizeError) {
+        setError(mimeError?.message ?? sizeError?.message ?? t("error.invalidFile"));
+        setProcessing("error");
+        trackEvent("process_failed", { tool: "json-to-csv" });
+        return;
+      }
+      source = selectedFile;
     }
     setError(null);
     setProcessing("processing");
@@ -91,15 +109,38 @@ export function JsonToCsvPage(): JSX.Element {
         breadcrumb={["Home", t("tool.json-to-csv.title")]}
         children={{
         workspace: (
-          <>
-            <FileDropzone
-              label={t("label.dropJson")}
-              accept="application/json,text/plain"
-              onFiles={setFiles}
-              multiple={false}
-            />
-            <FileInfo files={files} />
-          </>
+          <div className="tool-form">
+            <label>
+              {t("label.inputSource")}
+              <select
+                value={inputSource}
+                onChange={(event) => setInputSource(event.target.value as "text" | "file")}
+              >
+                <option value="text">{t("tool.json-to-csv.label.inputSourceText")}</option>
+                <option value="file">{t("tool.json-to-csv.label.inputSourceFile")}</option>
+              </select>
+            </label>
+            {inputSource === "text" ? (
+              <label>
+                {t("tool.json-to-csv.label.inputSourceText")}
+                <textarea
+                  rows={12}
+                  value={jsonInput}
+                  onChange={(event) => setJsonInput(event.target.value)}
+                />
+              </label>
+            ) : (
+              <>
+                <FileDropzone
+                  label={t("label.dropJson")}
+                  accept="application/json,text/plain"
+                  onFiles={setFiles}
+                  multiple={false}
+                />
+                <FileInfo files={files} />
+              </>
+            )}
+          </div>
         ),
         options: (
           <div className="tool-form">

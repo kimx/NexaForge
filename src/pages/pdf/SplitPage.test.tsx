@@ -65,6 +65,34 @@ describe("PdfSplitPage", () => {
     expect(downloadSpy).toHaveBeenCalledWith(expect.any(Blob), "split.pdf");
   });
 
+  it("supports selecting and clearing every page with an updated selection summary", async () => {
+    vi.spyOn(pdfService, "getPdfPageCount").mockResolvedValue(3);
+
+    const { container } = renderWithRouter(<PdfSplitPage />);
+    const input = container.querySelector('input[type="file"]') as HTMLInputElement;
+    const file = new File(["%PDF-1.4"], "sample.pdf", { type: "application/pdf" });
+    fireEvent.change(input, { target: { files: [file] } });
+    fireEvent.click(screen.getByRole("button", { name: "Process" }));
+
+    await waitFor(() => {
+      expect(screen.getByText("Selected 0 of 3 pages")).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Select all" }));
+    expect(screen.getByText("Selected 3 of 3 pages")).toBeInTheDocument();
+    expect(screen.getByLabelText("1")).toBeChecked();
+    expect(screen.getByLabelText("2")).toBeChecked();
+    expect(screen.getByLabelText("3")).toBeChecked();
+    expect(screen.getByRole("button", { name: "Export" })).toBeEnabled();
+
+    fireEvent.click(screen.getByRole("button", { name: "Clear selection" }));
+    expect(screen.getByText("Selected 0 of 3 pages")).toBeInTheDocument();
+    expect(screen.getByLabelText("1")).not.toBeChecked();
+    expect(screen.getByLabelText("2")).not.toBeChecked();
+    expect(screen.getByLabelText("3")).not.toBeChecked();
+    expect(screen.getByRole("button", { name: "Export" })).toBeDisabled();
+  });
+
   it("shows error when export fails", async () => {
     const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
     vi.spyOn(pdfService, "getPdfPageCount").mockResolvedValue(2);

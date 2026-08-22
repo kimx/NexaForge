@@ -125,6 +125,14 @@ export function HashPage(): JSX.Element {
               >
                 {processing === "processing" ? t("button.processing") : t("button.process")}
               </button>
+            </div>
+          </div>
+        ),
+        result: (
+          <>
+            {error && <p role="alert" className="error">{error}</p>}
+            {resultText ? <pre>{resultText}</pre> : <p>{t("tool.hash.label.noOutput")}</p>}
+            <div className="tool-actions">
               <button
                 type="button"
                 className="btn secondary"
@@ -139,25 +147,19 @@ export function HashPage(): JSX.Element {
               >
                 {t("button.copy")}
               </button>
+              {resultText ? (
+                <DownloadButton
+                  result={{
+                    blob: new Blob([resultText], { type: "text/plain" }),
+                    fileName: `${files[0]?.name ?? "hash"}.txt`,
+                    mimeType: "text/plain",
+                    size: resultText.length,
+                  }}
+                  disabled={processing === "processing"}
+                  onDownloaded={() => trackEvent("download", { tool: "hash" })}
+                />
+              ) : null}
             </div>
-          </div>
-        ),
-        result: (
-          <>
-            {processing === "error" && error && <p role="alert" className="error">{error}</p>}
-            {resultText ? <pre>{resultText}</pre> : <p>{t("tool.hash.label.noOutput")}</p>}
-            {resultText ? (
-              <DownloadButton
-                result={{
-                  blob: new Blob([resultText], { type: "text/plain" }),
-                  fileName: `${files[0]?.name ?? "hash"}.txt`,
-                  mimeType: "text/plain",
-                  size: resultText.length,
-                }}
-                disabled={processing === "processing"}
-                onDownloaded={() => trackEvent("download", { tool: "hash" })}
-              />
-            ) : null}
           </>
         ),
         howItWorks,

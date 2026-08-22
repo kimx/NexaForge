@@ -4,6 +4,7 @@ import { MemoryRouter } from "react-router-dom";
 import type { ReactElement } from "react";
 import { HashPage } from "./HashPage";
 import * as textService from "../../services/text/textService";
+import { LanguageProvider } from "../../context/LanguageContext";
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -12,7 +13,7 @@ afterEach(() => {
 function renderWithRouter(ui: ReactElement): ReturnType<typeof render> {
   return render(
     <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-      {ui}
+      <LanguageProvider>{ui}</LanguageProvider>
     </MemoryRouter>
   );
 }

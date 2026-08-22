@@ -161,14 +161,51 @@ export function PdfSplitPage(): JSX.Element {
             </button>
             {pageCount !== null && (
               <>
-                <p>{t("tool.pdf-split.pageCount", { count: pageCount })}</p>
-                <fieldset>
-                  <legend>{t("tool.pdf-split.selectPages")}</legend>
-                  <div className="button-row">
+                <fieldset className="pdf-page-picker">
+                  <legend className="pdf-page-picker__legend">
+                    {t("tool.pdf-split.selectPages")}
+                  </legend>
+                  <div className="pdf-page-picker__header">
+                    <div className="pdf-page-picker__status">
+                      <p className="pdf-page-picker__total">
+                        {t("tool.pdf-split.pageCount", { count: pageCount })}
+                      </p>
+                      <p className="pdf-page-picker__summary" aria-live="polite">
+                        {t("tool.pdf-split.selectionSummary", {
+                          selected: selectedPages.length,
+                          count: pageCount,
+                        })}
+                      </p>
+                    </div>
+                    <div className="pdf-page-picker__actions">
+                      <button
+                        type="button"
+                        className="pdf-page-picker__action"
+                        onClick={() => setSelectedPages(Array.from({ length: pageCount }, (_, page) => page))}
+                        disabled={selectedPages.length === pageCount}
+                      >
+                        {t("tool.pdf-split.selectAll")}
+                      </button>
+                      <button
+                        type="button"
+                        className="pdf-page-picker__action"
+                        onClick={() => setSelectedPages([])}
+                        disabled={!selectedPages.length}
+                      >
+                        {t("tool.pdf-split.clearSelection")}
+                      </button>
+                    </div>
+                  </div>
+                  <div className="pdf-page-picker__grid">
                     {Array.from({ length: pageCount }, (_, page) => (
-                      <label key={page} className="file-btn">
+                      <label
+                        key={page}
+                        className={`pdf-page-picker__page${selectedPages.includes(page) ? " pdf-page-picker__page--selected" : ""}`}
+                      >
                         <input
                           type="checkbox"
+                          className="pdf-page-picker__checkbox"
+                          aria-label={String(page + 1)}
                           checked={selectedPages.includes(page)}
                           onChange={() =>
                             setSelectedPages((current) =>
@@ -178,7 +215,8 @@ export function PdfSplitPage(): JSX.Element {
                             )
                           }
                         />
-                        {page + 1}
+                        <span>{page + 1}</span>
+                        <span className="pdf-page-picker__check" aria-hidden="true">✓</span>
                       </label>
                     ))}
                   </div>

@@ -21,6 +21,12 @@ interface ParseError {
   message: string;
 }
 
+const JSON_FORMATTER_SAMPLE: JsonValue = {
+  name: "NexaForge",
+  active: true,
+  tags: ["json", "sample"],
+};
+
 function extractParseError(text: string, message: string): ParseError {
   const lineMatch = /line (\d+)\s+column (\d+)/i.exec(message);
   if (lineMatch) {
@@ -61,8 +67,8 @@ export function JsonFormatterPage(): JSX.Element {
   const [files, setFiles] = useState<File[]>([]);
   const [inputSource, setInputSource] = useState<"text" | "file">("text");
   const [editorMode, setEditorMode] = useState<"text" | "tree">("tree");
-  const [jsonInput, setJsonInput] = useState("{}");
-  const [jsonTree, setJsonTree] = useState<JsonValue>({} as JsonValue);
+  const [jsonInput, setJsonInput] = useState(() => JSON.stringify(JSON_FORMATTER_SAMPLE, null, 2));
+  const [jsonTree, setJsonTree] = useState<JsonValue>(JSON_FORMATTER_SAMPLE);
   const [treeError, setTreeError] = useState<string | null>(null);
   const [mode, setMode] = useState<"format" | "minify">("format");
   const [processing, setProcessing] = useState<ProcessingState>("idle");

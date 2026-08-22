@@ -212,6 +212,15 @@ export function HtmlEncoderPage(): JSX.Element {
               <button type="button" className="btn secondary" onClick={handleClear}>
                 {t("tool.html-encoder.button.clear")}
               </button>
+            </div>
+          </div>
+        ),
+        result: (
+          <>
+            {processing === "error" && error && <p role="alert" className="error">{error}</p>}
+            {copyError && <p role="alert" className="error">{copyError}</p>}
+            <pre>{resultText || t("tool.html-encoder.label.noOutput")}</pre>
+            <div className="tool-actions">
               <button
                 type="button"
                 className="btn secondary"
@@ -221,13 +230,6 @@ export function HtmlEncoderPage(): JSX.Element {
                 {t("tool.html-encoder.button.copy")}
               </button>
             </div>
-          </div>
-        ),
-        result: (
-          <>
-            {processing === "error" && error && <p role="alert" className="error">{error}</p>}
-            {copyError && <p role="alert" className="error">{copyError}</p>}
-            <pre>{resultText || t("tool.html-encoder.label.noOutput")}</pre>
           </>
         ),
         howItWorks,

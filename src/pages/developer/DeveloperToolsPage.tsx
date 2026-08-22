@@ -18,6 +18,28 @@ interface YamlLine {
   text: string;
 }
 
+const JSON_TOOL_SAMPLE = JSON.stringify({
+  name: "NexaForge",
+  active: true,
+  tags: ["json", "sample"],
+}, null, 2);
+
+const JSON_DIFF_RIGHT_SAMPLE = JSON.stringify({
+  name: "NexaForge",
+  active: false,
+  tags: ["json", "sample", "diff"],
+}, null, 2);
+
+function initialInputFor(kind: DeveloperToolKind): string {
+  return kind === "json-yaml" || kind === "json-diff" ? JSON_TOOL_SAMPLE : "";
+}
+
+function initialModeFor(kind: DeveloperToolKind): string {
+  if (kind === "json-yaml") return "json-to-yaml";
+  if (kind === "unix-timestamp") return "timestamp-to-date";
+  return "encode";
+}
+
 function yamlScalar(value: unknown): string {
   if (typeof value === "string") return JSON.stringify(value);
   if (value === null) return "null";
@@ -173,9 +195,9 @@ export function DeveloperToolsPage({ kind }: DeveloperToolsPageProps): JSX.Eleme
   const { t } = useLanguage();
   const localToolMeta = useLocalizedToolMeta();
   const tool = FILE_TOOLS.find((item) => item.id === kind) ?? FILE_TOOLS[0];
-  const [input, setInput] = useState("");
-  const [secondInput, setSecondInput] = useState("");
-  const [mode, setMode] = useState("encode");
+  const [input, setInput] = useState(() => initialInputFor(kind));
+  const [secondInput, setSecondInput] = useState(() => kind === "json-diff" ? JSON_DIFF_RIGHT_SAMPLE : "");
+  const [mode, setMode] = useState(() => initialModeFor(kind));
   const [output, setOutput] = useState("");
   const [state, setState] = useState<ProcessingState>("idle");
   const [error, setError] = useState<string | null>(null);
@@ -279,8 +301,16 @@ export function DeveloperToolsPage({ kind }: DeveloperToolsPageProps): JSX.Eleme
             </button>
           </div>
         ),
-        result: kind === "json-diff" ? <JsonDiffOutput output={output} /> : <pre className="developer-output">{output}</pre>,
-        nextActions: <button type="button" className="btn primary" onClick={copyOutput}>{t("developerTools.copy")}</button>,
+        result: (
+          <>
+            {kind === "json-diff" ? <JsonDiffOutput output={output} /> : <pre className="developer-output">{output}</pre>}
+            <div className="tool-actions">
+              <button type="button" className="btn secondary" onClick={copyOutput} disabled={!output}>
+                {t("developerTools.copy")}
+              </button>
+            </div>
+          </>
+        ),
         howItWorks,
         faq,
         relatedTools: getRelatedTools(kind),

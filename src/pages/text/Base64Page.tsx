@@ -131,7 +131,15 @@ export function Base64Page(): JSX.Element {
                 accept="*/*"
               />
             ) : (
-              <p>{t("tool.base64.label.enterText")}</p>
+              <div className="tool-form">
+                <p id="base64-text-input-label">{t("tool.base64.label.enterText")}</p>
+                <textarea
+                  aria-labelledby="base64-text-input-label"
+                  rows={6}
+                  value={text}
+                  onChange={(event) => setText(event.target.value)}
+                />
+              </div>
             )}
           </>
         ),
@@ -150,9 +158,6 @@ export function Base64Page(): JSX.Element {
                 <option value="fileToBase64">{t("tool.base64.option.fileToBase64")}</option>
               </select>
             </label>
-            {mode !== "fileToBase64" && (
-              <textarea rows={6} value={text} onChange={(event) => setText(event.target.value)} />
-            )}
             <div className="tool-actions">
               <button
                 type="button"
@@ -163,6 +168,15 @@ export function Base64Page(): JSX.Element {
               >
                 {processing === "processing" ? t("button.processing") : t("button.process")}
               </button>
+            </div>
+          </div>
+        ),
+        result: (
+          <>
+            {processing === "error" && error && <p role="alert" className="error">{error}</p>}
+            {copyError && <p role="alert" className="error">{copyError}</p>}
+            <pre>{resultText || t("tool.base64.label.noOutput")}</pre>
+            <div className="tool-actions">
               <button
                 type="button"
                 className="btn secondary"
@@ -178,15 +192,6 @@ export function Base64Page(): JSX.Element {
               >
                 {t("button.copy")}
               </button>
-            </div>
-          </div>
-        ),
-        result: (
-          <>
-            {processing === "error" && error && <p role="alert" className="error">{error}</p>}
-            {copyError && <p role="alert" className="error">{copyError}</p>}
-            <pre>{resultText || t("tool.base64.label.noOutput")}</pre>
-            <div className="tool-actions">
               <DownloadButton
                 result={resultFile}
                 disabled={processing === "processing"}
