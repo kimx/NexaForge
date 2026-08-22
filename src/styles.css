@@ -3993,6 +3993,34 @@ button:hover,
   margin-top: 16px;
 }
 
+.home-hero__search {
+  width: min(100%, 520px);
+  margin-top: 18px;
+}
+
+.workspace-search--hero {
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+}
+
+.workspace-search--hero input {
+  height: 50px;
+  padding-right: 46px;
+  border-color: rgba(61, 126, 211, 0.52);
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 12px 28px rgba(38, 97, 176, 0.14);
+  font-size: 0.94rem;
+}
+
+.workspace-search--hero .workspace-search__icon {
+  top: 14px;
+}
+
+.workspace-search--hero .workspace-search__clear {
+  top: 12px;
+}
+
 .home-hero__proof {
   gap: 8px 20px;
   margin-top: 16px;

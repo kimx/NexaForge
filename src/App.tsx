@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { Footer } from "./components/Footer";
 import { Header } from "./components/Header";
@@ -12,6 +12,8 @@ import {
   localizePath,
   stripLocalePrefix,
 } from "./routing/localePaths";
+
+const useIsomorphicLayoutEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
 
 const HomePage = lazy(() =>
   import("./pages/HomePage").then((module) => ({ default: module.HomePage }))
@@ -202,8 +204,18 @@ function RouteLocaleSync(): null {
 function ScrollToTop(): null {
   const { pathname } = useLocation();
 
-  useEffect(() => {
-    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  useIsomorphicLayoutEffect(() => {
+    const resetRoutePosition = () => {
+      if (document.querySelector('[role="dialog"]')) {
+        return;
+      }
+      document.getElementById("main-content")?.focus({ preventScroll: true });
+      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    };
+
+    resetRoutePosition();
+    const frame = window.requestAnimationFrame(resetRoutePosition);
+    return () => window.cancelAnimationFrame(frame);
   }, [pathname]);
 
   return null;
@@ -310,7 +322,7 @@ function ToolFrame({ children }: { children: JSX.Element }): JSX.Element {
         <button
           type="button"
           className="tool-sidebar-backdrop"
-          aria-label={t("header.closeTools")}
+          aria-hidden="true"
           tabIndex={-1}
           onClick={closeTools}
         />

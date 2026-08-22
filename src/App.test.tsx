@@ -201,11 +201,36 @@ describe("App routes", () => {
 
     const dialog = screen.getByRole("dialog", { name: /tools navigation|工具導覽/i });
     const close = within(dialog).getByRole("button", { name: /close tools|關閉工具/i });
+    expect(screen.getAllByRole("button", { name: /close tools|關閉工具/i })).toHaveLength(1);
     await waitFor(() => expect(close).toHaveFocus());
 
     fireEvent.keyDown(dialog, { key: "Escape" });
     await waitFor(() => expect(opener).toHaveFocus());
     expect(screen.queryByRole("dialog", { name: /tools navigation|工具導覽/i })).not.toBeInTheDocument();
+  });
+
+  it("moves focus and scroll to the top when a tool route opens", async () => {
+    render(
+      <MemoryRouter
+        initialEntries={["/en"]}
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+      >
+        <LanguageProvider initialLocale="en">
+          <App />
+        </LanguageProvider>
+      </MemoryRouter>
+    );
+
+    await screen.findByRole("heading", { name: "NexaForge", level: 1 });
+    vi.mocked(window.scrollTo).mockClear();
+    fireEvent.change(screen.getByRole("textbox", { name: "Search Tools" }), {
+      target: { value: "PDF Merge" },
+    });
+    fireEvent.click(await screen.findByRole("link", { name: "Open tool" }));
+
+    await screen.findByRole("heading", { name: "PDF Merge", level: 1 });
+    await waitFor(() => expect(screen.getByRole("main")).toHaveFocus());
+    expect(window.scrollTo).toHaveBeenLastCalledWith({ top: 0, left: 0, behavior: "auto" });
   });
 
   it("renders English-prefixed routes and localizes internal navigation", async () => {

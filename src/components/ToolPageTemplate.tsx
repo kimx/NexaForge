@@ -152,11 +152,6 @@ export function ToolPageTemplate({
           ) : null}
         </div>
 
-        <AdSlot
-          position="tool-result"
-          adSlotId={import.meta.env.VITE_ADSENSE_SLOT_TOOL_RESULT}
-        />
-
         <section className="tool-card">
           <h2>{t("toolPage.how")}</h2>
           <ol className="tool-steps">
@@ -167,6 +162,11 @@ export function ToolPageTemplate({
             ))}
           </ol>
         </section>
+
+        <AdSlot
+          position="tool-result"
+          adSlotId={import.meta.env.VITE_ADSENSE_SLOT_TOOL_RESULT}
+        />
 
         <section className="tool-card">
           <h2>{t("toolPage.faq")}</h2>

@@ -1,5 +1,6 @@
 type ToolEventName =
   | "tool_open"
+  | "tool_search"
   | "process_start"
   | "process_success"
   | "process_failed"
@@ -8,8 +9,11 @@ type ToolEventName =
   | "result_action_used";
 
 interface TrackPayload {
-  tool: string;
+  tool?: string;
   action?: string;
+  category?: string;
+  queryLength?: number;
+  resultCount?: number;
 }
 
 export function trackEvent(name: ToolEventName, payload: TrackPayload): void {

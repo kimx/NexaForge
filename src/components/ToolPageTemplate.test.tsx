@@ -55,10 +55,27 @@ function rect(top: number, bottom: number): DOMRect {
 describe("ToolPageTemplate result focus", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.stubEnv("VITE_ADSENSE_SLOT_TOOL_RESULT", "1234567890");
   });
 
   afterEach(() => {
     vi.useRealTimers();
+    vi.unstubAllEnvs();
+  });
+
+  it("places monetization after the task guidance instead of inside the primary workflow", () => {
+    render(<Template state="ready" />);
+
+    const guidance = screen.getByRole("heading", { name: "How it works" }).closest("section");
+    const advertisement = screen.getByRole("region", { name: /advertisement/i });
+    const faq = screen.getByRole("heading", { name: "FAQ" }).closest("section");
+
+    if (!guidance || !faq) {
+      throw new Error("Expected guidance and FAQ headings to belong to section elements.");
+    }
+
+    expect(guidance.compareDocumentPosition(advertisement) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(advertisement.compareDocumentPosition(faq) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
   it("focuses a newly completed result when it is outside the viewport", () => {

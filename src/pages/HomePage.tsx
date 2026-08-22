@@ -9,8 +9,9 @@ import {
   useLocalizedToolMeta,
 } from "../context/LanguageContext";
 import { AdSlot } from "../components/AdSlot";
-import { isJsonTool, JSON_TOOLS } from "../utils/toolPaths";
+import { JSON_TOOLS } from "../utils/toolPaths";
 import { localizePath } from "../routing/localePaths";
+import { trackEvent } from "../utils/analytics";
 
 const categoryOrder: ToolDefinition["category"][] = [
   "Image",
@@ -19,6 +20,21 @@ const categoryOrder: ToolDefinition["category"][] = [
   "Developer",
   "Text",
 ];
+
+const FEATURED_TOOL_IDS = [
+  "image-resize",
+  "image-compress",
+  "image-convert",
+  "pdf-merge",
+  "pdf-split",
+  "csv-viewer",
+  "word-counter",
+  "qr-code",
+] as const;
+
+const FEATURED_TOOLS = FEATURED_TOOL_IDS
+  .map((id) => FILE_TOOLS.find((tool) => tool.id === id))
+  .filter((tool): tool is ToolDefinition => Boolean(tool));
 
 const TOOL_VISUALS: Record<string, { label: string; tone: string }> = {
   "image-resize": { label: "IMG", tone: "blue" },
@@ -159,15 +175,30 @@ export function HomePage(): JSX.Element {
     );
   }, [categoryFilter, keyword, toolMeta]);
 
+  useEffect(() => {
+    const queryLength = keyword.trim().length;
+    if (queryLength === 0) {
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      trackEvent("tool_search", {
+        category: categoryFilter,
+        queryLength,
+        resultCount: filteredTools.length,
+      });
+    }, 400);
+
+    return () => window.clearTimeout(timer);
+  }, [categoryFilter, filteredTools.length, keyword]);
+
   const recentTools = useMemo(
     () => recentToolIds.map((id) => FILE_TOOLS.find((tool) => tool.id === id)).filter((tool): tool is ToolDefinition => Boolean(tool)),
     [recentToolIds]
   );
 
   const isFilterActive = keyword.trim().length > 0 || categoryFilter !== "All";
-  const displayedTools = isFilterActive
-    ? filteredTools
-    : filteredTools.filter((tool) => !isJsonTool(tool.id));
+  const displayedTools = isFilterActive ? filteredTools : FEATURED_TOOLS;
 
   const categoryCounts = categoryOrder.reduce(
     (counts, category) => {
@@ -194,13 +225,25 @@ export function HomePage(): JSX.Element {
                 <span className="home-hero__title-accent">Forge</span>
               </h1>
               <p>{t("home.subtitle")}</p>
-              <div className="home-hero__actions">
-                <Link to={localizePath("/data/json-formatter", locale)} className="btn">
-                  {t("home.primaryJsonCta")}
-                </Link>
-                <Link to={localizePath("/json", locale)} className="btn secondary">
-                  {t("jsonHub.title")}
-                </Link>
+              <div className="home-hero__search">
+                <div className="workspace-search workspace-search--hero">
+                  <label htmlFor="search-tools">
+                    <span className="workspace-search__icon" aria-hidden="true">⌕</span>
+                    <span className="sr-only">{t("home.searchLabel")}</span>
+                    <input
+                      id="search-tools"
+                      ref={searchRef}
+                      value={keyword}
+                      placeholder={t("home.searchPlaceholder")}
+                      onChange={(event) => setKeyword(event.target.value)}
+                    />
+                  </label>
+                  {keyword ? (
+                    <button type="button" className="workspace-search__clear" onClick={() => setKeyword("")} aria-label={t("home.clearSearch")}>
+                      ×
+                    </button>
+                  ) : null}
+                </div>
               </div>
               <div className="home-hero__proof" aria-label={t("home.proofLabel")}>
                 <span>{t("home.proof.local")}</span>
@@ -215,24 +258,6 @@ export function HomePage(): JSX.Element {
               <span className="workspace-heading__eyebrow">{t("home.workspaceKicker")}</span>
               <h2>{t("home.workspaceTitle")}</h2>
               <p>{t("home.workspaceSubtitle")}</p>
-            </div>
-            <div className="workspace-search">
-              <label htmlFor="search-tools">
-                <span className="workspace-search__icon" aria-hidden="true">⌕</span>
-                <span className="sr-only">{t("home.searchLabel")}</span>
-                <input
-                  id="search-tools"
-                  ref={searchRef}
-                  value={keyword}
-                  placeholder={t("home.searchPlaceholder")}
-                  onChange={(event) => setKeyword(event.target.value)}
-                />
-              </label>
-              {keyword ? (
-                <button type="button" className="workspace-search__clear" onClick={() => setKeyword("")} aria-label={t("home.clearSearch")}>
-                  ×
-                </button>
-              ) : null}
             </div>
           </div>
 
@@ -249,6 +274,47 @@ export function HomePage(): JSX.Element {
                 {category === "All" ? t("home.categories.all") : localizedCategoryLabel(category, t)}
               </button>
             ))}
+          </div>
+
+          {!isFilterActive && recentTools.length > 0 ? (
+            <div className="workspace-section recent-tools-section" data-testid="recent-tools">
+              <div className="workspace-section__heading">
+                <h3>{t("home.recentTools")}</h3>
+                <div className="recent-tools-section__meta">
+                  <span>{t("home.recentToolsCount", { count: recentTools.length })}</span>
+                  <button type="button" className="text-button" onClick={() => setRecentToolIds([])}>
+                    {t("home.clearRecentTools")}
+                  </button>
+                </div>
+              </div>
+              <div className="tool-grid home-tool-grid home-tool-grid--recent">
+                {recentTools.map((tool) => <ToolCard key={tool.id} tool={tool} onOpen={rememberTool} className="home-tool-card--recent" />)}
+              </div>
+            </div>
+          ) : null}
+
+          <div
+            className="workspace-section"
+            id="popular-tools"
+            data-testid={!isFilterActive ? "featured-tools" : undefined}
+          >
+            <div className="workspace-section__heading">
+              <h3>{t(isFilterActive ? "home.searchResults" : "home.popular")}</h3>
+              <span>{t("sidebar.resultCount", { count: displayedTools.length })}</span>
+            </div>
+            {displayedTools.length > 0 ? (
+              <div className="tool-grid home-tool-grid">
+                {displayedTools.map((tool) => <ToolCard key={tool.id} tool={tool} onOpen={rememberTool} />)}
+              </div>
+            ) : (
+              <div className="finder-empty" role="status">
+                <strong>{t("home.noResults")}</strong>
+                <p>{t("home.noResultsHint")}</p>
+                <button type="button" className="btn secondary" onClick={() => { setKeyword(""); setCategoryFilter("All"); }}>
+                  {t("home.clearFilters")}
+                </button>
+              </div>
+            )}
           </div>
 
           {!isFilterActive ? (
@@ -270,43 +336,6 @@ export function HomePage(): JSX.Element {
               </div>
             </section>
           ) : null}
-
-          {!isFilterActive && recentTools.length > 0 ? (
-            <div className="workspace-section recent-tools-section" data-testid="recent-tools">
-              <div className="workspace-section__heading">
-                <h3>{t("home.recentTools")}</h3>
-                <div className="recent-tools-section__meta">
-                  <span>{t("home.recentToolsCount", { count: recentTools.length })}</span>
-                  <button type="button" className="text-button" onClick={() => setRecentToolIds([])}>
-                    {t("home.clearRecentTools")}
-                  </button>
-                </div>
-              </div>
-              <div className="tool-grid home-tool-grid home-tool-grid--recent">
-                {recentTools.map((tool) => <ToolCard key={tool.id} tool={tool} onOpen={rememberTool} className="home-tool-card--recent" />)}
-              </div>
-            </div>
-          ) : null}
-
-          <div className="workspace-section" id="popular-tools">
-            <div className="workspace-section__heading">
-              <h3>{t(isFilterActive ? "home.searchResults" : "home.otherTools")}</h3>
-              <span>{t("sidebar.resultCount", { count: displayedTools.length })}</span>
-            </div>
-            {displayedTools.length > 0 ? (
-              <div className="tool-grid home-tool-grid">
-                {displayedTools.map((tool) => <ToolCard key={tool.id} tool={tool} onOpen={rememberTool} />)}
-              </div>
-            ) : (
-              <div className="finder-empty" role="status">
-                <strong>{t("home.noResults")}</strong>
-                <p>{t("home.noResultsHint")}</p>
-                <button type="button" className="btn secondary" onClick={() => { setKeyword(""); setCategoryFilter("All"); }}>
-                  {t("home.clearFilters")}
-                </button>
-              </div>
-            )}
-          </div>
 
           {!isFilterActive ? (
           <div className="workspace-section category-section" data-testid="category-browser">
