@@ -14,7 +14,7 @@ interface ToolPageTemplateProps {
   workflow?: ToolWorkflow;
   children: {
     workspace: JSX.Element;
-    options: JSX.Element;
+    options: JSX.Element | null;
     result: JSX.Element;
     nextActions?: JSX.Element;
     howItWorks: string[];
@@ -86,15 +86,17 @@ export function ToolPageTemplate({
         </div>
         <p className="short-description tool-page__description">{toolDescription}</p>
 
-        <div className="tool-page__duo">
+        <div className={`tool-page__duo${children.options ? "" : " tool-page__duo--single"}`}>
           <section className="tool-card tool-page__panel tool-page__panel--workspace">
             <h2>{t("toolPage.workspace")}</h2>
             {children.workspace}
           </section>
-          <section className="tool-card tool-page__panel tool-page__panel--options">
-            <h2>{t("toolPage.options")}</h2>
-            {children.options}
-          </section>
+          {children.options ? (
+            <section className="tool-card tool-page__panel tool-page__panel--options">
+              <h2>{t("toolPage.options")}</h2>
+              {children.options}
+            </section>
+          ) : null}
         </div>
 
         {showResultSection ? (

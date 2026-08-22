@@ -671,7 +671,11 @@ body::before {
 
 /* Image crop workspace */
 .tool-page--image-crop .tool-page__duo {
-  grid-template-columns: minmax(0, 7fr) minmax(260px, 3fr);
+  grid-template-columns: 1fr;
+}
+
+.tool-page__duo--single {
+  grid-template-columns: 1fr;
 }
 
 .image-crop-editor {
@@ -865,6 +869,16 @@ body::before {
 .image-crop-page__decode-status {
   margin: 0;
   color: var(--text-secondary);
+}
+
+.image-crop-page__options {
+  margin-top: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.image-crop-page__options .btn.primary {
+  width: 100%;
 }
 
 .image-crop-page__result-preview .preview-image {

@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import type { ReactElement } from "react";
 import { MemoryRouter } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -90,6 +90,16 @@ describe("ImageCropPage", () => {
 
     expect(screen.getByRole("img", { name: "Crop preview" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Crop image" })).toBeEnabled();
+  });
+
+  it("keeps crop controls below the preview without a separate options panel", () => {
+    renderCropPageWithSelectedFile();
+
+    const workspace = screen.getByRole("heading", { name: "Tool Workspace", level: 2 }).closest("section");
+    expect(workspace).not.toBeNull();
+    expect(within(workspace as HTMLElement).getByRole("combobox", { name: "Format" })).toBeInTheDocument();
+    expect(within(workspace as HTMLElement).getByRole("button", { name: "Crop image" })).toBeEnabled();
+    expect(screen.queryByRole("heading", { name: "Options", level: 2 })).not.toBeInTheDocument();
   });
 
   it("provides the crop workflow in Traditional Chinese", () => {

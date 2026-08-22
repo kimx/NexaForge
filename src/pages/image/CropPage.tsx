@@ -206,56 +206,55 @@ export function ImageCropPage(): JSX.Element {
               </p>
             ) : null}
             {decodeError ? <p className="error" role="alert">{decodeError}</p> : null}
+            <div className="tool-form image-crop-page__options">
+              {isRectangle ? (
+                <label>
+                  {t("label.format")}
+                  <select
+                    value={settings.format}
+                    onChange={(event) => {
+                      handleEditorChange({
+                        ...settings,
+                        format: event.target.value as CropSettings["format"],
+                      });
+                    }}
+                  >
+                    <option value="jpeg">JPG</option>
+                    <option value="png">PNG</option>
+                    <option value="webp">WebP</option>
+                  </select>
+                </label>
+              ) : (
+                <p className="image-crop-page__transparent-format">{t("tool.image-crop.transparentPng")}</p>
+              )}
+              {isRectangle && settings.format !== "png" ? (
+                <label>
+                  {t("label.quality")}: {Math.round(settings.quality * 100)}
+                  <input
+                    type="range"
+                    min={1}
+                    max={100}
+                    value={Math.round(settings.quality * 100)}
+                    onChange={(event) => {
+                      handleEditorChange({ ...settings, quality: Number(event.target.value) / 100 });
+                    }}
+                  />
+                </label>
+              ) : null}
+              {isRectangle && settings.format === "jpeg" ? <p>{t("tool.image-crop.jpegFill")}</p> : null}
+              <button
+                className="btn primary"
+                type="button"
+                disabled={!canProcess}
+                aria-busy={processing === "processing"}
+                onClick={handleProcess}
+              >
+                {processing === "processing" ? t("tool.image-crop.cropping") : t("tool.image-crop.crop")}
+              </button>
+            </div>
           </>
         ),
-        options: (
-          <div className="tool-form image-crop-page__options">
-            {isRectangle ? (
-              <label>
-                {t("label.format")}
-                <select
-                  value={settings.format}
-                  onChange={(event) => {
-                    handleEditorChange({
-                      ...settings,
-                      format: event.target.value as CropSettings["format"],
-                    });
-                  }}
-                >
-                  <option value="jpeg">JPG</option>
-                  <option value="png">PNG</option>
-                  <option value="webp">WebP</option>
-                </select>
-              </label>
-            ) : (
-              <p className="image-crop-page__transparent-format">{t("tool.image-crop.transparentPng")}</p>
-            )}
-            {isRectangle && settings.format !== "png" ? (
-              <label>
-                {t("label.quality")}: {Math.round(settings.quality * 100)}
-                <input
-                  type="range"
-                  min={1}
-                  max={100}
-                  value={Math.round(settings.quality * 100)}
-                  onChange={(event) => {
-                    handleEditorChange({ ...settings, quality: Number(event.target.value) / 100 });
-                  }}
-                />
-              </label>
-            ) : null}
-            {isRectangle && settings.format === "jpeg" ? <p>{t("tool.image-crop.jpegFill")}</p> : null}
-            <button
-              className="btn primary"
-              type="button"
-              disabled={!canProcess}
-              aria-busy={processing === "processing"}
-              onClick={handleProcess}
-            >
-              {processing === "processing" ? t("tool.image-crop.cropping") : t("tool.image-crop.crop")}
-            </button>
-          </div>
-        ),
+        options: null,
         result: (
           <>
             {result && resultUrl ? (
