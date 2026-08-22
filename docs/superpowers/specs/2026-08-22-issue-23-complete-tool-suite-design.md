@@ -36,7 +36,7 @@ This design completes every issue item as a discoverable, bilingual NexaForge to
 - `/qr-code/wifi`: build an escaped `WIFI:` payload for WPA/WPA2, WEP, or open networks, including hidden SSIDs, then generate a downloadable QR image.
 - `/qr-code/vcard`: build a vCard 3.0 payload from name, phone, email, company, job title, URL, and address fields, then generate a downloadable QR image.
 
-QR image decoding uses `@zxing/browser`; barcode rendering uses the browser-specific `@bwipjs/browser` package. Both are imported from their page services only when processing begins. QR payload builders remain pure TypeScript and are tested without the rendering libraries.
+QR image decoding uses `@zxing/browser`; barcode rendering uses the `bwip-js/browser` package export. Both are imported from their page services only when processing begins. QR payload builders remain pure TypeScript and are tested without the rendering libraries.
 
 ### Structured-data batch
 

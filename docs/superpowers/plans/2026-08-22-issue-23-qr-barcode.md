@@ -6,7 +6,7 @@
 
 **Architecture:** Pure TypeScript modules build and validate payloads. Browser adapters dynamically import ZXing and bwip-js for reading/rendering, while four focused React pages use the existing tool workflow and QR generator service.
 
-**Tech Stack:** React 18, TypeScript 5.8, `qrcode`, `@zxing/browser`, `@bwipjs/browser`, Vitest, Testing Library
+**Tech Stack:** React 18, TypeScript 5.8, `qrcode`, `@zxing/browser`, `bwip-js/browser`, Vitest, Testing Library
 
 **Spec:** `docs/superpowers/specs/2026-08-22-issue-23-complete-tool-suite-design.md`
 
@@ -101,7 +101,7 @@ Expected: FAIL because both services are missing.
 
 - [ ] **Step 3: Install browser dependencies and implement adapters**
 
-Run: `npm install @zxing/browser @bwipjs/browser`
+Run: `npm install @zxing/browser bwip-js`
 
 The default image decoder dynamically imports `BrowserQRCodeReader` and decodes an object URL in a `try/finally` that revokes the URL. The camera adapter returns a session whose idempotent `stop` calls ZXing controls and every media track. The barcode adapter calls the bwip-js browser canvas renderer with `code128` or `ean13`, exports PNG through `canvas.toBlob`, and calls its SVG renderer for SVG output.
 
@@ -216,4 +216,3 @@ Expected: all commands exit 0 and prerender includes all locale routes.
 git add -- src/types/tool.ts src/data/tools.ts src/App.tsx src/App.test.tsx src/components/ToolSidebar.test.tsx src/seo README.md
 git commit -m "feat: publish QR and barcode tool suite"
 ```
-
