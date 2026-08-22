@@ -25,7 +25,7 @@ describe("UuidPage", () => {
     consoleError.mockRestore();
   });
 
-  it("generates uuids and renders output", async () => {
+  it("renders each generated uuid on its own line", async () => {
     vi.spyOn(textService, "generateUuids").mockReturnValue(["111", "222"]);
     const { container } = renderWithProviders(<UuidPage />);
     fireEvent.click(screen.getByRole("button", { name: "Generate" }));
@@ -33,8 +33,7 @@ describe("UuidPage", () => {
     expect(result).not.toBeNull();
 
     await waitFor(() => {
-      expect(result).toHaveTextContent("111");
-      expect(result).toHaveTextContent("222");
+      expect(result?.textContent).toBe("111\n222");
     });
   });
 });
