@@ -28,6 +28,7 @@ Thumbs.db
 desktop.ini
 .idea/
 .vscode/
+.worktrees/
 
 # TypeScript
 *.tsbuildinfo
