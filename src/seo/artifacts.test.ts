@@ -19,6 +19,12 @@ describe("SEO artifacts", () => {
     );
     expect(sitemap).not.toContain("/text/base64");
     expect(sitemap).not.toContain("localhost");
+    expect(sitemap).toContain(
+      "<loc>https://nexaforge.kimx.info/developer/regex-tester</loc>"
+    );
+    expect(sitemap).toContain(
+      'hreflang="en" href="https://nexaforge.kimx.info/en/developer/regex-tester"'
+    );
   });
 
   it("XML-escapes route values", () => {

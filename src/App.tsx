@@ -34,6 +34,9 @@ const JsonToCsvPage = lazy(() =>
 const DeveloperToolsPage = lazy(() =>
   import("./pages/developer/DeveloperToolsPage").then((module) => ({ default: module.DeveloperToolsPage }))
 );
+const RegexTesterPage = lazy(() =>
+  import("./pages/developer/RegexTesterPage").then((module) => ({ default: module.RegexTesterPage }))
+);
 const JwtDecoderPage = lazy(() =>
   import("./pages/developer/JwtDecoderPage").then((module) => ({ default: module.JwtDecoderPage }))
 );
@@ -126,6 +129,7 @@ const APP_ROUTES: AppRoute[] = [
   { path: "/developer/unix-timestamp", element: <DeveloperToolsPage kind="unix-timestamp" /> },
   { path: "/developer/json-yaml", element: <DeveloperToolsPage kind="json-yaml" /> },
   { path: "/developer/json-diff", element: <DeveloperToolsPage kind="json-diff" /> },
+  { path: "/developer/regex-tester", element: <RegexTesterPage /> },
   { path: "/qr-code", element: <QrPage /> },
 ];
 

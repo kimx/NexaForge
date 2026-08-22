@@ -263,6 +263,15 @@ export const FILE_TOOLS: ToolDefinition[] = [
     keywords: ["developer", "json", "diff", "compare", "changes"],
   },
   {
+    id: "regex-tester",
+    title: "Regex Tester",
+    description: "Test JavaScript regular expressions safely in an isolated browser worker.",
+    path: "/developer/regex-tester",
+    category: "Developer",
+    aliases: ["regex test", "regexp tester", "regular expression tester"],
+    keywords: ["developer", "regex", "regexp", "pattern", "match", "capture groups"],
+  },
+  {
     id: "markdown-previewer",
     title: "Markdown Preview",
     description: "Preview Markdown instantly with support for headings, lists, links, and code blocks.",

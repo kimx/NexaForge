@@ -2,6 +2,26 @@ import { INDEXABLE_ROUTES } from "../routing/routes";
 import { buildPageSeo, SITE_ORIGIN } from "./siteMeta";
 
 describe("buildPageSeo", () => {
+  it("classifies the Regex Tester as a bilingual developer application", () => {
+    const seo = buildPageSeo("/developer/regex-tester", "en");
+
+    expect(seo.title).toContain("Regex Tester");
+    expect(seo.canonical).toBe(
+      "https://nexaforge.kimx.info/en/developer/regex-tester"
+    );
+    expect(seo.alternates["zh-Hant"]).toBe(
+      "https://nexaforge.kimx.info/developer/regex-tester"
+    );
+    expect(seo.jsonLd).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          "@type": "WebApplication",
+          applicationCategory: "DeveloperApplication",
+        }),
+      ])
+    );
+  });
+
   it("builds production bilingual URLs and structured data for a JSON tool", () => {
     const seo = buildPageSeo("/data/json-formatter", "en");
 

@@ -54,6 +54,7 @@ NexaForge 將常見工具集中到一個站點，從圖片到 PDF、從 JSON 到
 - **Base64**：文字與檔案的 Base64 互轉
 - **JWT Decoder / JWT Key Generator**：開發驗證流程輔助
 - **QR Code**：文字轉 QR
+- **Regex Tester**：安全測試 JavaScript 正則表達式、旗標與擷取群組
 
 ## 技術特性
 

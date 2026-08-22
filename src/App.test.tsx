@@ -2,6 +2,7 @@ import { fireEvent, render, screen, waitFor, within } from "@testing-library/rea
 import { MemoryRouter } from "react-router-dom";
 import App from "./App";
 import { LanguageProvider } from "./context/LanguageContext";
+import { BASE_INDEXABLE_ROUTES, INDEXABLE_ROUTES } from "./routing/routes";
 
 const ROUTE_HEADINGS: Record<string, string> = {
   "/": "NexaForge",
@@ -20,6 +21,7 @@ const ROUTE_HEADINGS: Record<string, string> = {
   "/data/csv-to-json": "CSV to JSON",
   "/data/json-to-csv": "JSON to CSV",
   "/developer/base64": "Base64",
+  "/developer/regex-tester": "Regex Tester",
   "/text/hash": "Hash Generator",
   "/text/uuid": "UUID Generator",
   "/text/word-counter": "Word Counter",
@@ -58,6 +60,11 @@ function setNarrowViewport(matches: boolean): void {
 }
 
 describe("App routes", () => {
+  it("publishes canonical and English Regex Tester routes for indexing", () => {
+    expect(BASE_INDEXABLE_ROUTES).toContain("/developer/regex-tester");
+    expect(INDEXABLE_ROUTES).toContain("/en/developer/regex-tester");
+  });
+
   it("announces route loading while a lazy page module is pending", () => {
     render(
       <MemoryRouter
