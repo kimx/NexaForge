@@ -49,7 +49,7 @@ function getToolIcon(toolId: string): SidebarIconName {
     return "home";
   }
 
-  if (toolId.startsWith("image-")) {
+  if (toolId.startsWith("image-") || ["heic-converter", "svg-optimizer", "favicon-generator", "social-resizer"].includes(toolId)) {
     return "image";
   }
 
@@ -218,6 +218,8 @@ export function ToolSidebar({
         tool.title.toLowerCase().includes(keywordNormalized) ||
         tool.description.toLowerCase().includes(keywordNormalized) ||
         tool.category.toLowerCase().includes(keywordNormalized) ||
+        tool.aliases?.some((alias) => alias.toLowerCase().includes(keywordNormalized)) ||
+        tool.keywords?.some((keyword) => keyword.toLowerCase().includes(keywordNormalized)) ||
         localToolMeta(tool.id, "title").toLowerCase().includes(keywordNormalized) ||
         localToolMeta(tool.id, "description").toLowerCase().includes(keywordNormalized)
     );

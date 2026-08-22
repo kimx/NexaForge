@@ -70,6 +70,21 @@ const ExifPage = lazy(() =>
 const ImageResizePage = lazy(() =>
   import("./pages/image/ResizePage").then((module) => ({ default: module.ImageResizePage }))
 );
+const HeicConverterPage = lazy(() =>
+  import("./pages/image/HeicConverterPage").then((module) => ({ default: module.HeicConverterPage }))
+);
+const ImageBase64Page = lazy(() =>
+  import("./pages/image/ImageBase64Page").then((module) => ({ default: module.ImageBase64Page }))
+);
+const SvgOptimizerPage = lazy(() =>
+  import("./pages/image/SvgOptimizerPage").then((module) => ({ default: module.SvgOptimizerPage }))
+);
+const FaviconGeneratorPage = lazy(() =>
+  import("./pages/image/FaviconGeneratorPage").then((module) => ({ default: module.FaviconGeneratorPage }))
+);
+const SocialResizerPage = lazy(() =>
+  import("./pages/image/SocialResizerPage").then((module) => ({ default: module.SocialResizerPage }))
+);
 const PdfMergePage = lazy(() =>
   import("./pages/pdf/MergePage").then((module) => ({ default: module.PdfMergePage }))
 );
@@ -130,6 +145,11 @@ const APP_ROUTES: AppRoute[] = [
   { path: "/image/convert", element: <ImageConvertPage /> },
   { path: "/image/exif-viewer", element: <ExifPage kind="image-exif-viewer" /> },
   { path: "/image/remove-exif", element: <ExifPage kind="image-remove-exif" /> },
+  { path: "/image/heic-converter", element: <HeicConverterPage /> },
+  { path: "/image/base64", element: <ImageBase64Page /> },
+  { path: "/image/svg-optimizer", element: <SvgOptimizerPage /> },
+  { path: "/image/favicon-generator", element: <FaviconGeneratorPage /> },
+  { path: "/image/social-resizer", element: <SocialResizerPage /> },
   { path: "/pdf/merge", element: <PdfMergePage /> },
   { path: "/pdf/split", element: <PdfSplitPage /> },
   { path: "/pdf/rotate", element: <PdfRotatePage /> },

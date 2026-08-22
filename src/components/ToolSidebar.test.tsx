@@ -48,6 +48,7 @@ describe("ToolSidebar", () => {
 
     expect(imageCategory).toHaveAttribute("aria-expanded", "true");
     expect(screen.getByRole("link", { name: /image resize|影像縮放/i })).toHaveAttribute("href", "/image/resize");
+    expect(screen.getByRole("link", { name: /favicon/i })).toHaveAttribute("href", "/image/favicon-generator");
   });
 
   it("keeps category toggles free of tool-count clutter", () => {
@@ -125,5 +126,11 @@ describe("ToolSidebar", () => {
 
     expect(search).toHaveValue("");
     expect(screen.getByRole("button", { name: /data.*tools|資料.*工具/i })).toBeInTheDocument();
+  });
+
+  it("finds tools through aliases and keywords", () => {
+    render(<MemoryRouter><LanguageProvider initialLocale="en"><ToolSidebar /></LanguageProvider></MemoryRouter>);
+    fireEvent.change(screen.getByRole("textbox", { name: /tool search/i }), { target: { value: "ico" } });
+    expect(screen.getByRole("link", { name: "Favicon Generator" })).toHaveAttribute("href", "/en/image/favicon-generator");
   });
 });

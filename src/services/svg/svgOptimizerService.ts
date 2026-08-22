@@ -1,4 +1,4 @@
-import type { Config } from "svgo";
+import type { Config } from "svgo/browser";
 
 export interface SvgOptimizationOptions {
   multipass?: boolean;
@@ -29,7 +29,7 @@ function previewSafety(source: string): Pick<SvgOptimizationResult, "previewSafe
 
 export async function optimizeSvg(source: string, options: SvgOptimizationOptions = {}, dependencies?: SvgDependencies): Promise<SvgOptimizationResult> {
   if (!/<svg\b/i.test(source)) throw new Error("Enter a valid SVG document.");
-  const { optimize } = dependencies ?? await import("svgo");
+  const { optimize } = dependencies ?? await import("svgo/browser");
   const config: Config = {
     multipass: options.multipass ?? true,
     // SVGO 4's default preset does not include removeViewBox.

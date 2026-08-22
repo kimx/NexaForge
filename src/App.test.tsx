@@ -3,6 +3,7 @@ import { MemoryRouter } from "react-router-dom";
 import App from "./App";
 import { LanguageProvider } from "./context/LanguageContext";
 import { BASE_INDEXABLE_ROUTES, INDEXABLE_ROUTES } from "./routing/routes";
+import { FILE_TOOLS } from "./data/tools";
 
 const ROUTE_HEADINGS: Record<string, string> = {
   "/": "NexaForge",
@@ -13,6 +14,11 @@ const ROUTE_HEADINGS: Record<string, string> = {
   "/image/compress": "Image Compress",
   "/image/exif-viewer": "EXIF Viewer",
   "/image/remove-exif": "Remove EXIF",
+  "/image/heic-converter": "HEIC → JPG / PNG",
+  "/image/base64": "Image → Base64",
+  "/image/svg-optimizer": "SVG Optimizer",
+  "/image/favicon-generator": "Favicon Generator",
+  "/image/social-resizer": "Social Media Image Resizer",
   "/pdf/merge": "PDF Merge",
   "/pdf/split": "PDF Split",
   "/pdf/rotate": "PDF Rotate",
@@ -97,6 +103,16 @@ describe("App routes", () => {
       expect(BASE_INDEXABLE_ROUTES).toContain(path);
       expect(INDEXABLE_ROUTES).toContain(`/en${path}`);
     });
+  });
+
+  it("publishes every advanced image route and advertises batch/AVIF upgrades", () => {
+    ["/image/heic-converter", "/image/base64", "/image/svg-optimizer", "/image/favicon-generator", "/image/social-resizer"].forEach((path) => {
+      expect(BASE_INDEXABLE_ROUTES).toContain(path);
+      expect(INDEXABLE_ROUTES).toContain(`/en${path}`);
+    });
+    expect(FILE_TOOLS.find((tool) => tool.id === "image-convert")?.description).toContain("AVIF");
+    expect(FILE_TOOLS.find((tool) => tool.id === "image-resize")?.description).toMatch(/batch/i);
+    expect(FILE_TOOLS.find((tool) => tool.id === "image-compress")?.description).toMatch(/batch/i);
   });
 
   it("announces route loading while a lazy page module is pending", () => {

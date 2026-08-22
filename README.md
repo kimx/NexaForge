@@ -25,11 +25,15 @@ NexaForge 將常見工具集中到一個站點，從圖片到 PDF、從 JSON 到
 ## 核心功能
 
 ### 圖片工具
-- **Image Resize**：調整尺寸、保留品質與預覽
-- **Image Compress**：壓縮圖片，提升傳輸與儲存效率
-- **Image Converter**：快速轉換 JPG / PNG / WebP 等格式
+- **Image Resize / Compress**：最多 20 張圖片批次調整尺寸或壓縮，支援單檔與 ZIP 下載
+- **Image Converter**：轉換 JPG / PNG / WebP / AVIF，另有 HEIC / HEIF → JPG / PNG
+- **Image Crop**：矩形、圓形、預設比例與自訂形狀裁切
 - **EXIF Viewer**：檢視 JPEG 相片中的 EXIF 中繼資料
 - **Remove EXIF**：移除 JPEG 相片中的 EXIF 中繼資料
+- **Image → Base64**：輸出原始 Base64 或 Data URL
+- **SVG Optimizer**：保留 viewBox 的安全 SVG 最佳化與下載
+- **Favicon Generator**：產生 ICO、平台 PNG 圖示與 web manifest
+- **Social Media Image Resizer**：產生 Instagram、Facebook、X、LinkedIn、YouTube 與自訂尺寸
 
 ### PDF 工具
 - **PDF Merge**：合併多份 PDF

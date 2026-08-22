@@ -46,6 +46,14 @@ describe("buildPageSeo", () => {
     expect(xml.alternates["zh-Hant"]).toBe("https://nexaforge.kimx.info/data/json-xml");
   });
 
+  it("builds bilingual metadata for advanced image routes", () => {
+    const seo = buildPageSeo("/image/favicon-generator", "en");
+    expect(seo.title).toContain("Favicon Generator");
+    expect(seo.canonical).toBe("https://nexaforge.kimx.info/en/image/favicon-generator");
+    expect(seo.alternates["zh-Hant"]).toBe("https://nexaforge.kimx.info/image/favicon-generator");
+    expect(seo.jsonLd).toEqual(expect.arrayContaining([expect.objectContaining({ applicationCategory: "UtilitiesApplication" })]));
+  });
+
   it("builds production bilingual URLs and structured data for a JSON tool", () => {
     const seo = buildPageSeo("/data/json-formatter", "en");
 

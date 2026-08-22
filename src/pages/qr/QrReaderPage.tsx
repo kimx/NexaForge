@@ -105,8 +105,7 @@ export function QrReaderPage(): JSX.Element {
       );
       if (!mountedRef.current) session.stop();
       else cameraSessionRef.current = session;
-    } catch (cause) {
-      console.error(cause);
+    } catch {
       setCameraActive(false);
       setError(t("tool.qr-reader.error.camera"));
       setProcessing("error");

@@ -31,6 +31,9 @@ describe("SEO artifacts", () => {
     expect(sitemap).toContain(
       "<loc>https://nexaforge.kimx.info/data/xml-formatter</loc>"
     );
+    expect(sitemap).toContain("<loc>https://nexaforge.kimx.info/image/heic-converter</loc>");
+    expect(sitemap).toContain("<loc>https://nexaforge.kimx.info/image/favicon-generator</loc>");
+    expect(sitemap).toContain('hreflang="en" href="https://nexaforge.kimx.info/en/image/social-resizer"');
   });
 
   it("XML-escapes route values", () => {
