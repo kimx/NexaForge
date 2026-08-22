@@ -2570,6 +2570,102 @@ section,
   resize: vertical;
 }
 
+.regex-tester__pattern-input,
+.regex-tester__results code {
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+}
+
+.regex-tester__help {
+  margin: -4px 0 2px;
+  color: var(--text-secondary);
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
+
+.regex-tester__flags {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.regex-tester__flags legend {
+  margin-bottom: 8px;
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+.regex-tester__flag-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 8px;
+}
+
+.tool-form label.regex-tester__flag {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 44px;
+  padding: 8px 10px;
+  border: 1px solid rgba(127, 171, 223, 0.38);
+  border-radius: 0.8rem;
+  background: var(--bg-subtle);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.tool-form label.regex-tester__flag:has(input:focus-visible) {
+  outline: 2px solid rgba(68, 149, 251, 0.76);
+  outline-offset: 2px;
+}
+
+.tool-form .regex-tester__flag input {
+  width: 1.05rem;
+  height: 1.05rem;
+  margin: 0;
+  accent-color: var(--brand-primary);
+}
+
+.regex-tester__results {
+  display: grid;
+  gap: 10px;
+}
+
+.regex-tester__summary,
+.regex-tester__notice {
+  margin: 0;
+}
+
+.regex-tester__summary {
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+.regex-tester__notice {
+  color: var(--text-secondary);
+}
+
+.regex-tester__table-wrapper table {
+  min-width: 760px;
+}
+
+.regex-tester__table-wrapper code {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.regex-tester__index {
+  font-variant-numeric: tabular-nums;
+}
+
+.regex-tester__group-list {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
 .diff-summary {
   margin: 0 0 10px;
   display: grid;
