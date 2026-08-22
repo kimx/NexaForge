@@ -81,4 +81,3 @@ export interface ImageCropEditorLabels {
   yCoordinate: string;
   resizeShape: string;
 }
-

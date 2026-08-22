@@ -4,7 +4,9 @@ import {
   createDefaultCropSettings,
   getCropBounds,
   getImageStageBounds,
+  simplifyFreehandPoints,
   stagePointToSource,
+  traceCropPath,
   validateCropShape,
 } from "./imageCropGeometry";
 
@@ -80,5 +82,118 @@ describe("image crop geometry", () => {
       width: 0.6,
       height: 0.6,
     });
+  });
+
+  it("rejects a bow-tie polygon because its non-adjacent edges cross", () => {
+    expect(
+      validateCropShape({
+        kind: "polygon",
+        closed: true,
+        points: [
+          { x: 0.1, y: 0.1 },
+          { x: 0.9, y: 0.9 },
+          { x: 0.9, y: 0.1 },
+          { x: 0.1, y: 0.9 },
+        ],
+      })
+    ).toEqual({ valid: false, reason: "self-intersection" });
+  });
+
+  it("accepts a normal four-corner polygon", () => {
+    expect(
+      validateCropShape({
+        kind: "polygon",
+        closed: true,
+        points: [
+          { x: 0.1, y: 0.1 },
+          { x: 0.9, y: 0.1 },
+          { x: 0.9, y: 0.9 },
+          { x: 0.1, y: 0.9 },
+        ],
+      })
+    ).toEqual({ valid: true });
+  });
+
+  it("requires a polygon to be explicitly closed", () => {
+    expect(
+      validateCropShape({
+        kind: "polygon",
+        closed: false,
+        points: [
+          { x: 0.1, y: 0.1 },
+          { x: 0.9, y: 0.1 },
+          { x: 0.5, y: 0.9 },
+        ],
+      })
+    ).toEqual({ valid: false, reason: "shape-not-closed" });
+  });
+
+  it("simplifies a straight freehand run while preserving corners", () => {
+    expect(
+      simplifyFreehandPoints(
+        [
+          { x: 0, y: 0 },
+          { x: 0.25, y: 0 },
+          { x: 0.5, y: 0 },
+          { x: 1, y: 0 },
+          { x: 1, y: 1 },
+          { x: 0, y: 1 },
+        ],
+        0.003,
+        500
+      )
+    ).toEqual([
+      { x: 0, y: 0 },
+      { x: 1, y: 0 },
+      { x: 1, y: 1 },
+      { x: 0, y: 1 },
+    ]);
+  });
+
+  it("calculates a tight bound for custom points", () => {
+    expect(
+      getCropBounds({
+        kind: "freehand",
+        closed: true,
+        points: [
+          { x: 0.2, y: 0.4 },
+          { x: 0.8, y: 0.3 },
+          { x: 0.6, y: 0.9 },
+        ],
+      })
+    ).toEqual({ x: 0.2, y: 0.3, width: 0.6, height: 0.6 });
+  });
+
+  it("traces a polygon through mapped coordinates and closes it", () => {
+    const calls: Array<[string, ...number[]]> = [];
+    const context = {
+      moveTo: (x: number, y: number) => calls.push(["moveTo", x, y]),
+      lineTo: (x: number, y: number) => calls.push(["lineTo", x, y]),
+      bezierCurveTo: (...values: number[]) => calls.push(["bezierCurveTo", ...values]),
+      ellipse: (...values: number[]) => calls.push(["ellipse", ...values]),
+      rect: (...values: number[]) => calls.push(["rect", ...values]),
+      closePath: () => calls.push(["closePath"]),
+    };
+
+    traceCropPath(
+      context,
+      {
+        kind: "polygon",
+        closed: true,
+        points: [
+          { x: 0.1, y: 0.2 },
+          { x: 0.5, y: 0.2 },
+          { x: 0.3, y: 0.8 },
+        ],
+      },
+      (point) => ({ x: point.x * 100, y: point.y * 100 })
+    );
+
+    expect(calls).toEqual([
+      ["moveTo", 10, 20],
+      ["lineTo", 50, 20],
+      ["lineTo", 30, 80],
+      ["closePath"],
+    ]);
   });
 });
