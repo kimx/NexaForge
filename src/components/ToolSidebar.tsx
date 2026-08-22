@@ -344,22 +344,8 @@ export function ToolSidebar({
           ) : null}
         </div>
 
-        <nav className="tool-sidebar__nav" aria-label={t("sidebar.navigation")}>
-          <NavLink
-            to={localizePath("/", locale)}
-            end
-            className={({ isActive }) => `tool-sidebar__link ${isActive ? "is-active" : ""}`}
-            onClick={isMobile ? onClose : undefined}
-          >
-            <span className="tool-sidebar__icon" aria-hidden="true">
-              <SidebarIcon name={getToolIcon("home")} />
-            </span>
-            <span className="tool-sidebar__label">{t("sidebar.home")}</span>
-          </NavLink>
-        </nav>
-
         {!keywordNormalized && (
-          <div className="tool-sidebar__categories">
+          <nav className="tool-sidebar__categories" aria-label={t("sidebar.navigation")}>
             <p className="tool-sidebar__section-title">{t("sidebar.categories")}</p>
             {categoryOrder.map((category) => (
               <div className="tool-sidebar__category" key={category}>
@@ -372,9 +358,6 @@ export function ToolSidebar({
                 >
                   <span className="tool-sidebar__icon" aria-hidden="true"><SidebarIcon name={CATEGORY_ICONS[category]} /></span>
                   <span className="tool-sidebar__label">{localizedCategoryLabel(category, t)} {t("sidebar.toolsSuffix")}</span>
-                  <span className="tool-sidebar__category-count" aria-hidden="true">
-                    {FILE_TOOLS.filter((tool) => tool.category === category).length}
-                  </span>
                   <span className="tool-sidebar__category-chevron" aria-hidden="true">
                     <SidebarIcon name="chevron" />
                   </span>
@@ -398,7 +381,7 @@ export function ToolSidebar({
                 )}
               </div>
             ))}
-          </div>
+          </nav>
         )}
 
         {keywordNormalized &&

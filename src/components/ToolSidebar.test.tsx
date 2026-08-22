@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { LanguageProvider } from "../context/LanguageContext";
 import { ToolSidebar } from "./ToolSidebar";
@@ -48,6 +48,19 @@ describe("ToolSidebar", () => {
 
     expect(imageCategory).toHaveAttribute("aria-expanded", "true");
     expect(screen.getByRole("link", { name: /image resize|影像縮放/i })).toHaveAttribute("href", "/image/resize");
+  });
+
+  it("keeps category toggles free of tool-count clutter", () => {
+    render(
+      <MemoryRouter>
+        <LanguageProvider>
+          <ToolSidebar />
+        </LanguageProvider>
+      </MemoryRouter>
+    );
+
+    const dataCategory = screen.getByRole("button", { name: /data.*tools|資料.*工具/i });
+    expect(within(dataCategory).queryByText("4")).not.toBeInTheDocument();
   });
 
 

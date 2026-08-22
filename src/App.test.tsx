@@ -109,6 +109,23 @@ describe("App routes", () => {
     expect(document.querySelector("link[rel='canonical']")).toBeTruthy();
   }, 15_000);
 
+  it("uses the sidebar brand as the home entry without duplicate Home links", async () => {
+    render(
+      <MemoryRouter
+        initialEntries={["/"]}
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+      >
+        <LanguageProvider initialLocale="zh-TW">
+          <App />
+        </LanguageProvider>
+      </MemoryRouter>
+    );
+
+    await screen.findByRole("heading", { name: "NexaForge", level: 1 });
+    expect(screen.queryAllByRole("link", { name: "首頁" })).toHaveLength(0);
+    expect(screen.getByRole("link", { name: /NexaForge.*Utility File Workspace/i })).toHaveAttribute("href", "/");
+  });
+
   it("opens mobile tool navigation as a modal and returns focus when closed", async () => {
     setNarrowViewport(true);
     render(

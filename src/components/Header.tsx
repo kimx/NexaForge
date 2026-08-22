@@ -1,5 +1,5 @@
 import type { RefObject } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useLanguage, type Locale } from "../context/LanguageContext";
 import { localizePath } from "../routing/localePaths";
 
@@ -47,9 +47,6 @@ export function Header({
             <span>{t("header.tools")}</span>
           </button>
         ) : null}
-        <Link to={localizePath("/", locale)} className="top-banner__home">
-          {t("sidebar.home")}
-        </Link>
         <a
           href="https://github.com/kimx/NexaForge"
           className="top-banner__github"
