@@ -70,6 +70,18 @@ const PdfSplitPage = lazy(() =>
 const QrPage = lazy(() =>
   import("./pages/qr/QrPage").then((module) => ({ default: module.QrPage }))
 );
+const QrReaderPage = lazy(() =>
+  import("./pages/qr/QrReaderPage").then((module) => ({ default: module.QrReaderPage }))
+);
+const BarcodeGeneratorPage = lazy(() =>
+  import("./pages/qr/BarcodeGeneratorPage").then((module) => ({ default: module.BarcodeGeneratorPage }))
+);
+const WifiQrPage = lazy(() =>
+  import("./pages/qr/WifiQrPage").then((module) => ({ default: module.WifiQrPage }))
+);
+const VCardQrPage = lazy(() =>
+  import("./pages/qr/VCardQrPage").then((module) => ({ default: module.VCardQrPage }))
+);
 const Base64Page = lazy(() =>
   import("./pages/text/Base64Page").then((module) => ({ default: module.Base64Page }))
 );
@@ -131,6 +143,10 @@ const APP_ROUTES: AppRoute[] = [
   { path: "/developer/json-diff", element: <DeveloperToolsPage kind="json-diff" /> },
   { path: "/developer/regex-tester", element: <RegexTesterPage /> },
   { path: "/qr-code", element: <QrPage /> },
+  { path: "/qr-code/reader", element: <QrReaderPage /> },
+  { path: "/barcode/generator", element: <BarcodeGeneratorPage /> },
+  { path: "/qr-code/wifi", element: <WifiQrPage /> },
+  { path: "/qr-code/vcard", element: <VCardQrPage /> },
 ];
 
 function RouteLocaleSync(): null {

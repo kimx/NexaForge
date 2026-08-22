@@ -50,7 +50,7 @@ export interface ToolDefinition {
   title: string;
   description: string;
   path: string;
-  category: "Image" | "PDF" | "Data" | "Text" | "Developer";
+  category: "Image" | "PDF" | "Data" | "Text" | "Developer" | "QR & Barcode";
   aliases?: string[];
   keywords?: string[];
 }

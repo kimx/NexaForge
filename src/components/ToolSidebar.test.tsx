@@ -79,6 +79,22 @@ describe("ToolSidebar", () => {
     expect(screen.getByRole("link", { name: /base64/i })).toHaveAttribute("href", "/developer/base64");
   });
 
+  it("groups QR and barcode workflows in a dedicated category", () => {
+    render(
+      <MemoryRouter>
+        <LanguageProvider initialLocale="en">
+          <ToolSidebar />
+        </LanguageProvider>
+      </MemoryRouter>
+    );
+
+    const category = screen.getByRole("button", { name: /QR & Barcode.*tools/i });
+    fireEvent.click(category);
+
+    expect(screen.getByRole("link", { name: "QR Code Reader" })).toHaveAttribute("href", "/en/qr-code/reader");
+    expect(screen.getByRole("link", { name: /Code128/ })).toHaveAttribute("href", "/en/barcode/generator");
+  });
+
   it("does not show the documentation resource link", () => {
     render(
       <MemoryRouter>

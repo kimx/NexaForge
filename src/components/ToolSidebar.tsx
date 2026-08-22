@@ -18,6 +18,7 @@ const categoryOrder: ToolDefinition["category"][] = [
   "Developer",
   "Image",
   "PDF",
+  "QR & Barcode",
   "Text",
 ];
 
@@ -30,6 +31,7 @@ type SidebarIconName =
   | "home"
   | "image"
   | "pdf"
+  | "qr"
   | "search"
   | "text";
 
@@ -39,6 +41,7 @@ const CATEGORY_ICONS: Record<ToolDefinition["category"], SidebarIconName> = {
   Data: "data",
   Text: "text",
   Developer: "developer",
+  "QR & Barcode": "qr",
 };
 
 function getToolIcon(toolId: string): SidebarIconName {
@@ -62,7 +65,11 @@ function getToolIcon(toolId: string): SidebarIconName {
     return "text";
   }
 
-  if (toolId.startsWith("jwt-") || toolId === "qr-code") {
+  if (toolId.startsWith("qr-") || toolId === "barcode-generator" || toolId === "vcard-qr" || toolId === "wifi-qr") {
+    return "qr";
+  }
+
+  if (toolId.startsWith("jwt-")) {
     return "developer";
   }
 
@@ -118,6 +125,14 @@ function SidebarIcon({ name }: { name: SidebarIconName }): JSX.Element {
         <path d="M14 3.5v4h4" />
         <path d="M8.5 15.5h7" />
         <path d="M8.5 12.5h4.5" />
+      </>
+    ),
+    qr: (
+      <>
+        <rect x="4" y="4" width="6" height="6" rx="1" />
+        <rect x="14" y="4" width="6" height="6" rx="1" />
+        <rect x="4" y="14" width="6" height="6" rx="1" />
+        <path d="M14 14h2v2h-2zm4 0h2v4h-2zm-4 4h4v2h-4z" />
       </>
     ),
     search: (

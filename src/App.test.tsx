@@ -30,6 +30,10 @@ const ROUTE_HEADINGS: Record<string, string> = {
   "/text/sort-lines": "Sort Lines",
   "/text/markdown": "Markdown Preview",
   "/qr-code": "QR Code",
+  "/qr-code/reader": "QR Code Reader",
+  "/barcode/generator": "Code128 / EAN-13 Barcode Generator",
+  "/qr-code/wifi": "Wi-Fi QR Generator",
+  "/qr-code/vcard": "vCard QR Generator",
 };
 
 const originalMatchMedia = window.matchMedia;
@@ -63,6 +67,19 @@ describe("App routes", () => {
   it("publishes canonical and English Regex Tester routes for indexing", () => {
     expect(BASE_INDEXABLE_ROUTES).toContain("/developer/regex-tester");
     expect(INDEXABLE_ROUTES).toContain("/en/developer/regex-tester");
+  });
+
+  it("publishes every QR and barcode route in both locales", () => {
+    const paths = [
+      "/qr-code/reader",
+      "/barcode/generator",
+      "/qr-code/wifi",
+      "/qr-code/vcard",
+    ];
+    paths.forEach((path) => {
+      expect(BASE_INDEXABLE_ROUTES).toContain(path);
+      expect(INDEXABLE_ROUTES).toContain(`/en${path}`);
+    });
   });
 
   it("announces route loading while a lazy page module is pending", () => {

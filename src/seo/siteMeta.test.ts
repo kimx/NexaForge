@@ -22,6 +22,17 @@ describe("buildPageSeo", () => {
     );
   });
 
+  it("builds localized metadata for a QR reader route", () => {
+    const seo = buildPageSeo("/qr-code/reader", "en");
+
+    expect(seo.title).toContain("QR Code Reader");
+    expect(seo.canonical).toBe("https://nexaforge.kimx.info/en/qr-code/reader");
+    expect(seo.alternates["zh-Hant"]).toBe("https://nexaforge.kimx.info/qr-code/reader");
+    expect(seo.jsonLd).toEqual(expect.arrayContaining([
+      expect.objectContaining({ "@type": "WebApplication" }),
+    ]));
+  });
+
   it("builds production bilingual URLs and structured data for a JSON tool", () => {
     const seo = buildPageSeo("/data/json-formatter", "en");
 

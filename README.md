@@ -53,8 +53,13 @@ NexaForge 將常見工具集中到一個站點，從圖片到 PDF、從 JSON 到
 ### 開發者工具
 - **Base64**：文字與檔案的 Base64 互轉
 - **JWT Decoder / JWT Key Generator**：開發驗證流程輔助
-- **QR Code**：文字轉 QR
 - **Regex Tester**：安全測試 JavaScript 正則表達式、旗標與擷取群組
+
+### QR 與條碼工具
+- **QR Code Generator / Reader**：建立 QR 圖片，或從圖片與相機辨識 QR
+- **Code128 / EAN-13 Barcode Generator**：輸出 PNG 或 SVG 條碼
+- **Wi-Fi QR Generator**：將 SSID、安全性與密碼製成 Wi-Fi QR
+- **vCard QR Generator**：建立 vCard 3.0 聯絡人 QR
 
 ## 技術特性
 
