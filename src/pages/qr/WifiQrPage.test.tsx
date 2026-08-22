@@ -1,0 +1,45 @@
+import { fireEvent, screen } from "@testing-library/react";
+import { afterAll, beforeAll, afterEach, describe, expect, it, vi } from "vitest";
+import { renderWithProviders } from "../../test/renderWithProviders";
+import * as qrService from "../../services/qr/qrService";
+import { WifiQrPage } from "./WifiQrPage";
+
+const urlApi = globalThis.URL as typeof URL & {
+  createObjectURL?: (blob: Blob) => string;
+  revokeObjectURL?: (url: string) => void;
+};
+const originalCreateObjectURL = urlApi.createObjectURL;
+const originalRevokeObjectURL = urlApi.revokeObjectURL;
+
+beforeAll(() => {
+  urlApi.createObjectURL = () => "blob:wifi";
+  urlApi.revokeObjectURL = () => undefined;
+});
+
+afterAll(() => {
+  if (originalCreateObjectURL) urlApi.createObjectURL = originalCreateObjectURL;
+  else Reflect.deleteProperty(urlApi, "createObjectURL");
+  if (originalRevokeObjectURL) urlApi.revokeObjectURL = originalRevokeObjectURL;
+  else Reflect.deleteProperty(urlApi, "revokeObjectURL");
+});
+
+afterEach(() => vi.restoreAllMocks());
+
+describe("WifiQrPage", () => {
+  it("shows the escaped local payload and downloadable QR preview", async () => {
+    vi.spyOn(qrService, "generateQrImage").mockResolvedValue({
+      blob: new Blob(["png"], { type: "image/png" }),
+      fileName: "wifi-qr.png",
+      mimeType: "image/png",
+      size: 3,
+    });
+    renderWithProviders(<WifiQrPage />);
+
+    fireEvent.change(screen.getByLabelText("SSID"), { target: { value: "Cafe;5G" } });
+    fireEvent.change(screen.getByLabelText("Password"), { target: { value: "private" } });
+    fireEvent.click(screen.getByRole("button", { name: "Generate Wi-Fi QR code" }));
+
+    expect(await screen.findByText("WIFI:T:WPA;S:Cafe\\;5G;P:private;H:false;;")).toBeInTheDocument();
+    expect(screen.getByAltText("Wi-Fi QR code preview")).toBeInTheDocument();
+  });
+});

@@ -8,6 +8,7 @@ import {
   useState,
 } from "react";
 import { localeFromPath } from "../routing/localePaths";
+import { ISSUE_23_EN_MESSAGES, ISSUE_23_ZH_MESSAGES } from "../i18n/issue23Messages";
 
 export type Locale = "zh-TW" | "en";
 
@@ -64,6 +65,7 @@ function persistLocaleState(locale: Locale): void {
 }
 
 const zhMessages: Record<string, string> = {
+  ...ISSUE_23_ZH_MESSAGES,
   "top.banner": "給設計師、學生、研究員、工程師的多功能檔案工具站。",
   "top.banner.cta": "你處理 PDF、圖片、JSON、文字的每一步都在本機完成，適合忙著出成果、又重視隱私的人。",
   "top.languageSwitcherLabel": "語言切換",
@@ -780,6 +782,7 @@ const zhMessages: Record<string, string> = {
 };
 
 const enMessages: Record<string, string> = {
+  ...ISSUE_23_EN_MESSAGES,
   "top.banner": "Built for designers, students, researchers, and engineers.",
   "top.banner.cta": "Image, PDF, JSON, and text workflows stay on your device, from upload to download.",
   "top.languageSwitcherLabel": "Language switch",
