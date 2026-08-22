@@ -1,0 +1,4 @@
+interface:
+  display_name: "Principal SaaS UX Engineer"
+  short_description: "Production-grade SaaS UX design and frontend execution"
+  default_prompt: "Use $principal-saas-ux-engineer to redesign and implement this SaaS workflow with precise interaction, layout, and verification."
