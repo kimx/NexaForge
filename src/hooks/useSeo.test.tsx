@@ -50,7 +50,13 @@ describe("useSeo", () => {
       "content",
       "summary_large_image"
     );
-    expect(document.querySelectorAll('script[data-nexaforge-seo]')).toHaveLength(2);
+    const structuredData = Array.from(
+      document.querySelectorAll<HTMLScriptElement>('script[data-nexaforge-seo]')
+    ).map((script) => JSON.parse(script.textContent ?? "{}"));
+    expect(structuredData).toHaveLength(3);
+    expect(structuredData).toEqual(
+      expect.arrayContaining([expect.objectContaining({ "@type": "FAQPage" })])
+    );
 
     rerender(
       <LanguageProvider initialLocale="en">
@@ -61,7 +67,7 @@ describe("useSeo", () => {
     expect(document.querySelectorAll('link[rel="canonical"]')).toHaveLength(1);
     expect(document.querySelectorAll('link[rel="alternate"]')).toHaveLength(3);
     expect(document.querySelectorAll('meta[property="og:title"]')).toHaveLength(1);
-    expect(document.querySelectorAll('script[data-nexaforge-seo]')).toHaveLength(2);
+    expect(document.querySelectorAll('script[data-nexaforge-seo]')).toHaveLength(3);
     expect(document.querySelector('meta[data-base-owned="true"]')).toBeInTheDocument();
   });
 });

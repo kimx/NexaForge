@@ -12,6 +12,7 @@ import { FILE_TOOLS } from "../data/tools";
 import type { ToolDefinition } from "../types/tool";
 import { localizedCategoryLabel, useLanguage, useLocalizedToolMeta } from "../context/LanguageContext";
 import { localizePath, stripLocalePrefix } from "../routing/localePaths";
+import { findSeoLanding } from "../seo/landingPages";
 
 const categoryOrder: ToolDefinition["category"][] = [
   "Data",
@@ -186,7 +187,11 @@ export function ToolSidebar({
   const localToolMeta = useLocalizedToolMeta();
   const { pathname } = useLocation();
   const searchInputRef = useRef<HTMLInputElement>(null);
-  const activeCategory = FILE_TOOLS.find((tool) => tool.path === stripLocalePrefix(pathname))?.category;
+  const basePath = stripLocalePrefix(pathname);
+  const activeLanding = findSeoLanding(basePath);
+  const activeTool = FILE_TOOLS.find((tool) => tool.path === basePath)
+    ?? FILE_TOOLS.find((tool) => tool.id === activeLanding?.toolId);
+  const activeCategory = activeTool?.category;
   const [keyword, setKeyword] = useState("");
   const [expandedCategories, setExpandedCategories] = useState<Set<ToolDefinition["category"]>>(
     () => new Set(activeCategory ? [activeCategory] : [])
@@ -393,7 +398,7 @@ export function ToolSidebar({
                         <NavLink
                           to={localizePath(tool.path, locale)}
                           title={localToolMeta(tool.id, "title")}
-                          className={({ isActive }) => `tool-sidebar__link ${isActive ? "is-active" : ""}`}
+                          className={({ isActive }) => `tool-sidebar__link ${isActive || tool.id === activeTool?.id ? "is-active" : ""}`}
                           onClick={isMobile ? onClose : undefined}
                         >
                           <span className="tool-sidebar__icon" aria-hidden="true"><SidebarIcon name={getToolIcon(tool.id)} /></span>
@@ -423,7 +428,7 @@ export function ToolSidebar({
                     <NavLink
                       to={localizePath(tool.path, locale)}
                       title={localToolMeta(tool.id, "title")}
-                      className={({ isActive }) => `tool-sidebar__link ${isActive ? "is-active" : ""}`}
+                      className={({ isActive }) => `tool-sidebar__link ${isActive || tool.id === activeTool?.id ? "is-active" : ""}`}
                       onClick={isMobile ? onClose : undefined}
                     >
                       <span className="tool-sidebar__icon" aria-hidden="true">

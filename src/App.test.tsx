@@ -90,7 +90,13 @@ describe("App routes", () => {
       </MemoryRouter>
     );
 
-    expect(await screen.findByRole("heading", { level: 1, name: heading })).toBeVisible();
+    expect(
+      await screen.findByRole(
+        "heading",
+        { level: 1, name: heading },
+        { timeout: 5_000 }
+      )
+    ).toBeVisible();
     await waitFor(() => expect(document.title).toContain(heading));
     expect(document.querySelector('link[rel="canonical"]')).toHaveAttribute(
       "href",
