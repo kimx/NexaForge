@@ -34,11 +34,13 @@ NexaForge 將常見工具集中到一個站點，從圖片到 PDF、從 JSON 到
 - **SVG Optimizer**：保留 viewBox 的安全 SVG 最佳化與下載
 - **Favicon Generator**：產生 ICO、平台 PNG 圖示與 web manifest
 - **Social Media Image Resizer**：產生 Instagram、Facebook、X、LinkedIn、YouTube 與自訂尺寸
+- **Image → PDF**：多張 JPG、PNG、WebP 依指定順序合併，每張圖片各佔一頁
 
 ### PDF 工具
 - **PDF Merge**：合併多份 PDF
 - **PDF Split**：依頁碼切分 PDF
 - **PDF Rotate**：旋轉頁面方向
+- **PDF → Image**：多頁 PDF 逐頁轉為 PNG，支援預覽、單張與 ZIP 下載
 
 ### 資料工具
 - **JSON Formatter**：格式化、壓縮與驗證 JSON

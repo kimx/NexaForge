@@ -103,6 +103,9 @@ const FaviconGeneratorPage = lazy(() =>
 const SocialResizerPage = lazy(() =>
   import("./pages/image/SocialResizerPage").then((module) => ({ default: module.SocialResizerPage }))
 );
+const ImageToPdfPage = lazy(() =>
+  import("./pages/image/ImageToPdfPage").then((module) => ({ default: module.ImageToPdfPage }))
+);
 const PdfMergePage = lazy(() =>
   import("./pages/pdf/MergePage").then((module) => ({ default: module.PdfMergePage }))
 );
@@ -111,6 +114,9 @@ const PdfRotatePage = lazy(() =>
 );
 const PdfSplitPage = lazy(() =>
   import("./pages/pdf/SplitPage").then((module) => ({ default: module.PdfSplitPage }))
+);
+const PdfToImagePage = lazy(() =>
+  import("./pages/pdf/PdfToImagePage").then((module) => ({ default: module.PdfToImagePage }))
 );
 const QrPage = lazy(() =>
   import("./pages/qr/QrPage").then((module) => ({ default: module.QrPage }))
@@ -185,9 +191,11 @@ const APP_ROUTES: AppRoute[] = [
   { path: "/image/svg-optimizer", element: <SvgOptimizerPage /> },
   { path: "/image/favicon-generator", element: <FaviconGeneratorPage /> },
   { path: "/image/social-resizer", element: <SocialResizerPage /> },
+  { path: "/image/to-pdf", element: <ImageToPdfPage /> },
   { path: "/pdf/merge", element: <PdfMergePage /> },
   { path: "/pdf/split", element: <PdfSplitPage /> },
   { path: "/pdf/rotate", element: <PdfRotatePage /> },
+  { path: "/pdf/to-image", element: <PdfToImagePage /> },
   { path: "/data/json-formatter", element: <JsonFormatterPage /> },
   { path: "/data/csv-viewer", element: <CsvViewerPage /> },
   { path: "/data/csv-to-json", element: <CsvToJsonPage /> },

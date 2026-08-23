@@ -83,6 +83,27 @@ describe("ToolSidebar", () => {
     expect(screen.getByRole("link", { name: /favicon/i })).toHaveAttribute("href", "/image/favicon-generator");
   });
 
+  it("puts the new conversion tools first in their category menus", () => {
+    render(
+      <MemoryRouter>
+        <LanguageProvider initialLocale="en">
+          <ToolSidebar />
+        </LanguageProvider>
+      </MemoryRouter>
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /image.*tools/i }));
+    fireEvent.click(screen.getByRole("button", { name: /pdf.*tools/i }));
+
+    const imageMenu = document.getElementById("tool-sidebar-category-Image");
+    const pdfMenu = document.getElementById("tool-sidebar-category-PDF");
+
+    expect(imageMenu).not.toBeNull();
+    expect(pdfMenu).not.toBeNull();
+    expect(within(imageMenu!).getAllByRole("link")[0]).toHaveAttribute("href", "/en/image/to-pdf");
+    expect(within(pdfMenu!).getAllByRole("link")[0]).toHaveAttribute("href", "/en/pdf/to-image");
+  });
+
   it("keeps category toggles free of tool-count clutter", () => {
     render(
       <MemoryRouter>

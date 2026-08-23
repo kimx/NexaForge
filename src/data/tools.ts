@@ -2,6 +2,15 @@ import type { ToolDefinition } from "../types/tool";
 
 export const FILE_TOOLS: ToolDefinition[] = [
   {
+    id: "image-to-pdf",
+    title: "Image to PDF",
+    description: "Combine ordered JPG, PNG, and WebP images into one PDF with one image per page.",
+    path: "/image/to-pdf",
+    category: "Image",
+    aliases: ["images to pdf", "jpg to pdf", "png to pdf"],
+    keywords: ["image", "pdf", "combine", "pages", "document"],
+  },
+  {
     id: "image-resize",
     title: "Image Resize",
     description: "Batch resize JPG, PNG, or WebP directly in the browser.",
@@ -99,6 +108,15 @@ export const FILE_TOOLS: ToolDefinition[] = [
     category: "Image",
     aliases: ["social image size", "instagram resizer", "youtube thumbnail size"],
     keywords: ["image", "social", "instagram", "facebook", "youtube", "resize"],
+  },
+  {
+    id: "pdf-to-image",
+    title: "PDF to Image",
+    description: "Convert every PDF page to a previewable PNG with individual and ZIP downloads.",
+    path: "/pdf/to-image",
+    category: "PDF",
+    aliases: ["pdf to png", "pdf pages to images", "extract pdf pages"],
+    keywords: ["document", "pdf", "image", "png", "pages", "preview"],
   },
   {
     id: "pdf-merge",

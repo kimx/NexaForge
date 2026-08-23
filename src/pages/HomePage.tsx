@@ -268,14 +268,6 @@ export function HomePage(): JSX.Element {
             </div>
           </section>
 
-          {!keywordActive ? <div className="workspace-heading">
-            <div>
-              <span className="workspace-heading__eyebrow">{t("home.workspaceKicker")}</span>
-              <h2>{t("home.workspaceTitle")}</h2>
-              <p>{t("home.workspaceSubtitle")}</p>
-            </div>
-          </div> : null}
-
           <div className="finder-filters" aria-label={t("home.categoryFilterLabel")}>
             <span className="finder-filters__label">{t("home.filterBy")}</span>
             {(["All", ...categoryOrder] as const).map((category) => (

@@ -21,6 +21,17 @@ describe("HomePage task-first hierarchy", () => {
     expect(screen.queryByRole("link", { name: /all json tools/i })).not.toBeInTheDocument();
   });
 
+  it("keeps one consolidated introduction in the hero without a redundant workspace heading", () => {
+    renderWithProviders(<HomePage />);
+
+    const introduction = screen.getByText(
+      "Fast, free, and easy to use. Resize, convert, format, and split in one place—from images to PDF, find a tool and get started."
+    );
+    expect(introduction.closest(".home-hero")).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "All-in-One File Tools" })).not.toBeInTheDocument();
+    expect(screen.queryByText("TOOL WORKSPACE")).not.toBeInTheDocument();
+  });
+
   it("shows a concise featured collection instead of every tool by default", () => {
     renderWithProviders(<HomePage />);
 

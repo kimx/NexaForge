@@ -10,6 +10,7 @@ import {
 import { localeFromPath } from "../routing/localePaths";
 import { ISSUE_23_EN_MESSAGES, ISSUE_23_ZH_MESSAGES } from "../i18n/issue23Messages";
 import { ISSUE_26_EN_MESSAGES, ISSUE_26_ZH_MESSAGES } from "../i18n/issue26Messages";
+import { PDF_CONVERSION_EN_MESSAGES, PDF_CONVERSION_ZH_MESSAGES } from "../i18n/pdfConversionMessages";
 
 export type Locale = "zh-TW" | "en";
 
@@ -68,6 +69,7 @@ function persistLocaleState(locale: Locale): void {
 const zhMessages: Record<string, string> = {
   ...ISSUE_23_ZH_MESSAGES,
   ...ISSUE_26_ZH_MESSAGES,
+  ...PDF_CONVERSION_ZH_MESSAGES,
   "top.banner": "給設計師、學生、研究員、工程師的多功能檔案工具站。",
   "top.banner.cta": "你處理 PDF、圖片、JSON、文字的每一步都在本機完成，適合忙著出成果、又重視隱私的人。",
   "top.languageSwitcherLabel": "語言切換",
@@ -363,7 +365,7 @@ const zhMessages: Record<string, string> = {
   "developerTools.faq.1.question": "支援哪些輸入？",
   "developerTools.faq.1.answer": "請依工具模式輸入有效的 URL、日期、JSON 或常見 YAML。",
   "home.title": "NexaForge",
-  "home.subtitle": "轉檔、壓縮、格式化與拆分集中一站，打開工具即可開始。",
+  "home.subtitle": "快速、免費、好上手；轉檔、壓縮、格式化與拆分集中一站，從圖片到 PDF，找到工具就能開始。",
   "home.eyebrow": "你的檔案工作台",
   "home.primaryCta": "開始處理檔案",
   "home.secondaryCta": "查看熱門工具",
@@ -373,9 +375,6 @@ const zhMessages: Record<string, string> = {
   "home.proof.local": "檔案不上傳",
   "home.proof.formats": "PDF、圖片、JSON 都能處理",
   "home.proof.noAccount": "不用註冊，打開就能用",
-  "home.workspaceKicker": "工具工作台",
-  "home.workspaceTitle": "一站式檔案工具",
-  "home.workspaceSubtitle": "快速、免費、好上手；從圖片到 PDF，找到工具就能開始。",
   "home.browseCategories": "依分類瀏覽",
   "home.browseCategoriesSubtitle": "按照你的工作情境，快速找到下一個工具。",
   "home.categoryCount": "{count} 個工具",
@@ -792,6 +791,7 @@ const zhMessages: Record<string, string> = {
 const enMessages: Record<string, string> = {
   ...ISSUE_23_EN_MESSAGES,
   ...ISSUE_26_EN_MESSAGES,
+  ...PDF_CONVERSION_EN_MESSAGES,
   "top.banner": "Built for designers, students, researchers, and engineers.",
   "top.banner.cta": "Image, PDF, JSON, and text workflows stay on your device, from upload to download.",
   "top.languageSwitcherLabel": "Language switch",
@@ -1068,7 +1068,7 @@ const enMessages: Record<string, string> = {
   "developerTools.faq.1.question": "What inputs are supported?",
   "developerTools.faq.1.answer": "Use a valid URL, date, JSON, or common YAML for the selected mode.",
   "home.title": "NexaForge",
-  "home.subtitle": "Resize, convert, format, and split from one focused workspace. Open a tool and get moving.",
+  "home.subtitle": "Fast, free, and easy to use. Resize, convert, format, and split in one place—from images to PDF, find a tool and get started.",
   "home.eyebrow": "Your file operations desk",
   "home.primaryCta": "Start with a file",
   "home.secondaryCta": "Explore popular tools",
@@ -1078,9 +1078,6 @@ const enMessages: Record<string, string> = {
   "home.proof.local": "Files stay on your device",
   "home.proof.formats": "PDF, image, and JSON workflows",
   "home.proof.noAccount": "No account needed",
-  "home.workspaceKicker": "TOOL WORKSPACE",
-  "home.workspaceTitle": "All-in-One File Tools",
-  "home.workspaceSubtitle": "Fast, free, and easy to use. Find a tool, open it, and keep moving.",
   "home.browseCategories": "Browse by Category",
   "home.browseCategoriesSubtitle": "Find the next tool by the kind of work you are doing.",
   "home.categoryCount": "{count} tools",
