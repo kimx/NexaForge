@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { PrivacyNotice } from "./PrivacyNotice";
 import { AdSlot } from "./AdSlot";
 import type { ToolMeta, ToolDefinition, ToolWorkflow } from "../types/tool";
@@ -8,6 +8,8 @@ import { trackEvent } from "../utils/analytics";
 import { ProcessingStatus } from "./ProcessingStatus";
 import { JsonWorkspaceNav } from "./JsonWorkspaceNav";
 import { localizePath } from "../routing/localePaths";
+import { getSeoLandingContent } from "../seo/landingPages";
+import { SeoLandingContent } from "./SeoLandingContent";
 
 interface ToolPageTemplateProps {
   tool: ToolDefinition;
@@ -37,6 +39,7 @@ export function ToolPageTemplate({
   children,
 }: ToolPageTemplateProps): JSX.Element {
   const { t, locale } = useLanguage();
+  const { pathname } = useLocation();
   const localToolMeta = useLocalizedToolMeta();
   const resultRef = useRef<HTMLElement | null>(null);
   const previousWorkflowState = useRef(workflow?.state);
@@ -44,13 +47,16 @@ export function ToolPageTemplate({
 
   const toolTitle = localToolMeta(tool.id, "title");
   const toolDescription = localToolMeta(tool.id, "description");
+  const seoContent = getSeoLandingContent(pathname, locale);
+  const displayTitle = seoContent?.h1 ?? toolTitle;
+  const displayDescription = seoContent?.description ?? toolDescription;
 
   const localizedBreadcrumb = breadcrumb.map((item, index) => {
     if (index === 0) {
       return t("sidebar.home");
     }
     if (index === 1) {
-      return item === tool.title ? toolTitle : item;
+      return item === tool.title ? displayTitle : item;
     }
     return item;
   });
@@ -110,10 +116,10 @@ export function ToolPageTemplate({
         </nav>
 
         <div className="tool-page__title-row">
-          <h1 className="tool-page__title">{toolTitle}</h1>
+          <h1 className="tool-page__title">{displayTitle}</h1>
           <PrivacyNotice inline />
         </div>
-        <p className="short-description tool-page__description">{toolDescription}</p>
+        <p className="short-description tool-page__description">{displayDescription}</p>
         <JsonWorkspaceNav />
 
         <div className={`tool-page__workbench tool-page__workbench--${layout}`}>
@@ -155,44 +161,52 @@ export function ToolPageTemplate({
           ) : null}
         </div>
 
-        <section className="tool-card">
-          <h2>{t("toolPage.how")}</h2>
-          <ol className="tool-steps">
-            {children.howItWorks.map((step, index) => (
-              <li key={step} data-index={index + 1}>
-                {step}
-              </li>
-            ))}
-          </ol>
-        </section>
+        {seoContent ? (
+          <SeoLandingContent content={seoContent} locale={locale} />
+        ) : (
+          <section className="tool-card">
+            <h2>{t("toolPage.how")}</h2>
+            <ol className="tool-steps">
+              {children.howItWorks.map((step, index) => (
+                <li key={step} data-index={index + 1}>
+                  {step}
+                </li>
+              ))}
+            </ol>
+          </section>
+        )}
 
         <AdSlot
           position="tool-result"
           adSlotId={import.meta.env.VITE_ADSENSE_SLOT_TOOL_RESULT}
         />
 
-        <section className="tool-card">
-          <h2>{t("toolPage.faq")}</h2>
-          <div className="tool-faq">
-            {children.faq.map((item) => (
-              <details key={item.q} className="tool-faq__item">
-                <summary>{item.q}</summary>
-                <p>{item.a}</p>
-              </details>
-            ))}
-          </div>
-        </section>
+        {!seoContent ? (
+          <>
+            <section className="tool-card">
+              <h2>{t("toolPage.faq")}</h2>
+              <div className="tool-faq">
+                {children.faq.map((item) => (
+                  <details key={item.q} className="tool-faq__item">
+                    <summary>{item.q}</summary>
+                    <p>{item.a}</p>
+                  </details>
+                ))}
+              </div>
+            </section>
 
-        <section className="tool-card">
-          <h2>{t("toolPage.related")}</h2>
-          <ul className="related-tools">
-            {children.relatedTools.map((relatedTool) => (
-              <li key={relatedTool.id}>
-                <Link to={localizePath(relatedTool.path, locale)}>{localToolMeta(relatedTool.id, "title")}</Link>
-              </li>
-            ))}
-          </ul>
-        </section>
+            <section className="tool-card">
+              <h2>{t("toolPage.related")}</h2>
+              <ul className="related-tools">
+                {children.relatedTools.map((relatedTool) => (
+                  <li key={relatedTool.id}>
+                    <Link to={localizePath(relatedTool.path, locale)}>{localToolMeta(relatedTool.id, "title")}</Link>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          </>
+        ) : null}
       </div>
     </div>
   );
