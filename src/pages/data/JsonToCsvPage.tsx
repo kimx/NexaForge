@@ -183,8 +183,9 @@ export function JsonToCsvPage(): JSX.Element {
                     setProcessing(nextFiles.length ? "ready" : "idle");
                   }}
                   multiple={false}
+                  compact={files.length > 0}
                 />
-                <FileInfo files={files} />
+                <FileInfo files={files} mode="single" compact={files.length > 0} />
               </>
             )}
           </div>

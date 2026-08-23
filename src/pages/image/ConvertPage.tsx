@@ -115,8 +115,9 @@ export function ImageConvertPage(): JSX.Element {
               accept={IMAGE_ACCEPT}
               onFiles={setFiles}
               multiple={false}
+              compact={files.length > 0}
             />
-            <FileInfo files={files} onClear={clearSelection} />
+            <FileInfo files={files} mode="single" onClear={clearSelection} compact={files.length > 0} />
           </>
         ),
         options: (

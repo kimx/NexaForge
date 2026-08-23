@@ -39,14 +39,18 @@ export function XmlFormatterPage(): JSX.Element {
     }
   };
 
-  return <ToolPageTemplate tool={tool} meta={meta} breadcrumb={["Home", title]} layout="split"
+  return <ToolPageTemplate tool={tool} meta={meta} breadcrumb={["Home", title]} layout="split" showIdleResult
     workflow={{ state, error, onRetry: process, onReprocess: process }} children={{
-      workspace: <div className="issue23-form"><label>{t("tool.xml-formatter.input")}<textarea value={source} rows={16} spellCheck={false} aria-describedby={error ? errorId : undefined} onChange={(event) => { setSource(event.target.value); clearResult(); }} /></label>{error ? <span id={errorId} className="sr-only">{error}</span> : null}</div>,
-      options: <div className="issue23-form">
-        <label>{t("tool.xml-formatter.mode")}<select value={mode} onChange={(event) => { setMode(event.target.value as "pretty" | "minify"); clearResult(); }}><option value="pretty">{t("tool.xml-formatter.pretty")}</option><option value="minify">{t("tool.xml-formatter.compact")}</option></select></label>
-        <label>{t("tool.json-xml.indent")}<select value={indent} disabled={mode === "minify"} onChange={(event) => { setIndent(Number(event.target.value)); clearResult(); }}><option value={2}>2</option><option value={4}>4</option></select></label>
-        <button type="button" className="btn primary" onClick={process}>{t("tool.xml-formatter.format")}</button>
+      workspace: <div className="issue23-form code-workspace">
+        <div className="code-workspace__controls code-workspace__controls--xml">
+          <label>{t("tool.xml-formatter.mode")}<select value={mode} onChange={(event) => { setMode(event.target.value as "pretty" | "minify"); clearResult(); }}><option value="pretty">{t("tool.xml-formatter.pretty")}</option><option value="minify">{t("tool.xml-formatter.compact")}</option></select></label>
+          <label>{t("tool.json-xml.indent")}<select value={indent} disabled={mode === "minify"} onChange={(event) => { setIndent(Number(event.target.value)); clearResult(); }}><option value={2}>2</option><option value={4}>4</option></select></label>
+          <button type="button" className="btn primary code-workspace__process" onClick={process}>{t("tool.xml-formatter.format")}</button>
+        </div>
+        <label>{t("tool.xml-formatter.input")}<textarea value={source} rows={16} spellCheck={false} aria-describedby={error ? errorId : undefined} onChange={(event) => { setSource(event.target.value); clearResult(); }} /></label>
+        {error ? <span id={errorId} className="sr-only">{error}</span> : null}
       </div>,
+      options: null,
       result: <CodeOutputPanel label={t("tool.xml-formatter.output")} value={output} fileName="formatted.xml" language="xml" emptyText={t("tool.xml-formatter.empty")} />,
       howItWorks: [0, 1, 2].map((index) => t(`tool.xml-formatter.how.${index}`)),
       faq: [0, 1].map((index) => ({ q: t(`tool.xml-formatter.faq.${index}.question`), a: t(`tool.xml-formatter.faq.${index}.answer`) })),

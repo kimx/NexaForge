@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from "@testing-library/react";
+import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { vi } from "vitest";
 import { JsonFormatterPage } from "./JsonFormatterPage";
 import * as fileService from "../../services/file/fileService";
@@ -29,6 +29,30 @@ describe("JsonFormatterPage", () => {
       tags: ["json", "sample"],
     });
     expect(screen.getByRole("button", { name: "Process" })).toBeEnabled();
+  });
+
+  it("keeps mode and the primary action inside the input workspace", () => {
+    renderWithProviders(<JsonFormatterPage />, { route: "/data/json-formatter" });
+
+    const workspace = screen
+      .getByRole("heading", { name: "Tool Workspace" })
+      .closest("section");
+
+    expect(workspace).not.toBeNull();
+    expect(within(workspace as HTMLElement).getByRole("combobox", { name: "Mode" })).toBeInTheDocument();
+    expect(within(workspace as HTMLElement).getByRole("button", { name: "Process" })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Options" })).not.toBeInTheDocument();
+  });
+
+  it("explains how to create a result before processing", () => {
+    renderWithProviders(<JsonFormatterPage />, { route: "/data/json-formatter" });
+
+    const result = screen.getByRole("heading", { name: "Result" }).closest("section");
+
+    expect(result).not.toBeNull();
+    expect(within(result as HTMLElement).getByText(
+      "Paste or upload JSON, then choose Process to see the result."
+    )).toBeInTheDocument();
   });
 
   it("associates debounced parse feedback with the source field and clears it after correction", async () => {
@@ -157,5 +181,25 @@ describe("JsonFormatterPage", () => {
     fireEvent.click(screen.getByRole("button", { name: "Process" }));
 
     await waitFor(() => expect(minifySpy).toHaveBeenCalledWith('{"a":1}'));
+  });
+
+  it("compacts upload controls only after a file is selected in file mode", () => {
+    const { container } = renderWithProviders(<JsonFormatterPage />, {
+      route: "/data/json-formatter",
+    });
+    fireEvent.change(screen.getByRole("combobox", { name: "Input source" }), {
+      target: { value: "file" },
+    });
+
+    expect(screen.getByLabelText("Drop JSON or click to select")).toBeInTheDocument();
+
+    fireEvent.change(container.querySelector('input[type="file"]') as HTMLInputElement, {
+      target: {
+        files: [new File(['{"a":1}'], "sample.json", { type: "application/json" })],
+      },
+    });
+
+    expect(screen.getByLabelText("Replace file or click to select")).toBeInTheDocument();
+    expect(screen.queryByText("1 file selected")).not.toBeInTheDocument();
   });
 });

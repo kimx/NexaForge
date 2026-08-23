@@ -100,8 +100,9 @@ export function HashPage(): JSX.Element {
               accept="*/*"
               multiple={false}
               onFiles={setFiles}
+              compact={files.length > 0}
             />
-            <FileInfo files={files} />
+            <FileInfo files={files} mode="single" compact={files.length > 0} />
           </>
         ),
         options: (

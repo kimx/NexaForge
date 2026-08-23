@@ -296,6 +296,7 @@ function ToolFrame({ children }: { children: JSX.Element }): JSX.Element {
         {t("skip.toMain")}
       </a>
       <Header
+        showBrand
         showToolsButton={isNarrowViewport}
         toolsOpen={isToolsOpen}
         onOpenTools={() => setToolsOpen(true)}
@@ -305,6 +306,7 @@ function ToolFrame({ children }: { children: JSX.Element }): JSX.Element {
         <ToolSidebar
           isMobile={isNarrowViewport}
           isOpen={!isNarrowViewport || isToolsOpen}
+          showDesktopBrand={false}
           onClose={closeTools}
           closeButtonRef={closeButtonRef}
         />

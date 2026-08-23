@@ -166,10 +166,11 @@ export function PdfMergePage(): JSX.Element {
               multiple
               onFiles={handleFiles}
               onRejectedFiles={handleRejectedFiles}
+              compact={files.length > 0}
             />
             {files.length > 0 ? (
               <div className="pdf-merge-list-summary">
-                <span>{t("fileInfo.selectedPlural", { count: files.length })} · {t("fileInfo.totalSize")}: {formatFileSize(files.reduce((total, file) => total + file.size, 0))}</span>
+                <span>{files.length === 1 ? t("fileInfo.selected", { count: 1 }) : t("fileInfo.selectedPlural", { count: files.length })} · {t("fileInfo.totalSize")}: {formatFileSize(files.reduce((total, file) => total + file.size, 0))}</span>
                 <button type="button" className="btn secondary file-btn" onClick={clearFiles}>{t("fileInfo.clearAll")}</button>
               </div>
             ) : null}

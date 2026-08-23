@@ -110,6 +110,22 @@ describe("ImageCropPage", () => {
     expect(screen.getByRole("button", { name: "Crop image" })).toBeEnabled();
   });
 
+  it("turns the selected-file dropzone into a concise replacement entry", () => {
+    renderCropPageWithSelectedFile();
+
+    expect(screen.getByLabelText("Replace image or click to select")).toBeInTheDocument();
+    expect(screen.queryByText("Drag and drop or click to choose files.")).not.toBeInTheDocument();
+  });
+
+  it("keeps one compact file row without repeating the selection summary", () => {
+    renderCropPageWithSelectedFile();
+
+    expect(screen.queryByText(/1 file selected/)).not.toBeInTheDocument();
+    const selectedFiles = screen.getByRole("list", { name: "Selected files" });
+    expect(within(selectedFiles).getByText("sample.png")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Clear all" })).toBeEnabled();
+  });
+
   it("keeps crop controls below the preview without a separate options panel", () => {
     renderCropPageWithSelectedFile();
 
@@ -118,6 +134,32 @@ describe("ImageCropPage", () => {
     expect(within(workspace as HTMLElement).getByRole("combobox", { name: "Format" })).toBeInTheDocument();
     expect(within(workspace as HTMLElement).getByRole("button", { name: "Crop image" })).toBeEnabled();
     expect(screen.queryByRole("heading", { name: "Options", level: 2 })).not.toBeInTheDocument();
+  });
+
+  it("groups output settings with the crop action", () => {
+    renderCropPageWithSelectedFile();
+
+    const outputControls = screen.getByRole("group", { name: "Output controls" });
+    expect(within(outputControls).getByRole("combobox", { name: "Format" })).toBeInTheDocument();
+    expect(within(outputControls).getByRole("button", { name: "Crop image" })).toBeEnabled();
+  });
+
+  it("keeps an instructional result visible before cropping", () => {
+    renderCropPageWithSelectedFile();
+
+    const result = screen.getByRole("heading", { name: "Result", level: 2 }).closest("section");
+    expect(result).not.toBeNull();
+    expect(within(result as HTMLElement).getByText(
+      "Adjust the crop, then choose Crop image to preview the result."
+    )).toBeInTheDocument();
+  });
+
+  it("offers crop shape choices before the interactive preview", () => {
+    renderCropPageWithSelectedFile();
+
+    const rectangle = screen.getByRole("button", { name: "Rectangle" });
+    const preview = screen.getByRole("img", { name: "Crop preview" });
+    expect(rectangle.compareDocumentPosition(preview) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
   it("provides the crop workflow in Traditional Chinese", () => {

@@ -12,19 +12,13 @@ describe("HomePage task-first hierarchy", () => {
     window.localStorage.removeItem("nexaforge-recent-tools");
   });
 
-  it("makes tool search the primary hero action and keeps JSON as a secondary workflow", () => {
+  it("makes tool search the primary hero action without repeating a JSON-only product story", () => {
     renderWithProviders(<HomePage />);
 
     const search = screen.getByRole("textbox", { name: "Search Tools" });
     expect(search.closest(".home-hero")).toBeInTheDocument();
-
-    const featuredSection = screen.getByTestId("featured-tools");
-    const jsonSection = screen.getByTestId("json-workflows");
-    expect(featuredSection.compareDocumentPosition(jsonSection) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    expect(screen.getByRole("link", { name: /all json tools/i })).toHaveAttribute(
-      "href",
-      "/en/json"
-    );
+    expect(screen.queryByTestId("json-workflows")).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /all json tools/i })).not.toBeInTheDocument();
   });
 
   it("shows a concise featured collection instead of every tool by default", () => {
@@ -33,6 +27,32 @@ describe("HomePage task-first hierarchy", () => {
     const featured = screen.getByTestId("featured-tools");
     expect(within(featured).getAllByRole("article")).toHaveLength(8);
     expect(within(featured).queryByRole("heading", { name: "SVG Optimizer" })).not.toBeInTheDocument();
+  });
+
+  it("caps recent tools at four and removes them from the featured collection", () => {
+    window.localStorage.setItem(
+      "nexaforge-recent-tools",
+      JSON.stringify(["image-resize", "pdf-merge", "uuid", "json-diff", "base64", "csv-viewer"])
+    );
+
+    renderWithProviders(<HomePage />);
+
+    const recent = screen.getByTestId("recent-tools");
+    const featured = screen.getByTestId("featured-tools");
+    expect(within(recent).getAllByRole("article")).toHaveLength(4);
+    expect(within(featured).queryByRole("heading", { name: "Image Resize" })).not.toBeInTheDocument();
+    expect(within(featured).queryByRole("heading", { name: "PDF Merge" })).not.toBeInTheDocument();
+  });
+
+  it("offers QR and barcode discovery in both filtering and category browsing", () => {
+    renderWithProviders(<HomePage />);
+
+    const qrCategoryButtons = screen.getAllByRole("button", { name: /QR & Barcode/i });
+    expect(qrCategoryButtons).toHaveLength(2);
+
+    fireEvent.click(qrCategoryButtons[0]);
+    expect(screen.getByRole("heading", { name: "QR Code" })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Image Resize" })).not.toBeInTheDocument();
   });
 
   it("shows one focused result collection while search is active", () => {
@@ -45,6 +65,19 @@ describe("HomePage task-first hierarchy", () => {
     expect(screen.queryByTestId("json-workflows")).not.toBeInTheDocument();
     expect(screen.queryByTestId("recent-tools")).not.toBeInTheDocument();
     expect(screen.queryByTestId("category-browser")).not.toBeInTheDocument();
+  });
+
+  it("compresses supporting homepage content while a keyword search is active", () => {
+    renderWithProviders(<HomePage />);
+    const search = screen.getByRole("textbox", { name: "Search Tools" });
+
+    fireEvent.change(search, { target: { value: "json" } });
+
+    expect(screen.getByRole("heading", { name: "NexaForge", level: 1 })).toBeInTheDocument();
+    expect(screen.queryByText(/Resize, convert, format, and split/i)).not.toBeInTheDocument();
+    expect(screen.queryByText("All-in-One File Tools")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("How NexaForge works")).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Search results" })).toBeInTheDocument();
   });
 
   it("focuses search with slash and clears an active query with Escape", () => {

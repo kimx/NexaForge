@@ -13,6 +13,8 @@ export interface FileDropzoneProps {
   maxSize?: number;
   enablePaste?: boolean;
   setInputRef?: (input: HTMLInputElement | null) => void;
+  compact?: boolean;
+  compactLabel?: string;
 }
 
 export function FileDropzone({
@@ -24,6 +26,8 @@ export function FileDropzone({
   maxSize,
   enablePaste,
   setInputRef,
+  compact = false,
+  compactLabel,
 }: FileDropzoneProps): JSX.Element {
   const [isDragging, setDragging] = useState(false);
   const [rejections, setRejections] = useState<FileRejection[]>([]);
@@ -31,6 +35,10 @@ export function FileDropzone({
   const inputRef = useRef<HTMLInputElement>(null);
   const dragDepth = useRef(0);
   const { t } = useLanguage();
+  const compactActionLabel = multiple
+    ? t("fileDropzone.addMoreFiles")
+    : t("fileDropzone.replaceFile");
+  const actionLabel = compact ? (compactLabel ?? compactActionLabel) : label;
 
   useEffect(() => {
     setInputRef?.(inputRef.current);
@@ -155,13 +163,13 @@ export function FileDropzone({
 
   return (
     <section
-      className={`file-dropzone${isDragging ? " file-dropzone--dragging" : ""}`}
+      className={`file-dropzone${compact ? " file-dropzone--compact" : ""}${isDragging ? " file-dropzone--dragging" : ""}`}
       onDragOver={handleDragOver}
       onDragEnter={handleDragEnter}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
       aria-label={t("fileDropzone.aria")}
-      aria-describedby={`${inputId}-help`}
+      aria-describedby={compact ? undefined : `${inputId}-help`}
     >
       <input
         id={inputId}
@@ -170,13 +178,14 @@ export function FileDropzone({
         type="file"
         accept={accept}
         multiple={multiple}
+        aria-label={`${actionLabel} ${t("fileDropzone.orSelect")}`}
         onChange={handleChange}
       />
       <label htmlFor={inputId} className="file-dropzone-label">
-        <strong>{label}</strong>
+        <strong>{actionLabel}</strong>
         <span>{t("fileDropzone.orSelect")}</span>
       </label>
-      <p id={`${inputId}-help`}>{t("fileDropzone.help")}</p>
+      {compact ? null : <p id={`${inputId}-help`}>{t("fileDropzone.help")}</p>}
       {rejections.length > 0 ? (
         <ul className="file-dropzone__rejections" role="alert">
           {rejections.map((rejection) => (

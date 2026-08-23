@@ -113,8 +113,9 @@ export function CsvToJsonPage(): JSX.Element {
               accept="text/csv"
               multiple={false}
               onFiles={handleFiles}
+              compact={files.length > 0}
             />
-            <FileInfo files={files} />
+            <FileInfo files={files} mode="single" compact={files.length > 0} />
           </>
         ),
         options: (

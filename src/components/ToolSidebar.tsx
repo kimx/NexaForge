@@ -161,6 +161,7 @@ function SidebarIcon({ name }: { name: SidebarIconName }): JSX.Element {
 interface ToolSidebarProps {
   isMobile?: boolean;
   isOpen?: boolean;
+  showDesktopBrand?: boolean;
   onClose?: () => void;
   closeButtonRef?: RefObject<HTMLButtonElement>;
 }
@@ -177,6 +178,7 @@ const FOCUSABLE_SELECTOR = [
 export function ToolSidebar({
   isMobile = false,
   isOpen = true,
+  showDesktopBrand = true,
   onClose,
   closeButtonRef,
 }: ToolSidebarProps): JSX.Element | null {
@@ -298,14 +300,19 @@ export function ToolSidebar({
   }
 
   const brandLink = (
-    <Link to={localizePath("/", locale)} className="tool-sidebar__brand" onClick={isMobile ? onClose : undefined}>
-      <span className="tool-sidebar__brand-mark" aria-hidden="true">
-        NF
-      </span>
-      <span className="tool-sidebar__brand-copy">
-        <strong>NexaForge</strong>
-        <small>Utility File Workspace</small>
-      </span>
+    <Link
+      to={localizePath("/", locale)}
+      className="tool-sidebar__brand"
+      aria-label="NexaForge Utility File Workspace"
+      onClick={isMobile ? onClose : undefined}
+    >
+      <img
+        className="tool-sidebar__brand-logo"
+        src="/nexaforge-logo.png"
+        alt="NexaForge"
+        width="168"
+        height="45"
+      />
     </Link>
   );
 
@@ -332,7 +339,7 @@ export function ToolSidebar({
               <SidebarIcon name="close" />
             </button>
           </div>
-        ) : brandLink}
+        ) : showDesktopBrand ? brandLink : null}
 
         <div className="tool-sidebar__search-wrap">
           <label htmlFor="tool-search" className="tool-sidebar__search-label sr-only">

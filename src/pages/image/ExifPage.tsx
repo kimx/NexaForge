@@ -106,9 +106,9 @@ export function ExifPage({ kind }: { kind: ExifToolKind }): JSX.Element {
       children={{
         workspace: (
           <>
-            <FileDropzone label={t("label.dropImage")} accept="image/jpeg" multiple={false} onFiles={setFiles} />
+            <FileDropzone label={t("label.dropImage")} accept="image/jpeg" multiple={false} onFiles={setFiles} compact={files.length > 0} />
             <p>{t("tool.image-exif.shared.jpegOnly")}</p>
-            <FileInfo files={files} onClear={clearSelection} />
+            <FileInfo files={files} mode="single" onClear={clearSelection} compact={files.length > 0} />
           </>
         ),
         options: (

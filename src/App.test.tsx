@@ -166,7 +166,7 @@ describe("App routes", () => {
     expect(document.querySelector("link[rel='canonical']")).toBeTruthy();
   }, 15_000);
 
-  it("uses the sidebar brand as the home entry without duplicate Home links", async () => {
+  it("places the home-page brand in the header instead of the sidebar", async () => {
     render(
       <MemoryRouter
         initialEntries={["/"]}
@@ -180,7 +180,35 @@ describe("App routes", () => {
 
     await screen.findByRole("heading", { name: "NexaForge", level: 1 });
     expect(screen.queryAllByRole("link", { name: "首頁" })).toHaveLength(0);
-    expect(screen.getByRole("link", { name: /NexaForge.*Utility File Workspace/i })).toHaveAttribute("href", "/");
+
+    const header = screen.getByRole("banner");
+    const sidebar = screen.getByRole("complementary", { name: /工具側欄/i });
+    const brandName = /NexaForge Utility File Workspace/i;
+
+    expect(within(header).getByRole("link", { name: brandName })).toHaveAttribute("href", "/");
+    expect(within(sidebar).queryByRole("link", { name: brandName })).not.toBeInTheDocument();
+  });
+
+  it("places the tool-page brand in the header instead of the sidebar", async () => {
+    render(
+      <MemoryRouter
+        initialEntries={["/en/data/json-formatter"]}
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+      >
+        <LanguageProvider initialLocale="en">
+          <App />
+        </LanguageProvider>
+      </MemoryRouter>
+    );
+
+    await screen.findByRole("heading", { name: "JSON Formatter", level: 1 });
+
+    const header = screen.getByRole("banner");
+    const sidebar = screen.getByRole("complementary", { name: /tool sidebar/i });
+    const brandName = /NexaForge Utility File Workspace/i;
+
+    expect(within(header).getByRole("link", { name: brandName })).toHaveAttribute("href", "/en");
+    expect(within(sidebar).queryByRole("link", { name: brandName })).not.toBeInTheDocument();
   });
 
   it("opens mobile tool navigation as a modal and returns focus when closed", async () => {

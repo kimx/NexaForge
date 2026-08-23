@@ -3,6 +3,7 @@ import { ProcessingState, ToolMeta, FileProcessResult } from "../../types/tool";
 import { FILE_TOOLS } from "../../data/tools";
 import { ToolPageTemplate } from "../../components/ToolPageTemplate";
 import { FileDropzone } from "../../components/FileDropzone";
+import { FileInfo } from "../../components/FileInfo";
 import { DownloadButton } from "../../components/DownloadButton";
 import { base64ToText, fileToBase64, textToBase64 } from "../../services/text/textService";
 import { getRelatedTools } from "../../utils/toolHelpers";
@@ -124,12 +125,16 @@ export function Base64Page(): JSX.Element {
         workspace: (
           <>
             {mode === "fileToBase64" ? (
-              <FileDropzone
-                label={t("label.dropFile")}
-                multiple={false}
-                onFiles={setFiles}
-                accept="*/*"
-              />
+              <>
+                <FileDropzone
+                  label={t("label.dropFile")}
+                  multiple={false}
+                  onFiles={setFiles}
+                  accept="*/*"
+                  compact={files.length > 0}
+                />
+                <FileInfo files={files} mode="single" compact={files.length > 0} />
+              </>
             ) : (
               <div className="tool-form">
                 <p id="base64-text-input-label">{t("tool.base64.label.enterText")}</p>

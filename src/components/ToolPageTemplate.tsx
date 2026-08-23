@@ -15,6 +15,7 @@ interface ToolPageTemplateProps {
   breadcrumb: string[];
   workflow?: ToolWorkflow;
   layout?: "default" | "split";
+  showIdleResult?: boolean;
   children: {
     workspace: JSX.Element;
     options: JSX.Element | null;
@@ -32,6 +33,7 @@ export function ToolPageTemplate({
   breadcrumb,
   workflow,
   layout = "default",
+  showIdleResult = false,
   children,
 }: ToolPageTemplateProps): JSX.Element {
   const { t, locale } = useLanguage();
@@ -91,7 +93,8 @@ export function ToolPageTemplate({
     };
   }, [workflow?.state]);
 
-  const showResultContent = !workflow || workflow.state === "success";
+  const showResultContent =
+    !workflow || workflow.state === "success" || (showIdleResult && workflow.state === "idle");
   const showResultSection = layout === "split" || !workflow || workflow.state !== "idle";
 
   return (

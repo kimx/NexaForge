@@ -314,20 +314,20 @@ export function JsonFormatterPage(): JSX.Element {
 
   const workspaceNode = useMemo(
     () => (
-      <div className="tool-form">
-        <label>
-          {t("label.inputSource")}
-          <select
-            value={inputSource}
-            onChange={(event) => handleInputSourceChange(event.target.value as "text" | "file")}
-          >
-            <option value="text">{t("tool.json-formatter.label.inputSourceText")}</option>
-            <option value="file">{t("tool.json-formatter.label.inputSourceFile")}</option>
-          </select>
-        </label>
+      <div className="tool-form json-formatter-workspace">
+        <div className="json-formatter-workspace__controls">
+          <label>
+            {t("label.inputSource")}
+            <select
+              value={inputSource}
+              onChange={(event) => handleInputSourceChange(event.target.value as "text" | "file")}
+            >
+              <option value="text">{t("tool.json-formatter.label.inputSourceText")}</option>
+              <option value="file">{t("tool.json-formatter.label.inputSourceFile")}</option>
+            </select>
+          </label>
 
-        {inputSource === "text" ? (
-          <>
+          {inputSource === "text" ? (
             <label>
               {t("label.editorMode")}
               <select
@@ -340,6 +340,31 @@ export function JsonFormatterPage(): JSX.Element {
                 <option value="tree">{t("tool.json-formatter.label.editorTree")}</option>
               </select>
             </label>
+          ) : null}
+
+          <label>
+            {t("label.mode")}
+            <select
+              value={mode}
+              onChange={(event) => setMode(event.target.value as "format" | "minify")}
+            >
+              <option value="format">{t("tool.json-formatter.mode.format")}</option>
+              <option value="minify">{t("tool.json-formatter.mode.minify")}</option>
+            </select>
+          </label>
+
+          <button
+            type="button"
+            className="btn primary json-formatter-workspace__process"
+            onClick={handleProcess}
+            disabled={!canProcess || processing === "processing"}
+          >
+            {processing === "processing" ? t("button.processing") : t("button.process")}
+          </button>
+        </div>
+
+        {inputSource === "text" ? (
+          <>
             {editorMode === "text" ? (
               <div className="json-formatter-editor">
                 <div className="json-formatter-editor__heading">
@@ -409,8 +434,9 @@ export function JsonFormatterPage(): JSX.Element {
               label={t("label.dropJson")}
               accept="application/json,text/plain"
               onFiles={setFiles}
+              compact={files.length > 0}
             />
-            <FileInfo files={files} />
+            <FileInfo files={files} mode="single" compact={files.length > 0} />
           </>
         )}
       </div>
@@ -438,6 +464,7 @@ export function JsonFormatterPage(): JSX.Element {
         meta={toolMeta}
         breadcrumb={["Home", t("tool.json-formatter.title")]}
         layout="split"
+        showIdleResult
         workflow={{
           state: processing,
           error: processing === "error" ? error : null,
@@ -445,51 +472,42 @@ export function JsonFormatterPage(): JSX.Element {
         }}
         children={{
         workspace: workspaceNode,
-        options: (
-          <div className="tool-form">
-            <label>
-              {t("label.mode")}
-              <select value={mode} onChange={(event) => setMode(event.target.value as "format" | "minify")}>
-                <option value="format">{t("tool.json-formatter.mode.format")}</option>
-                <option value="minify">{t("tool.json-formatter.mode.minify")}</option>
-              </select>
-            </label>
-            <button
-              type="button"
-              className="btn primary"
-              onClick={handleProcess}
-              disabled={!canProcess || processing === "processing"}
-            >
-              {processing === "processing" ? t("button.processing") : t("button.process")}
-            </button>
-          </div>
-        ),
+        options: null,
         result: (
           <>
             {copyError && <p role="alert" className="error">{copyError}</p>}
-            <pre className="json-formatter-result">{preview}</pre>
             {preview ? (
-              <div className="tool-actions">
-                <button
-                  type="button"
-                  className="btn secondary"
-                  onClick={async () => {
-                    try {
-                      await navigator.clipboard.writeText(preview);
-                      setCopyError(null);
-                    } catch {
-                      setCopyError(t("error.copyFailed"));
-                    }
-                  }}
-                >
-                  {t("button.copy")}
-                </button>
-                <DownloadButton
-                  result={result}
-                  onDownloaded={() => trackEvent("download", { tool: "json-formatter" })}
-                />
+              <div className="json-formatter-output">
+                <div className="tool-actions json-formatter-output__actions">
+                  <button
+                    type="button"
+                    className="btn secondary"
+                    onClick={async () => {
+                      try {
+                        await navigator.clipboard.writeText(preview);
+                        setCopyError(null);
+                      } catch {
+                        setCopyError(t("error.copyFailed"));
+                      }
+                    }}
+                  >
+                    {t("button.copy")}
+                  </button>
+                  <DownloadButton
+                    result={result}
+                    onDownloaded={() => trackEvent("download", { tool: "json-formatter" })}
+                  />
+                </div>
+                <pre className="json-formatter-result">{preview}</pre>
               </div>
-            ) : null}
+            ) : (
+              <div className="json-formatter-empty-state">
+                <span className="json-formatter-empty-state__mark" aria-hidden="true">
+                  {"{ }"}
+                </span>
+                <p>{t("tool.json-formatter.label.noPreview")}</p>
+              </div>
+            )}
           </>
         ),
         howItWorks,

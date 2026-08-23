@@ -178,6 +178,8 @@ export function ImageCropPage(): JSX.Element {
       tool={tool}
       meta={toolMeta}
       breadcrumb={["Home", title]}
+      layout="split"
+      showIdleResult
       workflow={{ state: processing, error, onRetry: handleProcess, onReprocess: handleProcess }}
       children={{
         workspace: (
@@ -187,8 +189,10 @@ export function ImageCropPage(): JSX.Element {
               accept={ACCEPTED_IMAGE_TYPES}
               multiple={false}
               onFiles={handleFiles}
+              compact={Boolean(files[0])}
+              compactLabel={t("tool.image-crop.replaceImage")}
             />
-            <FileInfo files={files} mode="single" onClear={clearSelection} />
+            <FileInfo files={files} mode="single" onClear={clearSelection} compact={Boolean(files[0])} />
             {files[0] && sourceUrl ? (
               <ImageCropEditor
                 sourceUrl={sourceUrl}
@@ -206,42 +210,50 @@ export function ImageCropPage(): JSX.Element {
               </p>
             ) : null}
             {decodeError ? <p className="error" role="alert">{decodeError}</p> : null}
-            <div className="tool-form image-crop-page__options">
-              {isRectangle ? (
-                <label>
-                  {t("label.format")}
-                  <select
-                    value={settings.format}
-                    onChange={(event) => {
-                      handleEditorChange({
-                        ...settings,
-                        format: event.target.value as CropSettings["format"],
-                      });
-                    }}
-                  >
-                    <option value="jpeg">JPG</option>
-                    <option value="png">PNG</option>
-                    <option value="webp">WebP</option>
-                  </select>
-                </label>
-              ) : (
-                <p className="image-crop-page__transparent-format">{t("tool.image-crop.transparentPng")}</p>
-              )}
-              {isRectangle && settings.format !== "png" ? (
-                <label>
-                  {t("label.quality")}: {Math.round(settings.quality * 100)}
-                  <input
-                    type="range"
-                    min={1}
-                    max={100}
-                    value={Math.round(settings.quality * 100)}
-                    onChange={(event) => {
-                      handleEditorChange({ ...settings, quality: Number(event.target.value) / 100 });
-                    }}
-                  />
-                </label>
-              ) : null}
-              {isRectangle && settings.format === "jpeg" ? <p>{t("tool.image-crop.jpegFill")}</p> : null}
+            <div
+              className="tool-form image-crop-page__options"
+              role="group"
+              aria-label={t("tool.image-crop.outputControls")}
+            >
+              <div className="image-crop-page__settings">
+                {isRectangle ? (
+                  <label className="image-crop-page__format">
+                    {t("label.format")}
+                    <select
+                      value={settings.format}
+                      onChange={(event) => {
+                        handleEditorChange({
+                          ...settings,
+                          format: event.target.value as CropSettings["format"],
+                        });
+                      }}
+                    >
+                      <option value="jpeg">JPG</option>
+                      <option value="png">PNG</option>
+                      <option value="webp">WebP</option>
+                    </select>
+                  </label>
+                ) : (
+                  <p className="image-crop-page__transparent-format">{t("tool.image-crop.transparentPng")}</p>
+                )}
+                {isRectangle && settings.format !== "png" ? (
+                  <label className="image-crop-page__quality">
+                    {t("label.quality")}: {Math.round(settings.quality * 100)}
+                    <input
+                      type="range"
+                      min={1}
+                      max={100}
+                      value={Math.round(settings.quality * 100)}
+                      onChange={(event) => {
+                        handleEditorChange({ ...settings, quality: Number(event.target.value) / 100 });
+                      }}
+                    />
+                  </label>
+                ) : null}
+                {isRectangle && settings.format === "jpeg" ? (
+                  <p className="image-crop-page__format-note">{t("tool.image-crop.jpegFill")}</p>
+                ) : null}
+              </div>
               <button
                 className="btn primary"
                 type="button"
@@ -263,12 +275,19 @@ export function ImageCropPage(): JSX.Element {
                 <p>{t("tool.image-crop.dimensions", { width: result.width, height: result.height })}</p>
                 <img src={resultUrl} alt={t("tool.image-crop.resultPreview")} className="preview-image" />
               </div>
+            ) : (
+              <div className="image-crop-page__result-empty">
+                <span className="image-crop-page__result-mark" aria-hidden="true">✂</span>
+                <p>{t("tool.image-crop.emptyResult")}</p>
+              </div>
+            )}
+            {result ? (
+              <DownloadButton
+                result={result}
+                disabled={processing === "processing"}
+                onDownloaded={() => trackEvent("download", { tool: "image-crop" })}
+              />
             ) : null}
-            <DownloadButton
-              result={result}
-              disabled={processing === "processing"}
-              onDownloaded={() => trackEvent("download", { tool: "image-crop" })}
-            />
           </>
         ),
         howItWorks,

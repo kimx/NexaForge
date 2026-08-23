@@ -28,6 +28,19 @@ describe("ImageConvertPage", () => {
     expect(screen.queryByRole("button", { name: "Download" })).not.toBeInTheDocument();
   });
 
+  it("compacts the upload controls after selecting one image", () => {
+    const { container } = renderWithProviders(<ImageConvertPage />);
+
+    fireEvent.change(container.querySelector('input[type="file"]') as HTMLInputElement, {
+      target: { files: [new File(["abc"], "sample.png", { type: "image/png" })] },
+    });
+
+    expect(screen.getByLabelText("Replace file or click to select")).toBeInTheDocument();
+    expect(screen.queryByText("1 file selected")).not.toBeInTheDocument();
+    expect(screen.getByText("sample.png")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Clear all" })).toBeInTheDocument();
+  });
+
   it("disables process button while conversion is in progress", async () => {
     const convertSpy = vi
       .spyOn(imageService, "convertImage")

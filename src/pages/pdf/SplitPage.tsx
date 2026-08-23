@@ -144,8 +144,9 @@ export function PdfSplitPage(): JSX.Element {
               accept="application/pdf"
               onFiles={handleFiles}
               multiple={false}
+              compact={file.length > 0}
             />
-            <FileInfo files={file} />
+            <FileInfo files={file} mode="single" compact={file.length > 0} />
           </>
         ),
         options: (

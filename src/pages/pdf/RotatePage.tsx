@@ -101,8 +101,9 @@ export function PdfRotatePage(): JSX.Element {
               accept="application/pdf"
               multiple={false}
               onFiles={setFiles}
+              compact={files.length > 0}
             />
-            <FileInfo files={files} />
+            <FileInfo files={files} mode="single" compact={files.length > 0} />
           </>
         ),
         options: (

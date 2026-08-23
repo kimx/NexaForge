@@ -103,8 +103,9 @@ export function CsvViewerPage(): JSX.Element {
               accept="text/csv"
               onFiles={setFiles}
               multiple={false}
+              compact={files.length > 0}
             />
-            <FileInfo files={files} />
+            <FileInfo files={files} mode="single" compact={files.length > 0} />
           </>
         ),
         options: (

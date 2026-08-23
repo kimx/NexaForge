@@ -70,4 +70,21 @@ describe("ImageCompressPage", () => {
     expect(await screen.findByText("2 of 2 completed")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Download ZIP" })).toBeEnabled();
   });
+
+  it("compacts the upload entry while retaining batch context", () => {
+    const { container } = renderWithProviders(<ImageCompressPage />);
+    fireEvent.change(container.querySelector('input[type="file"]') as HTMLInputElement, {
+      target: {
+        files: [
+          new File(["a"], "a.png", { type: "image/png" }),
+          new File(["b"], "b.png", { type: "image/png" }),
+        ],
+      },
+    });
+
+    expect(screen.getByLabelText("Add more files or click to select")).toBeInTheDocument();
+    expect(screen.getByText(/2 files selected · Total size:/)).toBeInTheDocument();
+    expect(screen.getByText("a.png")).toBeInTheDocument();
+    expect(screen.getByText("b.png")).toBeInTheDocument();
+  });
 });

@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from "@testing-library/react";
+import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { vi } from "vitest";
 import { PdfMergePage } from "./MergePage";
 import * as pdfService from "../../services/pdf/pdfService";
@@ -20,12 +20,31 @@ describe("PdfMergePage", () => {
       target: { files: [new File(["%PDF-1.4"], "a.pdf", { type: "application/pdf" })] },
     });
     expect(action).toBeDisabled();
+    expect(screen.getByText(/1 file selected · Total size:/)).toBeInTheDocument();
 
     fireEvent.change(input, {
       target: { files: [new File(["%PDF-1.4"], "b.pdf", { type: "application/pdf" })] },
     });
     expect(action).toBeEnabled();
     expect(screen.queryByRole("button", { name: "Download" })).not.toBeInTheDocument();
+  });
+
+  it("compacts the upload entry without removing file-order controls", () => {
+    const { container } = renderWithProviders(<PdfMergePage />);
+    fireEvent.change(container.querySelector('input[type="file"]') as HTMLInputElement, {
+      target: {
+        files: [
+          new File(["%PDF-1.4"], "a.pdf", { type: "application/pdf" }),
+          new File(["%PDF-1.4"], "b.pdf", { type: "application/pdf" }),
+        ],
+      },
+    });
+
+    expect(screen.getByLabelText("Add more files or click to select")).toBeInTheDocument();
+    const order = screen.getByRole("list", { name: "PDF file order" });
+    expect(order).toHaveTextContent("1. a.pdf");
+    expect(order).toHaveTextContent("2. b.pdf");
+    expect(within(order).getAllByRole("button", { name: "Move down" })[0]).toBeEnabled();
   });
 
   it("disables process button while merge is in progress", async () => {

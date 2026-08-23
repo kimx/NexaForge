@@ -4,6 +4,24 @@ import { LanguageProvider } from "../context/LanguageContext";
 import { ToolSidebar } from "./ToolSidebar";
 
 describe("ToolSidebar", () => {
+  it("uses the NexaForge wordmark as the home link without a duplicate tagline", () => {
+    render(
+      <MemoryRouter>
+        <LanguageProvider initialLocale="en">
+          <ToolSidebar />
+        </LanguageProvider>
+      </MemoryRouter>
+    );
+
+    const brandLink = screen.getByRole("link", { name: /NexaForge Utility File Workspace/i });
+    expect(brandLink).toHaveAttribute("href", "/en");
+    expect(within(brandLink).getByRole("img", { name: "NexaForge" })).toHaveAttribute(
+      "src",
+      "/nexaforge-logo.png"
+    );
+    expect(within(brandLink).queryByText("Utility File Workspace")).not.toBeInTheDocument();
+  });
+
   it("exposes a localized navigation name instead of a raw translation key", () => {
     render(
       <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>

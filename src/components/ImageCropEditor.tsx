@@ -458,6 +458,23 @@ export function ImageCropEditor({
         }}
       />
 
+      <fieldset className="image-crop-editor__shape-fieldset">
+        <legend>{labels.presets}</legend>
+        <div className="image-crop-editor__shape-grid">
+          {ALL_KINDS.map((kind) => (
+            <button
+              key={kind}
+              type="button"
+              className="btn secondary"
+              aria-pressed={value.shape.kind === kind}
+              onClick={() => selectShape(kind)}
+            >
+              {labels[kind]}
+            </button>
+          ))}
+        </div>
+      </fieldset>
+
       <div className="image-crop-editor__stage">
         <canvas
           ref={canvasRef}
@@ -509,23 +526,6 @@ export function ImageCropEditor({
         <span>{shapeLabel} · {zoomPercent}%</span>
         {validationMessage ? <span>{validationMessage}</span> : null}
       </p>
-
-      <fieldset className="image-crop-editor__shape-fieldset">
-        <legend>{labels.presets}</legend>
-        <div className="image-crop-editor__shape-grid">
-          {ALL_KINDS.map((kind) => (
-            <button
-              key={kind}
-              type="button"
-              className="btn secondary"
-              aria-pressed={value.shape.kind === kind}
-              onClick={() => selectShape(kind)}
-            >
-              {labels[kind]}
-            </button>
-          ))}
-        </div>
-      </fieldset>
 
       {(value.shape.kind === "polygon" || value.shape.kind === "freehand") ? (
         <div className="image-crop-editor__custom-controls">
@@ -580,31 +580,33 @@ export function ImageCropEditor({
         </div>
       ) : null}
 
-      <label className="image-crop-editor__zoom">
-        <span>{labels.zoom}</span>
-        <input
-          type="range"
-          min={100}
-          max={400}
-          value={zoomPercent}
-          aria-label={labels.zoom}
-          onChange={(event) => {
-            onChange({
-              ...value,
-              imageTransform: { ...value.imageTransform, scale: Number(event.target.value) / 100 },
-            });
-          }}
-        />
-        <output>{zoomPercent}%</output>
-      </label>
+      <div className="image-crop-editor__adjustments" role="group" aria-label={labels.zoom}>
+        <label className="image-crop-editor__zoom">
+          <span>{labels.zoom}</span>
+          <input
+            type="range"
+            min={100}
+            max={400}
+            value={zoomPercent}
+            aria-label={labels.zoom}
+            onChange={(event) => {
+              onChange({
+                ...value,
+                imageTransform: { ...value.imageTransform, scale: Number(event.target.value) / 100 },
+              });
+            }}
+          />
+          <output>{zoomPercent}%</output>
+        </label>
 
-      <div className="image-crop-editor__actions">
-        <button type="button" className="btn secondary" disabled={history.length === 0} onClick={undo}>
-          {labels.undo}
-        </button>
-        <button type="button" className="btn secondary" onClick={reset}>
-          {labels.reset}
-        </button>
+        <div className="image-crop-editor__actions">
+          <button type="button" className="btn secondary" disabled={history.length === 0} onClick={undo}>
+            {labels.undo}
+          </button>
+          <button type="button" className="btn secondary" onClick={reset}>
+            {labels.reset}
+          </button>
+        </div>
       </div>
       <span className="sr-only">{fileName}</span>
     </div>

@@ -67,4 +67,25 @@ describe("FileDropzone", () => {
     ]);
     expect(screen.getByRole("alert")).toHaveTextContent("data.txt: invalid mime");
   });
+
+  it("turns a compact single-file dropzone into a replace action", () => {
+    render(
+      <LanguageProvider initialLocale="en">
+        <FileDropzone label="Drop image" compact accept="image/*" onFiles={vi.fn()} />
+      </LanguageProvider>
+    );
+
+    expect(screen.getByLabelText("Replace file or click to select")).toBeInTheDocument();
+    expect(screen.queryByText("Drag and drop or click to choose files.")).not.toBeInTheDocument();
+  });
+
+  it("turns a compact multi-file dropzone into an add-files action", () => {
+    render(
+      <LanguageProvider initialLocale="en">
+        <FileDropzone label="Drop images" compact multiple accept="image/*" onFiles={vi.fn()} />
+      </LanguageProvider>
+    );
+
+    expect(screen.getByLabelText("Add more files or click to select")).toBeInTheDocument();
+  });
 });

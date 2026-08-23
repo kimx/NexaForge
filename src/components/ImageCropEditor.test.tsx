@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { useState } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { CropSettings, ImageCropEditorLabels } from "../types/imageCrop";
@@ -197,6 +197,16 @@ describe("ImageCropEditor", () => {
     expect(onChange).toHaveBeenLastCalledWith(
       expect.objectContaining({ imageTransform: expect.objectContaining({ scale: 1.5 }) })
     );
+  });
+
+  it("groups zoom and edit history as one compact adjustment control", () => {
+    render(<EditorHarness />);
+    loadSource();
+
+    const adjustments = screen.getByRole("group", { name: "Zoom" });
+    expect(within(adjustments).getByRole("slider", { name: "Zoom" })).toBeInTheDocument();
+    expect(within(adjustments).getByRole("button", { name: "Undo" })).toBeInTheDocument();
+    expect(within(adjustments).getByRole("button", { name: "Reset" })).toBeInTheDocument();
   });
 
   it("resizes a circle proportionally from a keyboard-operable handle", () => {

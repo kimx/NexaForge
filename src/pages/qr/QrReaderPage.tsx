@@ -138,8 +138,9 @@ export function QrReaderPage(): JSX.Element {
                 setError(null);
                 setProcessing("idle");
               }}
+              compact={files.length > 0}
             />
-            <FileInfo files={files} mode="single" onClear={() => setFiles([])} />
+            <FileInfo files={files} mode="single" onClear={() => setFiles([])} compact={files.length > 0} />
             <video
               ref={videoRef}
               className="qr-reader__video"

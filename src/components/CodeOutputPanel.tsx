@@ -33,7 +33,11 @@ export function CodeOutputPanel({
   );
 
   if (!value) {
-    return <p>{emptyText}</p>;
+    return (
+      <div className="code-output-panel code-output-panel--empty">
+        <p>{emptyText}</p>
+      </div>
+    );
   }
 
   return (

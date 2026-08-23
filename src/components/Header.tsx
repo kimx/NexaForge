@@ -1,9 +1,10 @@
 import type { RefObject } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useLanguage, type Locale } from "../context/LanguageContext";
 import { localizePath } from "../routing/localePaths";
 
 interface HeaderProps {
+  showBrand?: boolean;
   showToolsButton?: boolean;
   toolsOpen?: boolean;
   onOpenTools?: () => void;
@@ -11,6 +12,7 @@ interface HeaderProps {
 }
 
 export function Header({
+  showBrand = false,
   showToolsButton = false,
   toolsOpen = false,
   onOpenTools,
@@ -33,6 +35,21 @@ export function Header({
   return (
     <header className="site-header">
       <div className="top-banner">
+        {showBrand ? (
+          <Link
+            to={localizePath("/", locale)}
+            className="top-banner__brand"
+            aria-label="NexaForge Utility File Workspace"
+          >
+            <img
+              className="top-banner__brand-logo"
+              src="/nexaforge-logo.png"
+              alt="NexaForge"
+              width="168"
+              height="45"
+            />
+          </Link>
+        ) : null}
         {showToolsButton ? (
           <button
             ref={toolsButtonRef}

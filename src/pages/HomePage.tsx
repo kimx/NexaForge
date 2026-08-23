@@ -9,7 +9,6 @@ import {
   useLocalizedToolMeta,
 } from "../context/LanguageContext";
 import { AdSlot } from "../components/AdSlot";
-import { JSON_TOOLS } from "../utils/toolPaths";
 import { localizePath } from "../routing/localePaths";
 import { trackEvent } from "../utils/analytics";
 
@@ -19,7 +18,17 @@ const categoryOrder: ToolDefinition["category"][] = [
   "Data",
   "Developer",
   "Text",
+  "QR & Barcode",
 ];
+
+const CATEGORY_VISUALS: Record<ToolDefinition["category"], { className: string; label: string }> = {
+  Image: { className: "image", label: "IMG" },
+  PDF: { className: "pdf", label: "PDF" },
+  Data: { className: "data", label: "CSV" },
+  Developer: { className: "developer", label: "</>" },
+  Text: { className: "text", label: "TXT" },
+  "QR & Barcode": { className: "qr", label: "QR" },
+};
 
 const FEATURED_TOOL_IDS = [
   "image-resize",
@@ -116,7 +125,7 @@ export function HomePage(): JSX.Element {
       const parsed = stored ? JSON.parse(stored) : [];
       setRecentToolIds(
         Array.isArray(parsed)
-          ? parsed.filter((id): id is string => typeof id === "string").slice(0, 6)
+          ? parsed.filter((id): id is string => typeof id === "string").slice(0, 4)
           : []
       );
     } catch {
@@ -155,7 +164,7 @@ export function HomePage(): JSX.Element {
   }, []);
 
   const rememberTool = (toolId: string) => {
-    setRecentToolIds((current) => [toolId, ...current.filter((id) => id !== toolId)].slice(0, 6));
+    setRecentToolIds((current) => [toolId, ...current.filter((id) => id !== toolId)].slice(0, 4));
   };
 
   const filteredTools = useMemo(() => {
@@ -193,12 +202,16 @@ export function HomePage(): JSX.Element {
   }, [categoryFilter, filteredTools.length, keyword]);
 
   const recentTools = useMemo(
-    () => recentToolIds.map((id) => FILE_TOOLS.find((tool) => tool.id === id)).filter((tool): tool is ToolDefinition => Boolean(tool)),
+    () => recentToolIds.slice(0, 4).map((id) => FILE_TOOLS.find((tool) => tool.id === id)).filter((tool): tool is ToolDefinition => Boolean(tool)),
     [recentToolIds]
   );
 
+  const keywordActive = keyword.trim().length > 0;
   const isFilterActive = keyword.trim().length > 0 || categoryFilter !== "All";
-  const displayedTools = isFilterActive ? filteredTools : FEATURED_TOOLS;
+  const recentToolIdSet = useMemo(() => new Set(recentTools.map((tool) => tool.id)), [recentTools]);
+  const displayedTools = isFilterActive
+    ? filteredTools
+    : FEATURED_TOOLS.filter((tool) => !recentToolIdSet.has(tool.id));
 
   const categoryCounts = categoryOrder.reduce(
     (counts, category) => {
@@ -216,15 +229,15 @@ export function HomePage(): JSX.Element {
   };
 
   return (
-    <div className="home-page">
-          <section className="home-hero">
+    <div className={`home-page${keywordActive ? " home-page--searching" : ""}`}>
+          <section className={`home-hero${keywordActive ? " home-hero--searching" : ""}`}>
             <img className="home-hero__visual" src="/nexaforge-hero.png" alt="" aria-hidden="true" />
             <div className="home-hero__content">
               <h1>
                 <span>Nexa</span>
                 <span className="home-hero__title-accent">Forge</span>
               </h1>
-              <p>{t("home.subtitle")}</p>
+              {!keywordActive ? <p>{t("home.subtitle")}</p> : null}
               <div className="home-hero__search">
                 <div className="workspace-search workspace-search--hero">
                   <label htmlFor="search-tools">
@@ -245,21 +258,23 @@ export function HomePage(): JSX.Element {
                   ) : null}
                 </div>
               </div>
-              <div className="home-hero__proof" aria-label={t("home.proofLabel")}>
-                <span>{t("home.proof.local")}</span>
-                <span>{t("home.proof.formats")}</span>
-                <span>{t("home.proof.noAccount")}</span>
-              </div>
+              {!keywordActive ? (
+                <div className="home-hero__proof" aria-label={t("home.proofLabel")}>
+                  <span>{t("home.proof.local")}</span>
+                  <span>{t("home.proof.formats")}</span>
+                  <span>{t("home.proof.noAccount")}</span>
+                </div>
+              ) : null}
             </div>
           </section>
 
-          <div className="workspace-heading">
+          {!keywordActive ? <div className="workspace-heading">
             <div>
               <span className="workspace-heading__eyebrow">{t("home.workspaceKicker")}</span>
               <h2>{t("home.workspaceTitle")}</h2>
               <p>{t("home.workspaceSubtitle")}</p>
             </div>
-          </div>
+          </div> : null}
 
           <div className="finder-filters" aria-label={t("home.categoryFilterLabel")}>
             <span className="finder-filters__label">{t("home.filterBy")}</span>
@@ -318,26 +333,6 @@ export function HomePage(): JSX.Element {
           </div>
 
           {!isFilterActive ? (
-            <section className="workspace-section home-json-workflows" data-testid="json-workflows">
-              <div className="workspace-section__heading home-json-workflows__heading">
-                <div>
-                  <h3>{t("home.jsonWorkflows")}</h3>
-                  <p>{t("home.jsonWorkflowsSubtitle")}</p>
-                </div>
-                <Link to={localizePath("/json", locale)} className="text-button">
-                  {t("home.allJsonTools")}
-                  <span aria-hidden="true"> →</span>
-                </Link>
-              </div>
-              <div className="tool-grid home-tool-grid home-tool-grid--json">
-                {JSON_TOOLS.map((tool) => (
-                  <ToolCard key={tool.id} tool={tool} onOpen={rememberTool} />
-                ))}
-              </div>
-            </section>
-          ) : null}
-
-          {!isFilterActive ? (
           <div className="workspace-section category-section" data-testid="category-browser">
             <div className="workspace-section__heading">
               <div>
@@ -353,8 +348,8 @@ export function HomePage(): JSX.Element {
                   key={category}
                   onClick={() => focusCategory(category)}
                 >
-                  <span className={`category-card__icon category-card__icon--${category.toLowerCase()}`} aria-hidden="true">
-                    {category === "Image" ? "IMG" : category === "PDF" ? "PDF" : category === "Data" ? "CSV" : category === "Text" ? "TXT" : "</>"}
+                  <span className={`category-card__icon category-card__icon--${CATEGORY_VISUALS[category].className}`} aria-hidden="true">
+                    {CATEGORY_VISUALS[category].label}
                   </span>
                   <span className="category-card__copy">
                     <strong>{localizedCategoryLabel(category, t)}</strong>

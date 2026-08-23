@@ -65,10 +65,16 @@ export function JsonCodeGeneratorPage({ kind }: JsonCodeGeneratorPageProps): JSX
       meta={meta}
       breadcrumb={["Home", title]}
       layout="split"
+      showIdleResult
       workflow={{ state, error, onRetry: generate, onReprocess: generate }}
       children={{
         workspace: (
-          <div className="issue23-form">
+          <div className="issue23-form code-workspace">
+            <div className="code-workspace__controls code-workspace__controls--generator">
+              <label>{t("tool.codegen.rootName")}<input value={rootName} onChange={(event) => { setRootName(event.target.value); clearResult(); }} /></label>
+              {kind === "csharp" ? <label>{t("tool.codegen.namespace")}<input value={namespace} onChange={(event) => { setNamespace(event.target.value); clearResult(); }} /></label> : null}
+              <button type="button" className="btn primary code-workspace__process" onClick={generate}>{t(`tool.${id}.generate`)}</button>
+            </div>
             <label>
               {t("tool.codegen.jsonInput")}
               <textarea value={source} rows={16} spellCheck={false} aria-describedby={error ? errorId : undefined} onChange={(event) => { setSource(event.target.value); clearResult(); }} />
@@ -76,13 +82,7 @@ export function JsonCodeGeneratorPage({ kind }: JsonCodeGeneratorPageProps): JSX
             {error ? <span id={errorId} className="sr-only">{error}</span> : null}
           </div>
         ),
-        options: (
-          <div className="issue23-form">
-            <label>{t("tool.codegen.rootName")}<input value={rootName} onChange={(event) => { setRootName(event.target.value); clearResult(); }} /></label>
-            {kind === "csharp" ? <label>{t("tool.codegen.namespace")}<input value={namespace} onChange={(event) => { setNamespace(event.target.value); clearResult(); }} /></label> : null}
-            <button type="button" className="btn primary" onClick={generate}>{t(`tool.${id}.generate`)}</button>
-          </div>
-        ),
+        options: null,
         result: <CodeOutputPanel label={t(`tool.${id}.output`)} value={output} fileName={kind === "csharp" ? "models.cs" : "models.ts"} language={kind} emptyText={t("tool.codegen.empty")} />,
         howItWorks: [0, 1, 2].map((index) => t(`tool.codegen.how.${index}`)),
         faq: [0, 1].map((index) => ({ q: t(`tool.codegen.faq.${index}.question`), a: t(`tool.codegen.faq.${index}.answer`) })),
