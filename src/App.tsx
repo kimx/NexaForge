@@ -46,6 +46,21 @@ const DeveloperToolsPage = lazy(() =>
 const RegexTesterPage = lazy(() =>
   import("./pages/developer/RegexTesterPage").then((module) => ({ default: module.RegexTesterPage }))
 );
+const SqlFormatterPage = lazy(() =>
+  import("./pages/developer/SqlFormatterPage").then((module) => ({ default: module.SqlFormatterPage }))
+);
+const CronBuilderPage = lazy(() =>
+  import("./pages/developer/CronBuilderPage").then((module) => ({ default: module.CronBuilderPage }))
+);
+const UrlParserPage = lazy(() =>
+  import("./pages/developer/UrlParserPage").then((module) => ({ default: module.UrlParserPage }))
+);
+const CurlToCodePage = lazy(() =>
+  import("./pages/developer/CurlToCodePage").then((module) => ({ default: module.CurlToCodePage }))
+);
+const SecretGeneratorPage = lazy(() =>
+  import("./pages/developer/SecretGeneratorPage").then((module) => ({ default: module.SecretGeneratorPage }))
+);
 const JsonToCSharpPage = lazy(() =>
   import("./pages/developer/JsonToCSharpPage").then((module) => ({ default: module.JsonToCSharpPage }))
 );
@@ -88,6 +103,9 @@ const FaviconGeneratorPage = lazy(() =>
 const SocialResizerPage = lazy(() =>
   import("./pages/image/SocialResizerPage").then((module) => ({ default: module.SocialResizerPage }))
 );
+const ImageToPdfPage = lazy(() =>
+  import("./pages/image/ImageToPdfPage").then((module) => ({ default: module.ImageToPdfPage }))
+);
 const PdfMergePage = lazy(() =>
   import("./pages/pdf/MergePage").then((module) => ({ default: module.PdfMergePage }))
 );
@@ -96,6 +114,9 @@ const PdfRotatePage = lazy(() =>
 );
 const PdfSplitPage = lazy(() =>
   import("./pages/pdf/SplitPage").then((module) => ({ default: module.PdfSplitPage }))
+);
+const PdfToImagePage = lazy(() =>
+  import("./pages/pdf/PdfToImagePage").then((module) => ({ default: module.PdfToImagePage }))
 );
 const QrPage = lazy(() =>
   import("./pages/qr/QrPage").then((module) => ({ default: module.QrPage }))
@@ -170,9 +191,11 @@ const APP_ROUTES: AppRoute[] = [
   { path: "/image/svg-optimizer", element: <SvgOptimizerPage /> },
   { path: "/image/favicon-generator", element: <FaviconGeneratorPage /> },
   { path: "/image/social-resizer", element: <SocialResizerPage /> },
+  { path: "/image/to-pdf", element: <ImageToPdfPage /> },
   { path: "/pdf/merge", element: <PdfMergePage /> },
   { path: "/pdf/split", element: <PdfSplitPage /> },
   { path: "/pdf/rotate", element: <PdfRotatePage /> },
+  { path: "/pdf/to-image", element: <PdfToImagePage /> },
   { path: "/data/json-formatter", element: <JsonFormatterPage /> },
   { path: "/data/csv-viewer", element: <CsvViewerPage /> },
   { path: "/data/csv-to-json", element: <CsvToJsonPage /> },
@@ -196,6 +219,11 @@ const APP_ROUTES: AppRoute[] = [
   { path: "/developer/json-yaml", element: <DeveloperToolsPage kind="json-yaml" /> },
   { path: "/developer/json-diff", element: <DeveloperToolsPage kind="json-diff" /> },
   { path: "/developer/regex-tester", element: <RegexTesterPage /> },
+  { path: "/developer/sql-formatter", element: <SqlFormatterPage /> },
+  { path: "/developer/cron-builder", element: <CronBuilderPage /> },
+  { path: "/developer/url-parser", element: <UrlParserPage /> },
+  { path: "/developer/curl-to-code", element: <CurlToCodePage /> },
+  { path: "/developer/secret-generator", element: <SecretGeneratorPage /> },
   { path: "/developer/json-to-csharp", element: <JsonToCSharpPage /> },
   { path: "/developer/json-to-typescript", element: <JsonToTypeScriptPage /> },
   { path: "/qr-code", element: <QrPage /> },

@@ -9,6 +9,8 @@ import {
 } from "react";
 import { localeFromPath } from "../routing/localePaths";
 import { ISSUE_23_EN_MESSAGES, ISSUE_23_ZH_MESSAGES } from "../i18n/issue23Messages";
+import { ISSUE_26_EN_MESSAGES, ISSUE_26_ZH_MESSAGES } from "../i18n/issue26Messages";
+import { PDF_CONVERSION_EN_MESSAGES, PDF_CONVERSION_ZH_MESSAGES } from "../i18n/pdfConversionMessages";
 
 export type Locale = "zh-TW" | "en";
 
@@ -66,6 +68,8 @@ function persistLocaleState(locale: Locale): void {
 
 const zhMessages: Record<string, string> = {
   ...ISSUE_23_ZH_MESSAGES,
+  ...ISSUE_26_ZH_MESSAGES,
+  ...PDF_CONVERSION_ZH_MESSAGES,
   "top.banner": "給設計師、學生、研究員、工程師的多功能檔案工具站。",
   "top.banner.cta": "你處理 PDF、圖片、JSON、文字的每一步都在本機完成，適合忙著出成果、又重視隱私的人。",
   "top.languageSwitcherLabel": "語言切換",
@@ -288,7 +292,7 @@ const zhMessages: Record<string, string> = {
   "tool.hash.title": "Hash 產生器",
   "tool.hash.description": "在瀏覽器中安全產生 SHA 雜湊值。",
   "tool.uuid.title": "UUID 產生器",
-  "tool.uuid.description": "產生 1 筆或 1000 筆 UUID。",
+  "tool.uuid.description": "批次產生 UUID v4、UUID v7 或相容 .NET Guid 的識別碼。",
   "tool.qr-code.title": "QR 代碼",
   "tool.qr-code.description": "由文字或網址快速產生 PNG 二維碼。",
 
@@ -361,7 +365,7 @@ const zhMessages: Record<string, string> = {
   "developerTools.faq.1.question": "支援哪些輸入？",
   "developerTools.faq.1.answer": "請依工具模式輸入有效的 URL、日期、JSON 或常見 YAML。",
   "home.title": "NexaForge",
-  "home.subtitle": "轉檔、壓縮、格式化與拆分集中一站，打開工具即可開始。",
+  "home.subtitle": "快速、免費、好上手；轉檔、壓縮、格式化與拆分集中一站，從圖片到 PDF，找到工具就能開始。",
   "home.eyebrow": "你的檔案工作台",
   "home.primaryCta": "開始處理檔案",
   "home.secondaryCta": "查看熱門工具",
@@ -371,9 +375,6 @@ const zhMessages: Record<string, string> = {
   "home.proof.local": "檔案不上傳",
   "home.proof.formats": "PDF、圖片、JSON 都能處理",
   "home.proof.noAccount": "不用註冊，打開就能用",
-  "home.workspaceKicker": "工具工作台",
-  "home.workspaceTitle": "一站式檔案工具",
-  "home.workspaceSubtitle": "快速、免費、好上手；從圖片到 PDF，找到工具就能開始。",
   "home.browseCategories": "依分類瀏覽",
   "home.browseCategoriesSubtitle": "按照你的工作情境，快速找到下一個工具。",
   "home.categoryCount": "{count} 個工具",
@@ -725,13 +726,13 @@ const zhMessages: Record<string, string> = {
   "tool.hash.faq.1.question": "資料會外流嗎？",
   "tool.hash.faq.1.answer": "不會，完全在本機處理。",
   "tool.hash.label.noOutput": "尚未產生輸出。",
-  "tool.uuid.how.0": "設定產生筆數（1~1000）。",
-  "tool.uuid.how.1": "點擊「產生」建立 UUID 清單。",
-  "tool.uuid.how.2": "複製或下載清單。",
+  "tool.uuid.how.0": "選擇 UUID v4、UUID v7 或相容 .NET Guid，並設定 1～1000 筆。",
+  "tool.uuid.how.1": "設定大小寫與標準、大括號或緊湊格式。",
+  "tool.uuid.how.2": "在本機產生後複製或下載清單。",
   "tool.uuid.faq.0.question": "最多可產生多少？",
   "tool.uuid.faq.0.answer": "單次最多 1000 筆。",
   "tool.uuid.faq.1.question": "UUID 安全嗎？",
-  "tool.uuid.faq.1.answer": "使用瀏覽器 crypto.randomUUID() 產生。",
+  "tool.uuid.faq.1.answer": "UUID v4 與 v7 都使用瀏覽器提供的密碼學安全隨機來源產生。",
   "tool.uuid.label.noOutput": "尚未產生 UUID。",
   "tool.qr-code.how.0": "輸入文字或網址。",
   "tool.qr-code.how.1": "選擇尺寸與容錯等級。",
@@ -789,6 +790,8 @@ const zhMessages: Record<string, string> = {
 
 const enMessages: Record<string, string> = {
   ...ISSUE_23_EN_MESSAGES,
+  ...ISSUE_26_EN_MESSAGES,
+  ...PDF_CONVERSION_EN_MESSAGES,
   "top.banner": "Built for designers, students, researchers, and engineers.",
   "top.banner.cta": "Image, PDF, JSON, and text workflows stay on your device, from upload to download.",
   "top.languageSwitcherLabel": "Language switch",
@@ -992,7 +995,7 @@ const enMessages: Record<string, string> = {
   "tool.hash.title": "Hash Generator",
   "tool.hash.description": "Generate SHA digest values in browser securely.",
   "tool.uuid.title": "UUID Generator",
-  "tool.uuid.description": "Generate one UUID or batch up to 1000.",
+  "tool.uuid.description": "Generate UUID v4, UUID v7, or .NET Guid-compatible identifiers in batches.",
   "tool.qr-code.title": "QR Code",
   "tool.qr-code.description": "Create and download PNG QR codes from text or URL.",
 
@@ -1065,7 +1068,7 @@ const enMessages: Record<string, string> = {
   "developerTools.faq.1.question": "What inputs are supported?",
   "developerTools.faq.1.answer": "Use a valid URL, date, JSON, or common YAML for the selected mode.",
   "home.title": "NexaForge",
-  "home.subtitle": "Resize, convert, format, and split from one focused workspace. Open a tool and get moving.",
+  "home.subtitle": "Fast, free, and easy to use. Resize, convert, format, and split in one place—from images to PDF, find a tool and get started.",
   "home.eyebrow": "Your file operations desk",
   "home.primaryCta": "Start with a file",
   "home.secondaryCta": "Explore popular tools",
@@ -1075,9 +1078,6 @@ const enMessages: Record<string, string> = {
   "home.proof.local": "Files stay on your device",
   "home.proof.formats": "PDF, image, and JSON workflows",
   "home.proof.noAccount": "No account needed",
-  "home.workspaceKicker": "TOOL WORKSPACE",
-  "home.workspaceTitle": "All-in-One File Tools",
-  "home.workspaceSubtitle": "Fast, free, and easy to use. Find a tool, open it, and keep moving.",
   "home.browseCategories": "Browse by Category",
   "home.browseCategoriesSubtitle": "Find the next tool by the kind of work you are doing.",
   "home.categoryCount": "{count} tools",
@@ -1448,13 +1448,13 @@ const enMessages: Record<string, string> = {
   "tool.hash.faq.1.question": "Does the data leave the browser?",
   "tool.hash.faq.1.answer": "No.",
   "tool.hash.label.noOutput": "No output.",
-  "tool.uuid.how.0": "Select single or batch mode by setting count.",
-  "tool.uuid.how.1": "Click Generate to create UUIDs.",
-  "tool.uuid.how.2": "Copy or download generated list.",
+  "tool.uuid.how.0": "Choose UUID v4, UUID v7, or .NET Guid compatibility and set a count from 1 to 1000.",
+  "tool.uuid.how.1": "Choose letter case and standard, braced, or compact formatting.",
+  "tool.uuid.how.2": "Generate locally, then copy or download the list.",
   "tool.uuid.faq.0.question": "What is max count?",
   "tool.uuid.faq.0.answer": "Maximum 1000 in one run.",
   "tool.uuid.faq.1.question": "Are UUIDs secure?",
-  "tool.uuid.faq.1.answer": "crypto.randomUUID is used directly in browser.",
+  "tool.uuid.faq.1.answer": "UUID v4 and v7 use the browser's cryptographically secure random source.",
   "tool.uuid.label.noOutput": "No output.",
   "tool.qr-code.how.0": "Input text or URL.",
   "tool.qr-code.how.1": "Choose size and error-correction level.",

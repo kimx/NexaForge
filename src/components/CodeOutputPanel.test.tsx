@@ -23,4 +23,17 @@ describe("CodeOutputPanel", () => {
     expect(await screen.findByRole("status")).toHaveTextContent("Copied");
     expect(screen.getByRole("button", { name: "Download" })).toBeInTheDocument();
   });
+
+  it("shows an inline error and keeps output selectable when copy is rejected", async () => {
+    const writeText = vi.fn().mockRejectedValue(new Error("denied"));
+    Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText } });
+    renderWithProviders(
+      <CodeOutputPanel label="Generated code" value="keep me" fileName="model.ts" language="typescript" emptyText="Nothing generated" />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Copy" }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent("Unable to copy result to clipboard.");
+    expect(screen.getByLabelText("Generated code")).toHaveValue("keep me");
+  });
 });

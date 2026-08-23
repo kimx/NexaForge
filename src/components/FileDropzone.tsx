@@ -15,6 +15,7 @@ export interface FileDropzoneProps {
   setInputRef?: (input: HTMLInputElement | null) => void;
   compact?: boolean;
   compactLabel?: string;
+  disabled?: boolean;
 }
 
 export function FileDropzone({
@@ -28,6 +29,7 @@ export function FileDropzone({
   setInputRef,
   compact = false,
   compactLabel,
+  disabled = false,
 }: FileDropzoneProps): JSX.Element {
   const [isDragging, setDragging] = useState(false);
   const [rejections, setRejections] = useState<FileRejection[]>([]);
@@ -49,6 +51,9 @@ export function FileDropzone({
 
   const handleFiles = useCallback(
     (fileList: FileList | File[]) => {
+      if (disabled) {
+        return;
+      }
       const list = Array.from(fileList);
       const accepted: File[] = [];
       const rejected: FileRejection[] = [];
@@ -87,7 +92,7 @@ export function FileDropzone({
         onFiles(accepted);
       }
     },
-    [maxSize, accept, onFiles, onRejectedFiles, t]
+    [maxSize, accept, onFiles, onRejectedFiles, t, disabled]
   );
 
   const handleDrop = useCallback(
@@ -133,7 +138,7 @@ export function FileDropzone({
   }, []);
 
   useEffect(() => {
-    if (!enablePaste) {
+    if (!enablePaste || disabled) {
       return;
     }
 
@@ -159,23 +164,25 @@ export function FileDropzone({
     return () => {
       window.removeEventListener("paste", handler);
     };
-  }, [enablePaste, handleFiles]);
+  }, [enablePaste, handleFiles, disabled]);
 
   return (
     <section
-      className={`file-dropzone${compact ? " file-dropzone--compact" : ""}${isDragging ? " file-dropzone--dragging" : ""}`}
+      className={`file-dropzone${compact ? " file-dropzone--compact" : ""}${isDragging ? " file-dropzone--dragging" : ""}${disabled ? " file-dropzone--disabled" : ""}`}
       onDragOver={handleDragOver}
       onDragEnter={handleDragEnter}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
       aria-label={t("fileDropzone.aria")}
       aria-describedby={compact ? undefined : `${inputId}-help`}
+      aria-disabled={disabled || undefined}
     >
       <input
         id={inputId}
         className="file-input"
         ref={inputRef}
         type="file"
+        disabled={disabled}
         accept={accept}
         multiple={multiple}
         aria-label={`${actionLabel} ${t("fileDropzone.orSelect")}`}

@@ -20,9 +20,11 @@ const ROUTE_HEADINGS: Record<string, string> = {
   "/image/svg-optimizer": "SVG Optimizer",
   "/image/favicon-generator": "Favicon Generator",
   "/image/social-resizer": "Social Media Image Resizer",
+  "/image/to-pdf": "Image to PDF",
   "/pdf/merge": "Free Online PDF Merger",
   "/pdf/split": "Free Online PDF Splitter",
   "/pdf/rotate": "Free Online PDF Rotator",
+  "/pdf/to-image": "PDF to Image",
   "/data/json-formatter": "Free Online JSON Formatter",
   "/data/csv-viewer": "CSV Viewer",
   "/data/csv-to-json": "CSV to JSON",
@@ -33,6 +35,11 @@ const ROUTE_HEADINGS: Record<string, string> = {
   "/developer/json-to-csharp": "JSON → C# Class",
   "/developer/json-to-typescript": "JSON → TypeScript Interface",
   "/developer/regex-tester": "Regex Tester",
+  "/developer/sql-formatter": "SQL Formatter",
+  "/developer/cron-builder": "Cron Expression Builder",
+  "/developer/url-parser": "URL Parser",
+  "/developer/curl-to-code": "cURL to Code",
+  "/developer/secret-generator": "Password & Key Generator",
   "/text/hash": "Hash Generator",
   "/text/uuid": "Free Online UUID Generator",
   "/text/word-counter": "Word Counter",
@@ -217,6 +224,32 @@ describe("App routes", () => {
 
     expect(within(header).getByRole("link", { name: brandName })).toHaveAttribute("href", "/");
     expect(within(sidebar).queryByRole("link", { name: brandName })).not.toBeInTheDocument();
+  });
+
+  it("publishes SQL Formatter and Cron Builder in both locales", () => {
+    ["/developer/sql-formatter", "/developer/cron-builder"].forEach((path) => {
+      expect(BASE_INDEXABLE_ROUTES).toContain(path);
+      expect(INDEXABLE_ROUTES).toContain(`/en${path}`);
+    });
+    expect(FILE_TOOLS.find((tool) => tool.id === "sql-formatter")?.aliases).toContain("format sql");
+    expect(FILE_TOOLS.find((tool) => tool.id === "cron-builder")?.keywords).toContain("schedule");
+  });
+
+  it("publishes URL Parser and cURL to Code in both locales", () => {
+    ["/developer/url-parser", "/developer/curl-to-code"].forEach((path) => {
+      expect(BASE_INDEXABLE_ROUTES).toContain(path);
+      expect(INDEXABLE_ROUTES).toContain(`/en${path}`);
+    });
+    expect(FILE_TOOLS.find((tool) => tool.id === "url-parser")?.aliases).toContain("parse url");
+    expect(FILE_TOOLS.find((tool) => tool.id === "curl-to-code")?.keywords).toContain("powershell");
+  });
+
+  it("publishes Secret Generator and upgrades UUID discovery", () => {
+    expect(BASE_INDEXABLE_ROUTES).toContain("/developer/secret-generator");
+    expect(INDEXABLE_ROUTES).toContain("/en/developer/secret-generator");
+    expect(FILE_TOOLS.find((tool) => tool.id === "secret-generator")?.keywords).toContain("api key");
+    expect(FILE_TOOLS.find((tool) => tool.id === "uuid")?.aliases).toContain("uuid v7");
+    expect(FILE_TOOLS.find((tool) => tool.id === "uuid")?.description).toContain(".NET Guid");
   });
 
   it("places the tool-page brand in the header instead of the sidebar", async () => {

@@ -69,6 +69,48 @@ describe("buildPageSeo", () => {
     );
   });
 
+  it("classifies SQL and Cron tools as bilingual developer applications", () => {
+    const sql = buildPageSeo("/developer/sql-formatter", "en");
+    const cron = buildPageSeo("/developer/cron-builder", "en");
+
+    expect(sql.title).toContain("SQL Formatter");
+    expect(sql.canonical).toBe(`${SITE_ORIGIN}/en/developer/sql-formatter`);
+    expect(sql.alternates["zh-Hant"]).toBe(`${SITE_ORIGIN}/developer/sql-formatter`);
+    expect(cron.title).toContain("Cron Expression Builder");
+    expect(cron.canonical).toBe(`${SITE_ORIGIN}/en/developer/cron-builder`);
+    expect(cron.jsonLd).toEqual(expect.arrayContaining([
+      expect.objectContaining({ applicationCategory: "DeveloperApplication" }),
+    ]));
+  });
+
+  it("classifies URL Parser and cURL to Code as bilingual developer applications", () => {
+    const url = buildPageSeo("/developer/url-parser", "en");
+    const curl = buildPageSeo("/developer/curl-to-code", "en");
+
+    expect(url.title).toContain("URL Parser");
+    expect(url.canonical).toBe(`${SITE_ORIGIN}/en/developer/url-parser`);
+    expect(url.alternates["zh-Hant"]).toBe(`${SITE_ORIGIN}/developer/url-parser`);
+    expect(curl.title).toContain("cURL to Code");
+    expect(curl.canonical).toBe(`${SITE_ORIGIN}/en/developer/curl-to-code`);
+    expect(curl.jsonLd).toEqual(expect.arrayContaining([
+      expect.objectContaining({ applicationCategory: "DeveloperApplication" }),
+    ]));
+  });
+
+  it("indexes Secret Generator and upgraded UUID metadata in both locales", () => {
+    const secret = buildPageSeo("/developer/secret-generator", "en");
+    const uuid = buildPageSeo("/text/uuid", "en");
+
+    expect(secret.title).toContain("Password & Key Generator");
+    expect(secret.canonical).toBe(`${SITE_ORIGIN}/en/developer/secret-generator`);
+    expect(secret.alternates["zh-Hant"]).toBe(`${SITE_ORIGIN}/developer/secret-generator`);
+    expect(secret.jsonLd).toEqual(expect.arrayContaining([
+      expect.objectContaining({ applicationCategory: "DeveloperApplication" }),
+    ]));
+    expect(uuid.description).toContain("UUID v7");
+    expect(uuid.canonical).toBe(`${SITE_ORIGIN}/en/text/uuid`);
+  });
+
   it("builds localized metadata for a QR reader route", () => {
     const seo = buildPageSeo("/qr-code/reader", "en");
 

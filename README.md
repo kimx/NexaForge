@@ -34,11 +34,13 @@ NexaForge 將常見工具集中到一個站點，從圖片到 PDF、從 JSON 到
 - **SVG Optimizer**：保留 viewBox 的安全 SVG 最佳化與下載
 - **Favicon Generator**：產生 ICO、平台 PNG 圖示與 web manifest
 - **Social Media Image Resizer**：產生 Instagram、Facebook、X、LinkedIn、YouTube 與自訂尺寸
+- **Image → PDF**：多張 JPG、PNG、WebP 依指定順序合併，每張圖片各佔一頁
 
 ### PDF 工具
 - **PDF Merge**：合併多份 PDF
 - **PDF Split**：依頁碼切分 PDF
 - **PDF Rotate**：旋轉頁面方向
+- **PDF → Image**：多頁 PDF 逐頁轉為 PNG，支援預覽、單張與 ZIP 下載
 
 ### 資料工具
 - **JSON Formatter**：格式化、壓縮與驗證 JSON
@@ -54,12 +56,17 @@ NexaForge 將常見工具集中到一個站點，從圖片到 PDF、從 JSON 到
 - **Remove Duplicate Lines**：移除重複行並保留首次出現
 - **Sort Lines**：將文字逐行排序
 - **Hash Generator**：生成安全雜湊
-- **UUID Generator**：快速建立 UUID
+- **UUID Generator**：批次建立 UUID v4、UUID v7 與相容 .NET Guid 的格式
 
 ### 開發者工具
 - **Base64**：文字與檔案的 Base64 互轉
 - **JWT Decoder / JWT Key Generator**：開發驗證流程輔助
 - **Regex Tester**：安全測試 JavaScript 正則表達式、旗標與擷取群組
+- **SQL Formatter**：格式化或壓縮 SQL Server、PostgreSQL 與 MySQL 查詢
+- **Cron Expression Builder**：建立五欄 Cron 並預覽未來五次執行時間
+- **URL Parser**：拆解 URL 結構並保留重複的查詢參數
+- **cURL → Code**：將 cURL 轉成 C#、JavaScript、Python 或 PowerShell
+- **Password & Key Generator**：產生密碼、API Key、Hex、Base64 並顯示熵資訊
 - **JSON → C# Class**：產生巢狀類別、可空型別與 JSON 欄位對應
 - **JSON → TypeScript Interface**：產生 interface、聯集與可選欄位
 

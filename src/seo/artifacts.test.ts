@@ -24,6 +24,21 @@ describe("SEO artifacts", () => {
       "<loc>https://nexaforge.kimx.info/developer/regex-tester</loc>"
     );
     expect(sitemap).toContain(
+      "<loc>https://nexaforge.kimx.info/developer/sql-formatter</loc>"
+    );
+    expect(sitemap).toContain(
+      'hreflang="en" href="https://nexaforge.kimx.info/en/developer/cron-builder"'
+    );
+    expect(sitemap).toContain(
+      "<loc>https://nexaforge.kimx.info/developer/url-parser</loc>"
+    );
+    expect(sitemap).toContain(
+      'hreflang="en" href="https://nexaforge.kimx.info/en/developer/curl-to-code"'
+    );
+    expect(sitemap).toContain(
+      "<loc>https://nexaforge.kimx.info/developer/secret-generator</loc>"
+    );
+    expect(sitemap).toContain(
       'hreflang="en" href="https://nexaforge.kimx.info/en/developer/regex-tester"'
     );
     expect(sitemap).toContain(
