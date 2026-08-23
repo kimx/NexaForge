@@ -1,4 +1,4 @@
-import { act, render, screen } from "@testing-library/react";
+import { act, render, screen, within } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { LanguageProvider } from "../context/LanguageContext";
 import type { ProcessingState, ToolDefinition, ToolWorkflow } from "../types/tool";
@@ -94,6 +94,14 @@ describe("ToolPageTemplate result focus", () => {
       screen.getByRole("heading", { level: 2, name: "Frequently asked questions" })
     ).toBeVisible();
     expect(screen.queryByRole("heading", { level: 2, name: "FAQ" })).not.toBeInTheDocument();
+  });
+
+  it("makes the breadcrumb return path actionable and marks the current page", () => {
+    render(<Template state="ready" route="/en/data/json-formatter" />);
+
+    const breadcrumb = screen.getByRole("navigation", { name: /breadcrumb/i });
+    expect(within(breadcrumb).getByRole("link", { name: "Home" })).toHaveAttribute("href", "/en");
+    expect(within(breadcrumb).getByText("Free Online JSON Formatter")).toHaveAttribute("aria-current", "page");
   });
 
   it("focuses a newly completed result when it is outside the viewport", () => {

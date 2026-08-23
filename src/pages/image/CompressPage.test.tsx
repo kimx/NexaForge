@@ -100,4 +100,26 @@ describe("ImageCompressPage", () => {
     expect(screen.getByText("a.png")).toBeInTheDocument();
     expect(screen.getByText("b.png")).toBeInTheDocument();
   });
+
+  it("keeps the download actions ahead of a collapsed single-image preview", async () => {
+    vi.spyOn(imageService, "compressImage").mockResolvedValue({
+      blob: new Blob(["compressed"], { type: "image/jpeg" }),
+      fileName: "sample.jpg",
+      mimeType: "image/jpeg",
+      size: 10,
+    });
+
+    const { container } = renderWithProviders(<ImageCompressPage />);
+    fireEvent.change(container.querySelector('input[type="file"]') as HTMLInputElement, {
+      target: { files: [new File(["original"], "sample.png", { type: "image/png" })] },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Process" }));
+
+    const downloadZip = await screen.findByRole("button", { name: "Download ZIP" });
+    const previewSummary = screen.getByText("Preview");
+    const previewDisclosure = previewSummary.closest("details");
+
+    expect(previewDisclosure).not.toHaveAttribute("open");
+    expect(downloadZip.compareDocumentPosition(previewDisclosure as Node) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
 });
