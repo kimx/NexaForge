@@ -10,6 +10,19 @@ afterEach(() => {
 });
 
 describe("ImageConvertPage", () => {
+  it("starts a JPG to WebP search page with matching input and output presets", () => {
+    const { container } = renderWithProviders(<ImageConvertPage />, {
+      route: "/en/image/jpg-to-webp",
+    });
+
+    expect(screen.getByRole("heading", { level: 1, name: "Free Online JPG to WebP Converter" })).toBeVisible();
+    expect(screen.getByRole("combobox", { name: "Target format" })).toHaveValue("webp");
+    expect(container.querySelector('input[type="file"]')).toHaveAttribute(
+      "accept",
+      "image/jpeg,.jpg,.jpeg"
+    );
+  });
+
   it("offers AVIF as an input and output format", () => {
     const { container } = renderWithProviders(<ImageConvertPage />);
     expect(screen.getByRole("option", { name: "AVIF" })).toBeInTheDocument();

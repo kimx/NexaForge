@@ -10,15 +10,22 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-function renderWithRouter(ui: ReactElement): ReturnType<typeof render> {
+function renderWithRouter(ui: ReactElement, route = "/"): ReturnType<typeof render> {
   return render(
-    <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+    <MemoryRouter initialEntries={[route]} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <LanguageProvider initialLocale="en">{ui}</LanguageProvider>
     </MemoryRouter>
   );
 }
 
 describe("Base64Page", () => {
+  it("starts the Base64 decode search route in decode mode", () => {
+    renderWithRouter(<Base64Page />, "/en/developer/base64-decode");
+
+    expect(screen.getByRole("heading", { level: 1, name: "Free Online Base64 Decoder" })).toBeVisible();
+    expect(screen.getByRole("combobox", { name: "Mode" })).toHaveValue("base64ToText");
+  });
+
   it("places the copy action below the result instead of in options", () => {
     renderWithRouter(<Base64Page />);
 

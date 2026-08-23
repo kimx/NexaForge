@@ -4,12 +4,13 @@ import App from "./App";
 import { LanguageProvider } from "./context/LanguageContext";
 import { BASE_INDEXABLE_ROUTES, INDEXABLE_ROUTES } from "./routing/routes";
 import { FILE_TOOLS } from "./data/tools";
+import { SEO_ALIAS_PAGES } from "./seo/landingPages";
 
 const ROUTE_HEADINGS: Record<string, string> = {
   "/": "NexaForge",
   "/json": "JSON Workspace",
-  "/image/resize": "Image Resize",
-  "/image/crop": "Image Crop",
+  "/image/resize": "Free Online Image Resizer",
+  "/image/crop": "Free Online Image Cropper",
   "/image/convert": "Image Converter",
   "/image/compress": "Image Compress",
   "/image/exif-viewer": "EXIF Viewer",
@@ -19,10 +20,10 @@ const ROUTE_HEADINGS: Record<string, string> = {
   "/image/svg-optimizer": "SVG Optimizer",
   "/image/favicon-generator": "Favicon Generator",
   "/image/social-resizer": "Social Media Image Resizer",
-  "/pdf/merge": "PDF Merge",
-  "/pdf/split": "PDF Split",
-  "/pdf/rotate": "PDF Rotate",
-  "/data/json-formatter": "JSON Formatter",
+  "/pdf/merge": "Free Online PDF Merger",
+  "/pdf/split": "Free Online PDF Splitter",
+  "/pdf/rotate": "Free Online PDF Rotator",
+  "/data/json-formatter": "Free Online JSON Formatter",
   "/data/csv-viewer": "CSV Viewer",
   "/data/csv-to-json": "CSV to JSON",
   "/data/json-to-csv": "JSON to CSV",
@@ -33,13 +34,13 @@ const ROUTE_HEADINGS: Record<string, string> = {
   "/developer/json-to-typescript": "JSON → TypeScript Interface",
   "/developer/regex-tester": "Regex Tester",
   "/text/hash": "Hash Generator",
-  "/text/uuid": "UUID Generator",
+  "/text/uuid": "Free Online UUID Generator",
   "/text/word-counter": "Word Counter",
   "/text/case-converter": "Case Converter",
   "/text/remove-duplicate-lines": "Remove Duplicate Lines",
   "/text/sort-lines": "Sort Lines",
-  "/text/markdown": "Markdown Preview",
-  "/qr-code": "QR Code",
+  "/text/markdown": "Free Online Markdown Preview",
+  "/qr-code": "Free Online QR Code Generator",
   "/qr-code/reader": "QR Code Reader",
   "/barcode/generator": "Code128 / EAN-13 Barcode Generator",
   "/qr-code/wifi": "Wi-Fi QR Generator",
@@ -74,6 +75,29 @@ function setNarrowViewport(matches: boolean): void {
 }
 
 describe("App routes", () => {
+  it.each(SEO_ALIAS_PAGES.map(({ path, content }) => [
+    `/en${path}`,
+    content.en.h1,
+  ] as const))("renders the search-intent route %s as a working tool", async (path, heading) => {
+    render(
+      <MemoryRouter
+        initialEntries={[path]}
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+      >
+        <LanguageProvider initialLocale="en">
+          <App />
+        </LanguageProvider>
+      </MemoryRouter>
+    );
+
+    expect(await screen.findByRole("heading", { level: 1, name: heading })).toBeVisible();
+    await waitFor(() => expect(document.title).toContain(heading));
+    expect(document.querySelector('link[rel="canonical"]')).toHaveAttribute(
+      "href",
+      `https://nexaforge.kimx.info${path}`
+    );
+  });
+
   it("publishes canonical and English Regex Tester routes for indexing", () => {
     expect(BASE_INDEXABLE_ROUTES).toContain("/developer/regex-tester");
     expect(INDEXABLE_ROUTES).toContain("/en/developer/regex-tester");
@@ -201,7 +225,7 @@ describe("App routes", () => {
       </MemoryRouter>
     );
 
-    await screen.findByRole("heading", { name: "JSON Formatter", level: 1 });
+    await screen.findByRole("heading", { name: "Free Online JSON Formatter", level: 1 });
 
     const header = screen.getByRole("banner");
     const sidebar = screen.getByRole("complementary", { name: /tool sidebar/i });
@@ -256,7 +280,7 @@ describe("App routes", () => {
     });
     fireEvent.click(await screen.findByRole("link", { name: "Open tool" }));
 
-    await screen.findByRole("heading", { name: "PDF Merge", level: 1 });
+    await screen.findByRole("heading", { name: "Free Online PDF Merger", level: 1 });
     await waitFor(() => expect(screen.getByRole("main")).toHaveFocus());
     expect(window.scrollTo).toHaveBeenLastCalledWith({ top: 0, left: 0, behavior: "auto" });
   });
@@ -274,7 +298,7 @@ describe("App routes", () => {
     );
 
     expect(
-      await screen.findByRole("heading", { level: 1, name: "JSON Formatter" })
+      await screen.findByRole("heading", { level: 1, name: "Free Online JSON Formatter" })
     ).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "JSON Diff" })).toHaveAttribute(
       "href",
@@ -284,7 +308,7 @@ describe("App routes", () => {
     fireEvent.click(screen.getByRole("button", { name: "繁中" }));
 
     expect(
-      await screen.findByRole("heading", { level: 1, name: "JSON 格式化" })
+      await screen.findByRole("heading", { level: 1, name: "免費線上 JSON 格式化" })
     ).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "JSON Diff" })).toHaveAttribute(
       "href",

@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ToolPageTemplate } from "../../components/ToolPageTemplate";
 import { FileDropzone } from "../../components/FileDropzone";
 import { FileInfo } from "../../components/FileInfo";
@@ -14,23 +14,37 @@ import { MAX_FILE_BYTES, runBatch, validateImageBatch, type BatchItem } from "..
 import { getRelatedTools } from "../../utils/toolHelpers";
 import { trackEvent } from "../../utils/analytics";
 import type { ProcessingState, ToolMeta } from "../../types/tool";
+import { useSeoLanding } from "../../hooks/useSeoLanding";
 
 const IMAGE_ACCEPT = "image/jpeg,image/png,image/webp";
 
 export function ImageCompressPage(): JSX.Element {
   const { t } = useLanguage();
+  const landing = useSeoLanding();
+  const presetFormat = landing?.definition.preset.outputFormat ?? "jpeg";
+  const sourceFormat = landing?.definition.preset.sourceFormat;
+  const imageAccept = sourceFormat === "jpeg"
+    ? "image/jpeg,.jpg,.jpeg"
+    : sourceFormat === "png"
+      ? "image/png,.png"
+      : IMAGE_ACCEPT;
   const [files, setFiles] = useState<File[]>([]);
   const [items, setItems] = useState<BatchItem[]>([]);
   const [completed, setCompleted] = useState(0);
   const [quality, setQuality] = useState(80);
-  const [format, setFormat] = useState<"jpeg" | "png" | "webp">("jpeg");
+  const [format, setFormat] = useState<"jpeg" | "png" | "webp">(presetFormat);
   const [processing, setProcessing] = useState<ProcessingState>("idle");
   const [error, setError] = useState<string | null>(null);
   const [selectionValid, setSelectionValid] = useState(true);
   const operationRef = useRef(0);
   const tool = FILE_TOOLS.find((item) => item.id === "image-compress") ?? FILE_TOOLS[0];
   const title = t("tool.image-compress.title");
-  const meta: ToolMeta = { title: `${title} - ${t("header.title")}`, description: t("tool.image-compress.description"), canonical: "/image/compress", h1: title };
+  const meta: ToolMeta = {
+    title: landing?.content.title ?? `${title} - ${t("header.title")}`,
+    description: landing?.content.description ?? t("tool.image-compress.description"),
+    canonical: landing?.definition.path ?? "/image/compress",
+    h1: landing?.content.h1 ?? title,
+  };
   useSeo(meta);
   const successes = items.flatMap((item) => item.status === "success" ? [item.result] : []);
   const singleResult = files.length === 1 ? successes[0] : undefined;
@@ -38,6 +52,16 @@ export function ImageCompressPage(): JSX.Element {
   const clearOutputs = (): void => { operationRef.current += 1; setItems([]); setCompleted(0); setError(null); setProcessing("idle"); };
   const selectFiles = (next: File[]): void => { clearOutputs(); setFiles(next); const validation = validateImageBatch(next); setSelectionValid(!validation.length); if (validation[0]) { setError(validation[0].message); setProcessing("error"); } };
   const clearSelection = (): void => { clearOutputs(); setFiles([]); setSelectionValid(true); };
+  useEffect(() => {
+    operationRef.current += 1;
+    setFormat(presetFormat);
+    setFiles([]);
+    setItems([]);
+    setCompleted(0);
+    setError(null);
+    setProcessing("idle");
+    setSelectionValid(true);
+  }, [landing?.definition.path, presetFormat]);
   const process = async (): Promise<void> => {
     if (!files.length || !selectionValid) return;
     const operation = operationRef.current + 1; operationRef.current = operation;
@@ -52,7 +76,7 @@ export function ImageCompressPage(): JSX.Element {
   const faq = useMemo(() => [0, 1].map((index) => ({ q: t(`tool.image-compress.faq.${index}.question`), a: t(`tool.image-compress.faq.${index}.answer`) })), [t]);
   return <ToolPageTemplate tool={tool} meta={meta} breadcrumb={["Home", title]}
     workflow={{ state: processing, error, progress: files.length ? (completed / files.length) * 100 : 0, onRetry: process, onReprocess: process }} children={{
-      workspace: <><FileDropzone label={t("label.dropImage")} accept={IMAGE_ACCEPT} onFiles={selectFiles} onRejectedFiles={(rejections) => { setError(rejections[0]?.message ?? t("error.invalidFile")); setProcessing("error"); setSelectionValid(false); }} multiple maxSize={MAX_FILE_BYTES} compact={files.length > 0} /><FileInfo files={files} mode="multi" onClear={clearSelection} compact={files.length > 0} /></>,
+      workspace: <><FileDropzone label={t("label.dropImage")} accept={imageAccept} onFiles={selectFiles} onRejectedFiles={(rejections) => { setError(rejections[0]?.message ?? t("error.invalidFile")); setProcessing("error"); setSelectionValid(false); }} multiple maxSize={MAX_FILE_BYTES} compact={files.length > 0} /><FileInfo files={files} mode="multi" onClear={clearSelection} compact={files.length > 0} /></>,
       options: <div className="tool-form"><label>{t("label.outputFormat")}<select value={format} onChange={(event) => { setFormat(event.target.value as "jpeg" | "png" | "webp"); clearOutputs(); }}><option value="jpeg">JPG</option><option value="png">PNG</option><option value="webp">WebP</option></select></label><label>{t("label.quality")}: {quality}<input type="range" min={1} max={100} value={quality} onChange={(event) => { setQuality(Number(event.target.value)); clearOutputs(); }} /></label><button type="button" className="btn primary" disabled={!files.length || !selectionValid || processing === "processing"} aria-busy={processing === "processing"} onClick={process}>{processing === "processing" ? t("button.processing") : t("button.process")}</button></div>,
       result: <>{items.length ? <><p>{t("batch.progress", { completed: items.length, total: files.length })}</p><BatchFileResults items={items} />{singleResult ? <><SizeComparison originalSize={files[0]?.size ?? 0} outputSize={singleResult.size} /><img src={previewUrl} alt={t("label.preview")} className="preview-image" /></> : null}<DownloadCollectionButton results={successes} fileName="compressed-images.zip" disabled={processing === "processing"} /></> : <p>{t("label.noResult")}</p>}</>,
       howItWorks, faq, relatedTools: getRelatedTools("image-compress"),

@@ -11,11 +11,15 @@ import { useSeo } from "../../hooks/useSeo";
 import { convertHeic } from "../../services/image/heicService";
 import { getRelatedTools } from "../../utils/toolHelpers";
 import type { FileProcessResult, ProcessingState, ToolDefinition, ToolMeta } from "../../types/tool";
+import { useSeoLanding } from "../../hooks/useSeoLanding";
 
 export function HeicConverterPage(): JSX.Element {
   const { t } = useLanguage();
+  const landing = useSeoLanding();
   const [files, setFiles] = useState<File[]>([]);
-  const [format, setFormat] = useState<"jpeg" | "png">("jpeg");
+  const [format, setFormat] = useState<"jpeg" | "png">(
+    landing?.definition.preset.outputFormat === "png" ? "png" : "jpeg"
+  );
   const [quality, setQuality] = useState(85);
   const [result, setResult] = useState<FileProcessResult | null>(null);
   const [state, setState] = useState<ProcessingState>("idle");
@@ -24,7 +28,12 @@ export function HeicConverterPage(): JSX.Element {
   const fallback: ToolDefinition = { id: "heic-converter", title: "HEIC → JPG / PNG", description: "Convert HEIC locally.", path: "/image/heic-converter", category: "Image" };
   const tool = FILE_TOOLS.find((item) => item.id === "heic-converter") ?? fallback;
   const title = t("tool.heic-converter.title");
-  const meta: ToolMeta = { title: `${title} - ${t("header.title")}`, description: t("tool.heic-converter.description"), canonical: "/image/heic-converter", h1: title };
+  const meta: ToolMeta = {
+    title: landing?.content.title ?? `${title} - ${t("header.title")}`,
+    description: landing?.content.description ?? t("tool.heic-converter.description"),
+    canonical: landing?.definition.path ?? "/image/heic-converter",
+    h1: landing?.content.h1 ?? title,
+  };
   useSeo(meta);
   const clearResult = (): void => { setResult(null); setError(null); setState("idle"); };
   const process = async (): Promise<void> => {
