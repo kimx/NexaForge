@@ -16,6 +16,7 @@ const AD_SLOT_FALLBACK: Record<AdSlotProps["position"], string> = {
   "tool-result": "",
 };
 const AD_SLOT_PATTERN = /^\d{10,16}$/;
+const AD_FILL_TIMEOUT_MS = 5_000;
 
 function ensureAdSenseScript(): void {
   if (document.querySelector('script[data-nexaforge-adsense="true"]')) {
@@ -34,6 +35,7 @@ export function AdSlot({ position, adSlotId }: AdSlotProps): JSX.Element {
   const containerRef = useRef<HTMLElement>(null);
   const adRef = useRef<HTMLModElement>(null);
   const [eligibleSlot, setEligibleSlot] = useState<string | null>(null);
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const { t } = useLanguage();
   const slotId = adSlotId ?? AD_SLOT_FALLBACK[position];
   const isValidSlot = AD_SLOT_PATTERN.test(slotId);
@@ -86,6 +88,38 @@ export function AdSlot({ position, adSlotId }: AdSlotProps): JSX.Element {
     }
   }, [eligibleSlot, isValidSlot, slotId]);
 
+  useEffect(() => {
+    setIsCollapsed(false);
+  }, [slotId]);
+
+  useEffect(() => {
+    if (!isValidSlot || eligibleSlot !== slotId || !adRef.current) {
+      return;
+    }
+
+    const ad = adRef.current;
+    const timeout = window.setTimeout(() => {
+      setIsCollapsed(true);
+    }, AD_FILL_TIMEOUT_MS);
+    const updateVisibility = () => {
+      const status = ad.dataset.adStatus;
+      if (status === "unfilled") {
+        window.clearTimeout(timeout);
+        setIsCollapsed(true);
+      } else if (status === "filled") {
+        window.clearTimeout(timeout);
+      }
+    };
+    const observer = new MutationObserver(updateVisibility);
+    observer.observe(ad, { attributes: true, attributeFilter: ["data-ad-status"] });
+    updateVisibility();
+
+    return () => {
+      window.clearTimeout(timeout);
+      observer.disconnect();
+    };
+  }, [eligibleSlot, isValidSlot, slotId]);
+
   if (!isValidSlot) {
     if (import.meta.env.DEV) {
       // eslint-disable-next-line no-console
@@ -94,6 +128,10 @@ export function AdSlot({ position, adSlotId }: AdSlotProps): JSX.Element {
       );
     }
 
+    return <></>;
+  }
+
+  if (isCollapsed) {
     return <></>;
   }
 

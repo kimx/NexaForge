@@ -361,7 +361,11 @@ export function JsonFormatterPage(): JSX.Element {
             onClick={handleProcess}
             disabled={!canProcess || processing === "processing"}
           >
-            {processing === "processing" ? t("button.processing") : t("button.process")}
+            {processing === "processing"
+              ? t("button.processing")
+              : mode === "format"
+                ? t("tool.json-formatter.action.format")
+                : t("tool.json-formatter.action.minify")}
           </button>
         </div>
 
