@@ -354,6 +354,7 @@ function ToolFrame({ children }: { children: JSX.Element }): JSX.Element {
           isMobile={isNarrowViewport}
           isOpen={!isNarrowViewport || isToolsOpen}
           showDesktopBrand={false}
+          showSearch={!isHome || isNarrowViewport}
           onClose={closeTools}
           closeButtonRef={closeButtonRef}
         />

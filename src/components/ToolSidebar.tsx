@@ -163,6 +163,7 @@ interface ToolSidebarProps {
   isMobile?: boolean;
   isOpen?: boolean;
   showDesktopBrand?: boolean;
+  showSearch?: boolean;
   onClose?: () => void;
   closeButtonRef?: RefObject<HTMLButtonElement>;
 }
@@ -180,6 +181,7 @@ export function ToolSidebar({
   isMobile = false,
   isOpen = true,
   showDesktopBrand = true,
+  showSearch = true,
   onClose,
   closeButtonRef,
 }: ToolSidebarProps): JSX.Element | null {
@@ -346,32 +348,34 @@ export function ToolSidebar({
           </div>
         ) : showDesktopBrand ? brandLink : null}
 
-        <div className="tool-sidebar__search-wrap">
-          <label htmlFor="tool-search" className="tool-sidebar__search-label sr-only">
-            {t("sidebar.searchLabel")}
-          </label>
-          <span className="tool-sidebar__search-icon" aria-hidden="true">
-            <SidebarIcon name="search" />
-          </span>
-          <input
-            ref={searchInputRef}
-            id="tool-search"
-            value={keyword}
-            onChange={handleKeywordChange}
-            placeholder={t("sidebar.searchPlaceholder")}
-            className="tool-sidebar__search-input"
-          />
-          {keyword ? (
-            <button
-              type="button"
-              className="tool-sidebar__search-clear"
-              aria-label={t("sidebar.clearSearch")}
-              onClick={clearKeyword}
-            >
-              <SidebarIcon name="close" />
-            </button>
-          ) : null}
-        </div>
+        {showSearch ? (
+          <div className="tool-sidebar__search-wrap">
+            <label htmlFor="tool-search" className="tool-sidebar__search-label sr-only">
+              {t("sidebar.searchLabel")}
+            </label>
+            <span className="tool-sidebar__search-icon" aria-hidden="true">
+              <SidebarIcon name="search" />
+            </span>
+            <input
+              ref={searchInputRef}
+              id="tool-search"
+              value={keyword}
+              onChange={handleKeywordChange}
+              placeholder={t("sidebar.searchPlaceholder")}
+              className="tool-sidebar__search-input"
+            />
+            {keyword ? (
+              <button
+                type="button"
+                className="tool-sidebar__search-clear"
+                aria-label={t("sidebar.clearSearch")}
+                onClick={clearKeyword}
+              >
+                <SidebarIcon name="close" />
+              </button>
+            ) : null}
+          </div>
+        ) : null}
 
         {!keywordNormalized && (
           <nav className="tool-sidebar__categories" aria-label={t("sidebar.navigation")}>

@@ -107,12 +107,17 @@ export function ToolPageTemplate({
     <div className={`tool-page tool-page--${tool.id} tool-page--layout-${layout}`}>
       <div className="tool-container">
         <nav className="breadcrumb tool-page__breadcrumb" aria-label={t("breadcrumb.aria")}>
-          {localizedBreadcrumb.map((item, index) => (
-            <span key={item}>
-              {index > 0 ? " / " : ""}
-              {item}
-            </span>
-          ))}
+          <ol>
+            {localizedBreadcrumb.map((item, index) => (
+              <li key={item}>
+                {index === 0 ? (
+                  <Link to={localizePath("/", locale)}>{item}</Link>
+                ) : (
+                  <span aria-current={index === localizedBreadcrumb.length - 1 ? "page" : undefined}>{item}</span>
+                )}
+              </li>
+            ))}
+          </ol>
         </nav>
 
         <div className="tool-page__title-row">

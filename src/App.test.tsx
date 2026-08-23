@@ -224,6 +224,8 @@ describe("App routes", () => {
 
     expect(within(header).getByRole("link", { name: brandName })).toHaveAttribute("href", "/");
     expect(within(sidebar).queryByRole("link", { name: brandName })).not.toBeInTheDocument();
+    expect(within(sidebar).queryByRole("textbox")).not.toBeInTheDocument();
+    expect(screen.getAllByRole("textbox", { name: "搜尋工具" })).toHaveLength(1);
   });
 
   it("publishes SQL Formatter and Cron Builder in both locales", () => {
@@ -272,6 +274,7 @@ describe("App routes", () => {
 
     expect(within(header).getByRole("link", { name: brandName })).toHaveAttribute("href", "/en");
     expect(within(sidebar).queryByRole("link", { name: brandName })).not.toBeInTheDocument();
+    expect(within(sidebar).getByRole("textbox", { name: /search/i })).toBeVisible();
   });
 
   it("opens mobile tool navigation as a modal and returns focus when closed", async () => {
@@ -317,7 +320,7 @@ describe("App routes", () => {
     fireEvent.change(screen.getByRole("textbox", { name: "Search Tools" }), {
       target: { value: "PDF Merge" },
     });
-    fireEvent.click(await screen.findByRole("link", { name: "Open tool" }));
+    fireEvent.click(await screen.findByRole("link", { name: "Open PDF Merge" }));
 
     await screen.findByRole("heading", { name: "Free Online PDF Merger", level: 1 });
     await waitFor(() => expect(screen.getByRole("main")).toHaveFocus());

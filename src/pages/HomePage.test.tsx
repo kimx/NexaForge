@@ -36,8 +36,34 @@ describe("HomePage task-first hierarchy", () => {
     renderWithProviders(<HomePage />);
 
     const featured = screen.getByTestId("featured-tools");
+    expect(within(featured).getByRole("heading", { level: 2, name: "Popular Tools" })).toBeVisible();
     expect(within(featured).getAllByRole("article")).toHaveLength(8);
     expect(within(featured).queryByRole("heading", { name: "SVG Optimizer" })).not.toBeInTheDocument();
+  });
+
+  it("gives every tool card a unique action name under a level-three heading", () => {
+    renderWithProviders(<HomePage />);
+
+    const featured = screen.getByTestId("featured-tools");
+    const imageResizeHeading = within(featured).getByRole("heading", { level: 3, name: "Image Resize" });
+    const imageResizeCard = imageResizeHeading.closest("article");
+
+    if (!imageResizeCard) {
+      throw new Error("Expected Image Resize heading to belong to a tool card.");
+    }
+
+    expect(within(imageResizeCard).getByRole("link", { name: "Open Image Resize" })).toHaveAttribute(
+      "href",
+      "/en/image/resize"
+    );
+  });
+
+  it("uses level-two headings for the homepage working regions", () => {
+    renderWithProviders(<HomePage />);
+
+    expect(screen.getByRole("heading", { level: 2, name: "Recent Tools" })).toBeVisible();
+    expect(screen.getByRole("heading", { level: 2, name: "Popular Tools" })).toBeVisible();
+    expect(screen.getByRole("heading", { level: 2, name: "Browse by Category" })).toBeVisible();
   });
 
   it("caps recent tools at four and removes them from the featured collection", () => {

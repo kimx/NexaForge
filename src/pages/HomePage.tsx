@@ -79,6 +79,7 @@ function ToolCard({ tool, onOpen, className = "" }: { tool: ToolDefinition; onOp
   const { t, locale } = useLanguage();
   const localToolMeta = useLocalizedToolMeta();
   const visual = TOOL_VISUALS[tool.id] ?? { label: "FILE", tone: "blue" };
+  const localizedTitle = localToolMeta(tool.id, "title");
 
   return (
     <article className={`tool-card home-tool-card ${className}`.trim()}>
@@ -90,11 +91,16 @@ function ToolCard({ tool, onOpen, className = "" }: { tool: ToolDefinition; onOp
           {visual.label}
         </span>
         <div>
-          <h3>{localToolMeta(tool.id, "title")}</h3>
+          <h3>{localizedTitle}</h3>
           <p>{localToolMeta(tool.id, "description")}</p>
         </div>
       </div>
-      <Link to={localizePath(tool.path, locale)} className="btn secondary home-tool-card__action" onClick={() => onOpen?.(tool.id)}>
+      <Link
+        to={localizePath(tool.path, locale)}
+        className="btn secondary home-tool-card__action"
+        aria-label={t("home.openNamed", { tool: localizedTitle })}
+        onClick={() => onOpen?.(tool.id)}
+      >
         {t("home.open")}
         <span aria-hidden="true">→</span>
       </Link>
@@ -286,7 +292,7 @@ export function HomePage(): JSX.Element {
           {!isFilterActive && recentTools.length > 0 ? (
             <div className="workspace-section recent-tools-section" data-testid="recent-tools">
               <div className="workspace-section__heading">
-                <h3>{t("home.recentTools")}</h3>
+                <h2>{t("home.recentTools")}</h2>
                 <div className="recent-tools-section__meta">
                   <span>{t("home.recentToolsCount", { count: recentTools.length })}</span>
                   <button type="button" className="text-button" onClick={() => setRecentToolIds([])}>
@@ -306,7 +312,7 @@ export function HomePage(): JSX.Element {
             data-testid={!isFilterActive ? "featured-tools" : undefined}
           >
             <div className="workspace-section__heading">
-              <h3>{t(isFilterActive ? "home.searchResults" : "home.popular")}</h3>
+              <h2>{t(isFilterActive ? "home.searchResults" : "home.popular")}</h2>
               <span>{t("sidebar.resultCount", { count: displayedTools.length })}</span>
             </div>
             {displayedTools.length > 0 ? (
@@ -328,7 +334,7 @@ export function HomePage(): JSX.Element {
           <div className="workspace-section category-section" data-testid="category-browser">
             <div className="workspace-section__heading">
               <div>
-                <h3>{t("home.browseCategories")}</h3>
+                <h2>{t("home.browseCategories")}</h2>
                 <p>{t("home.browseCategoriesSubtitle")}</p>
               </div>
             </div>
