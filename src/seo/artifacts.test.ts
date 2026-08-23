@@ -1,5 +1,6 @@
 import { INDEXABLE_ROUTES } from "../routing/routes";
 import { buildRobots, buildSitemap } from "./artifacts";
+import { SEO_SEARCH_PAGES } from "./landingPages";
 
 describe("SEO artifacts", () => {
   it("builds absolute reciprocal bilingual sitemap entries without legacy URLs", () => {
@@ -44,5 +45,20 @@ describe("SEO artifacts", () => {
     expect(buildRobots()).toBe(
       "User-agent: *\nAllow: /\n\nSitemap: https://nexaforge.kimx.info/sitemap.xml\n"
     );
+  });
+
+  it("publishes every bilingual search-intent route with reciprocal alternates", () => {
+    const sitemap = buildSitemap(INDEXABLE_ROUTES);
+
+    for (const { path } of SEO_SEARCH_PAGES) {
+      expect(sitemap).toContain(`<loc>https://nexaforge.kimx.info${path}</loc>`);
+      expect(sitemap).toContain(`<loc>https://nexaforge.kimx.info/en${path}</loc>`);
+      expect(sitemap).toContain(
+        `hreflang="en" href="https://nexaforge.kimx.info/en${path}"`
+      );
+      expect(sitemap).toContain(
+        `hreflang="zh-Hant" href="https://nexaforge.kimx.info${path}"`
+      );
+    }
   });
 });

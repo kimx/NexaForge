@@ -1,7 +1,54 @@
-import { INDEXABLE_ROUTES } from "../routing/routes";
+import { BASE_INDEXABLE_ROUTES, INDEXABLE_ROUTES } from "../routing/routes";
+import { SEO_SEARCH_PAGES } from "./landingPages";
 import { buildPageSeo, SITE_ORIGIN } from "./siteMeta";
 
 describe("buildPageSeo", () => {
+  it("indexes bilingual search-intent routes with matching application and FAQ data", () => {
+    expect(BASE_INDEXABLE_ROUTES).toEqual(expect.arrayContaining([
+      "/image/jpg-to-webp",
+      "/data/json-validator",
+      "/developer/base64-decode",
+    ]));
+    expect(INDEXABLE_ROUTES).toContain("/en/developer/url-decode");
+
+    const seo = buildPageSeo("/en/image/jpg-to-webp", "en");
+
+    expect(seo.title).toBe(
+      "Free Online JPG to WebP Converter — Private Browser Tool | NexaForge"
+    );
+    expect(seo.description).toContain("Convert JPG images to WebP for free");
+    expect(seo.canonical).toBe(`${SITE_ORIGIN}/en/image/jpg-to-webp`);
+    expect(seo.alternates["zh-Hant"]).toBe(`${SITE_ORIGIN}/image/jpg-to-webp`);
+    expect(seo.openGraph.title).toBe(seo.title);
+    expect(seo.jsonLd).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        "@type": "SoftwareApplication",
+        applicationCategory: "UtilitiesApplication",
+      }),
+      expect.objectContaining({ "@type": "BreadcrumbList" }),
+      expect.objectContaining({
+        "@type": "FAQPage",
+        mainEntity: expect.arrayContaining([
+          expect.objectContaining({
+            "@type": "Question",
+            name: "Will NexaForge upload or store my input?",
+          }),
+        ]),
+      }),
+    ]));
+  });
+
+  it("keeps localized titles, descriptions, and canonicals unique across search pages", () => {
+    const pages = SEO_SEARCH_PAGES.flatMap(({ path }) => [
+      buildPageSeo(path, "zh-TW"),
+      buildPageSeo(`/en${path}`, "en"),
+    ]);
+
+    expect(new Set(pages.map(({ title }) => title)).size).toBe(pages.length);
+    expect(new Set(pages.map(({ description }) => description)).size).toBe(pages.length);
+    expect(new Set(pages.map(({ canonical }) => canonical)).size).toBe(pages.length);
+  });
+
   it("classifies the Regex Tester as a bilingual developer application", () => {
     const seo = buildPageSeo("/developer/regex-tester", "en");
 

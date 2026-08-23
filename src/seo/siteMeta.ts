@@ -3,6 +3,7 @@ import { translate } from "../context/LanguageContext";
 import { FILE_TOOLS } from "../data/tools";
 import { localizePath, stripLocalePrefix } from "../routing/localePaths";
 import { isJsonTool } from "../utils/toolPaths";
+import { findSeoLanding, getSeoLandingContent } from "./landingPages";
 
 export const SITE_ORIGIN = "https://nexaforge.kimx.info";
 
@@ -69,7 +70,10 @@ function breadcrumbJsonLd(
 
 export function buildPageSeo(path: string, locale: Locale): PageSeo {
   const basePath = stripLocalePrefix(path.split(/[?#]/, 1)[0] || "/");
-  const tool = FILE_TOOLS.find((candidate) => candidate.path === basePath);
+  const landing = findSeoLanding(basePath);
+  const landingContent = getSeoLandingContent(basePath, locale);
+  const tool = FILE_TOOLS.find((candidate) => candidate.path === basePath)
+    ?? FILE_TOOLS.find((candidate) => candidate.id === landing?.toolId);
   const siteName = "NexaForge";
   const localSuffix = translate(locale, "seo.localSuffix");
 
@@ -77,7 +81,11 @@ export function buildPageSeo(path: string, locale: Locale): PageSeo {
   let title: string;
   let baseDescription: string;
 
-  if (basePath === "/") {
+  if (landingContent) {
+    pageName = landingContent.h1;
+    title = landingContent.title;
+    baseDescription = landingContent.description;
+  } else if (basePath === "/") {
     pageName = siteName;
     title = translate(locale, "seo.homeTitle");
     baseDescription = translate(locale, "home.subtitle");
@@ -95,7 +103,9 @@ export function buildPageSeo(path: string, locale: Locale): PageSeo {
     baseDescription = translate(locale, "notFound.description");
   }
 
-  const description = `${baseDescription} ${localSuffix}`.trim();
+  const description = landingContent
+    ? baseDescription
+    : `${baseDescription} ${localSuffix}`.trim();
   const canonicalPath = localizePath(basePath, locale);
   const canonical = absoluteUrl(canonicalPath);
   const chineseUrl = absoluteUrl(localizePath(basePath, "zh-TW"));
@@ -117,7 +127,7 @@ export function buildPageSeo(path: string, locale: Locale): PageSeo {
   } else if (tool) {
     jsonLd.push({
       "@context": "https://schema.org",
-      "@type": "WebApplication",
+      "@type": landing?.isAlias ? "SoftwareApplication" : "WebApplication",
       "@id": `${canonical}#application`,
       name: pageName,
       description,
@@ -138,6 +148,20 @@ export function buildPageSeo(path: string, locale: Locale): PageSeo {
       },
     });
     jsonLd.push(breadcrumbJsonLd(basePath, locale, pageName));
+    if (landingContent) {
+      jsonLd.push({
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        mainEntity: landingContent.faq.map(({ q, a }) => ({
+          "@type": "Question",
+          name: q,
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: a,
+          },
+        })),
+      });
+    }
   } else if (basePath === "/json") {
     jsonLd.push({
       "@context": "https://schema.org",
