@@ -46,6 +46,12 @@ const DeveloperToolsPage = lazy(() =>
 const RegexTesterPage = lazy(() =>
   import("./pages/developer/RegexTesterPage").then((module) => ({ default: module.RegexTesterPage }))
 );
+const SqlFormatterPage = lazy(() =>
+  import("./pages/developer/SqlFormatterPage").then((module) => ({ default: module.SqlFormatterPage }))
+);
+const CronBuilderPage = lazy(() =>
+  import("./pages/developer/CronBuilderPage").then((module) => ({ default: module.CronBuilderPage }))
+);
 const JsonToCSharpPage = lazy(() =>
   import("./pages/developer/JsonToCSharpPage").then((module) => ({ default: module.JsonToCSharpPage }))
 );
@@ -196,6 +202,8 @@ const APP_ROUTES: AppRoute[] = [
   { path: "/developer/json-yaml", element: <DeveloperToolsPage kind="json-yaml" /> },
   { path: "/developer/json-diff", element: <DeveloperToolsPage kind="json-diff" /> },
   { path: "/developer/regex-tester", element: <RegexTesterPage /> },
+  { path: "/developer/sql-formatter", element: <SqlFormatterPage /> },
+  { path: "/developer/cron-builder", element: <CronBuilderPage /> },
   { path: "/developer/json-to-csharp", element: <JsonToCSharpPage /> },
   { path: "/developer/json-to-typescript", element: <JsonToTypeScriptPage /> },
   { path: "/qr-code", element: <QrPage /> },

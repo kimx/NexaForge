@@ -60,6 +60,8 @@ NexaForge 將常見工具集中到一個站點，從圖片到 PDF、從 JSON 到
 - **Base64**：文字與檔案的 Base64 互轉
 - **JWT Decoder / JWT Key Generator**：開發驗證流程輔助
 - **Regex Tester**：安全測試 JavaScript 正則表達式、旗標與擷取群組
+- **SQL Formatter**：格式化或壓縮 SQL Server、PostgreSQL 與 MySQL 查詢
+- **Cron Expression Builder**：建立五欄 Cron 並預覽未來五次執行時間
 - **JSON → C# Class**：產生巢狀類別、可空型別與 JSON 欄位對應
 - **JSON → TypeScript Interface**：產生 interface、聯集與可選欄位
 

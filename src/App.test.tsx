@@ -33,6 +33,8 @@ const ROUTE_HEADINGS: Record<string, string> = {
   "/developer/json-to-csharp": "JSON → C# Class",
   "/developer/json-to-typescript": "JSON → TypeScript Interface",
   "/developer/regex-tester": "Regex Tester",
+  "/developer/sql-formatter": "SQL Formatter",
+  "/developer/cron-builder": "Cron Expression Builder",
   "/text/hash": "Hash Generator",
   "/text/uuid": "Free Online UUID Generator",
   "/text/word-counter": "Word Counter",
@@ -217,6 +219,15 @@ describe("App routes", () => {
 
     expect(within(header).getByRole("link", { name: brandName })).toHaveAttribute("href", "/");
     expect(within(sidebar).queryByRole("link", { name: brandName })).not.toBeInTheDocument();
+  });
+
+  it("publishes SQL Formatter and Cron Builder in both locales", () => {
+    ["/developer/sql-formatter", "/developer/cron-builder"].forEach((path) => {
+      expect(BASE_INDEXABLE_ROUTES).toContain(path);
+      expect(INDEXABLE_ROUTES).toContain(`/en${path}`);
+    });
+    expect(FILE_TOOLS.find((tool) => tool.id === "sql-formatter")?.aliases).toContain("format sql");
+    expect(FILE_TOOLS.find((tool) => tool.id === "cron-builder")?.keywords).toContain("schedule");
   });
 
   it("places the tool-page brand in the header instead of the sidebar", async () => {

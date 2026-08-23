@@ -69,6 +69,20 @@ describe("buildPageSeo", () => {
     );
   });
 
+  it("classifies SQL and Cron tools as bilingual developer applications", () => {
+    const sql = buildPageSeo("/developer/sql-formatter", "en");
+    const cron = buildPageSeo("/developer/cron-builder", "en");
+
+    expect(sql.title).toContain("SQL Formatter");
+    expect(sql.canonical).toBe(`${SITE_ORIGIN}/en/developer/sql-formatter`);
+    expect(sql.alternates["zh-Hant"]).toBe(`${SITE_ORIGIN}/developer/sql-formatter`);
+    expect(cron.title).toContain("Cron Expression Builder");
+    expect(cron.canonical).toBe(`${SITE_ORIGIN}/en/developer/cron-builder`);
+    expect(cron.jsonLd).toEqual(expect.arrayContaining([
+      expect.objectContaining({ applicationCategory: "DeveloperApplication" }),
+    ]));
+  });
+
   it("builds localized metadata for a QR reader route", () => {
     const seo = buildPageSeo("/qr-code/reader", "en");
 
