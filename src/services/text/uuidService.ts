@@ -21,12 +21,26 @@ export interface UuidDependencies {
   v7: () => string;
 }
 
+export class SecureUuidUnavailableError extends Error {
+  constructor() {
+    super("secure UUID generation is unavailable");
+    this.name = "SecureUuidUnavailableError";
+  }
+}
+
 const CANONICAL_UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 const defaultDependencies: UuidDependencies = {
-  v4: uuidV4,
-  v7: uuidV7,
+  v4: () => generateSecureUuid(uuidV4),
+  v7: () => generateSecureUuid(uuidV7),
 };
+
+function generateSecureUuid(generate: () => string): string {
+  if (!globalThis.crypto || typeof globalThis.crypto.getRandomValues !== "function") {
+    throw new SecureUuidUnavailableError();
+  }
+  return generate();
+}
 
 export function formatIdentifier(
   value: string,

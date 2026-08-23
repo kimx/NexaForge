@@ -48,4 +48,34 @@ describe("getNextExecutions", () => {
       getNextExecutions("* * * * *", { currentDate: new Date(), timeZone: "UTC" }, { parse })
     ).rejects.toMatchObject({ code: "schedule-failed", message: "schedule-failed" });
   });
+
+  it("skips months that do not contain the requested day", async () => {
+    const result = await getNextExecutions("0 9 31 * *", {
+      currentDate: new Date("2026-04-01T00:00:00.000Z"),
+      timeZone: "UTC",
+    });
+
+    expect(result.map((date) => date.toISOString())).toEqual([
+      "2026-05-31T09:00:00.000Z",
+      "2026-07-31T09:00:00.000Z",
+      "2026-08-31T09:00:00.000Z",
+      "2026-10-31T09:00:00.000Z",
+      "2026-12-31T09:00:00.000Z",
+    ]);
+  });
+
+  it("keeps future runs ordered across a daylight-saving transition", async () => {
+    const result = await getNextExecutions("30 2 * * *", {
+      currentDate: new Date("2026-03-07T12:00:00.000Z"),
+      timeZone: "America/New_York",
+    });
+
+    expect(result.map((date) => date.toISOString())).toEqual([
+      "2026-03-08T07:30:00.000Z",
+      "2026-03-09T06:30:00.000Z",
+      "2026-03-10T06:30:00.000Z",
+      "2026-03-11T06:30:00.000Z",
+      "2026-03-12T06:30:00.000Z",
+    ]);
+  });
 });

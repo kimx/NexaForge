@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { DownloadButton } from "./DownloadButton";
 import { useLanguage } from "../context/LanguageContext";
 
@@ -19,6 +19,7 @@ export function CodeOutputPanel({
 }: CodeOutputPanelProps): JSX.Element {
   const { t } = useLanguage();
   const [copied, setCopied] = useState(false);
+  const [copyError, setCopyError] = useState<string | null>(null);
   const result = useMemo(
     () =>
       value
@@ -31,6 +32,11 @@ export function CodeOutputPanel({
         : null,
     [fileName, value]
   );
+
+  useEffect(() => {
+    setCopied(false);
+    setCopyError(null);
+  }, [value]);
 
   if (!value) {
     return (
@@ -58,8 +64,14 @@ export function CodeOutputPanel({
           type="button"
           className="btn secondary"
           onClick={async () => {
-            await navigator.clipboard.writeText(value);
-            setCopied(true);
+            try {
+              await navigator.clipboard.writeText(value);
+              setCopied(true);
+              setCopyError(null);
+            } catch {
+              setCopied(false);
+              setCopyError(t("error.copyFailed"));
+            }
           }}
         >
           {t("button.copy")}
@@ -67,6 +79,7 @@ export function CodeOutputPanel({
         <DownloadButton result={result} />
       </div>
       {copied ? <p className="code-output-panel__status" role="status">{t("status.copied")}</p> : null}
+      {copyError ? <p className="error" role="alert">{copyError}</p> : null}
     </div>
   );
 }

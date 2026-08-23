@@ -1,5 +1,12 @@
 export type RandomSource = (target: Uint8Array) => Uint8Array;
 
+export class SecureRandomUnavailableError extends Error {
+  constructor() {
+    super("secure random generation is unavailable");
+    this.name = "SecureRandomUnavailableError";
+  }
+}
+
 export interface PasswordCharacterSets {
   lower: boolean;
   upper: boolean;
@@ -35,7 +42,13 @@ const CHARACTER_SETS = {
 
 const API_KEY_ALPHABET = `${CHARACTER_SETS.lower}${CHARACTER_SETS.upper}${CHARACTER_SETS.digits}-_`;
 
-const defaultRandomSource: RandomSource = (target) => crypto.getRandomValues(target);
+const defaultRandomSource: RandomSource = (target) => {
+  const cryptoApi = globalThis.crypto;
+  if (!cryptoApi || typeof cryptoApi.getRandomValues !== "function") {
+    throw new SecureRandomUnavailableError();
+  }
+  return cryptoApi.getRandomValues(target);
+};
 
 function requireIntegerInRange(value: number, minimum: number, maximum: number, label: string): void {
   if (!Number.isInteger(value) || value < minimum || value > maximum) {

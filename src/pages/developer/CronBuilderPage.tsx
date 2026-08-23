@@ -34,10 +34,18 @@ export function CronBuilderPage(): JSX.Element {
   const [executions, setExecutions] = useState<Date[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [copyError, setCopyError] = useState<string | null>(null);
   const [announcement, setAnnouncement] = useState("");
   const [refreshKey, setRefreshKey] = useState(0);
   const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
-  const expression = useMemo(() => buildCronExpression(schedule), [schedule]);
+  const expressionResult = useMemo(() => {
+    try {
+      return { expression: buildCronExpression(schedule), validationError: null };
+    } catch {
+      return { expression: "", validationError: t("tool.cron-builder.invalid") };
+    }
+  }, [schedule, t]);
+  const { expression, validationError } = expressionResult;
 
   const tool = FILE_TOOLS.find((item) => item.id === "cron-builder") ?? FALLBACK_TOOL;
   const title = t("tool.cron-builder.title");
@@ -52,6 +60,15 @@ export function CronBuilderPage(): JSX.Element {
 
   useEffect(() => {
     let active = true;
+    setCopyError(null);
+    if (!expression) {
+      setExecutions([]);
+      setLoading(false);
+      setError(null);
+      return () => {
+        active = false;
+      };
+    }
     setLoading(true);
     setError(null);
     getNextExecutions(expression, { currentDate: new Date(), timeZone })
@@ -135,10 +152,17 @@ export function CronBuilderPage(): JSX.Element {
                 <button
                   type="button"
                   className="btn secondary"
+                  disabled={!expression}
                   onClick={async () => {
-                    await navigator.clipboard.writeText(expression);
-                    setAnnouncement(t("status.copied"));
-                    trackEvent("result_action_used", { tool: tool.id, action: "copy" });
+                    try {
+                      await navigator.clipboard.writeText(expression);
+                      setCopyError(null);
+                      setAnnouncement(t("status.copied"));
+                      trackEvent("result_action_used", { tool: tool.id, action: "copy" });
+                    } catch {
+                      setAnnouncement("");
+                      setCopyError(t("error.copyFailed"));
+                    }
                   }}
                 >
                   {t("tool.cron-builder.copy")}
@@ -259,6 +283,7 @@ export function CronBuilderPage(): JSX.Element {
               className="btn primary"
               onClick={() => setRefreshKey((value) => value + 1)}
               aria-busy={loading}
+              disabled={!expression}
             >
               {t("tool.cron-builder.refresh")}
             </button>
@@ -266,9 +291,12 @@ export function CronBuilderPage(): JSX.Element {
         ),
         result: (
           <div>
-            {error ? <p className="error" role="alert">{error}</p> : null}
+            {validationError || error ? (
+              <p className="error" role="alert">{validationError ?? error}</p>
+            ) : null}
+            {copyError ? <p className="error" role="alert">{copyError}</p> : null}
             {loading ? <p aria-live="polite">{t("toolPage.workflow.processing")}</p> : null}
-            {!loading && !error ? (
+            {!loading && !validationError && !error ? (
               <ol className="issue26-run-list" aria-label={t("tool.cron-builder.nextRuns")}>
                 {executions.map((date, index) => (
                   <li key={`${date.toISOString()}-${index}`} aria-label={t("tool.cron-builder.execution", { index: index + 1, time: formatter.format(date) })}>

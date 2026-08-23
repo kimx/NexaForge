@@ -58,4 +58,64 @@ describe("CronBuilderPage", () => {
     expect(screen.getByRole("button", { name: "Copy Cron expression" })).toBeEnabled();
     await waitFor(() => expect(refresh).not.toHaveAttribute("aria-busy", "true"));
   });
+
+  it("shows an inline validation error instead of crashing on an empty numeric field", async () => {
+    renderWithProviders(<CronBuilderPage />);
+
+    fireEvent.change(screen.getByLabelText("Minute schedule"), {
+      target: { value: "interval" },
+    });
+    fireEvent.change(screen.getByLabelText("Minute value"), {
+      target: { value: "" },
+    });
+
+    expect(screen.getByLabelText("Cron expression")).toHaveValue("");
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "One or more schedule values are outside the allowed range."
+    );
+    expect(screen.getByRole("button", { name: "Copy Cron expression" })).toBeDisabled();
+
+    fireEvent.change(screen.getByLabelText("Minute value"), {
+      target: { value: "15" },
+    });
+    expect(screen.getByLabelText("Cron expression")).toHaveValue("*/15 * * * *");
+    await waitFor(() => expect(screen.queryByRole("alert")).not.toBeInTheDocument());
+  });
+
+  it("handles clipboard rejection and keeps the expression selectable", async () => {
+    const writeText = vi.fn().mockRejectedValue(new Error("denied"));
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: { writeText },
+    });
+    renderWithProviders(<CronBuilderPage />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Copy Cron expression" }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "Unable to copy result to clipboard."
+    );
+    expect(screen.getByLabelText("Cron expression")).toHaveValue("* * * * *");
+  });
+
+  it("replaces a previous copied announcement when a later copy is rejected", async () => {
+    const writeText = vi.fn()
+      .mockResolvedValueOnce(undefined)
+      .mockRejectedValueOnce(new Error("denied"));
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: { writeText },
+    });
+    renderWithProviders(<CronBuilderPage />);
+    const copy = screen.getByRole("button", { name: "Copy Cron expression" });
+
+    fireEvent.click(copy);
+    expect(await screen.findByText("Copied.")).toBeVisible();
+    fireEvent.click(copy);
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "Unable to copy result to clipboard."
+    );
+    expect(screen.queryByText("Copied.")).not.toBeInTheDocument();
+  });
 });

@@ -2,6 +2,7 @@ import {
   estimateAlphabetEntropy,
   generateSecret,
   randomIndex,
+  SecureRandomUnavailableError,
   type RandomSource,
 } from "./secretService";
 
@@ -65,6 +66,16 @@ describe("secret service", () => {
 
   it("computes alphabet entropy as an upper-bound estimate", () => {
     expect(estimateAlphabetEntropy(16, 64)).toBe(96);
+  });
+
+  it("reports a typed error when Web Crypto is unavailable", () => {
+    vi.stubGlobal("crypto", undefined);
+    try {
+      expect(() => generateSecret({ kind: "api-key", length: 16 }))
+        .toThrow(SecureRandomUnavailableError);
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 
   it.each([

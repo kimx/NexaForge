@@ -1,4 +1,4 @@
-import { useId, useMemo, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { CodeOutputPanel } from "../../components/CodeOutputPanel";
 import { ToolPageTemplate } from "../../components/ToolPageTemplate";
 import { useLanguage } from "../../context/LanguageContext";
@@ -34,6 +34,7 @@ export function SqlFormatterPage(): JSX.Element {
   const [output, setOutput] = useState("");
   const [inputError, setInputError] = useState<string | null>(null);
   const [workflowError, setWorkflowError] = useState<string | null>(null);
+  const operationRevision = useRef(0);
   const inputErrorId = useId();
 
   const tool = FILE_TOOLS.find((item) => item.id === "sql-formatter") ?? FALLBACK_TOOL;
@@ -46,6 +47,18 @@ export function SqlFormatterPage(): JSX.Element {
     h1: title,
   };
   useSeo(meta);
+
+  useEffect(() => () => {
+    operationRevision.current += 1;
+  }, []);
+
+  const invalidateResult = (nextState: ProcessingState): void => {
+    operationRevision.current += 1;
+    setInputError(null);
+    setWorkflowError(null);
+    setOutput("");
+    setState(nextState);
+  };
 
   const howItWorks = useMemo(
     () => [0, 1, 2].map((index) => t(`tool.sql-formatter.how.${index}`)),
@@ -60,6 +73,8 @@ export function SqlFormatterPage(): JSX.Element {
   );
 
   const processSql = async (mode: SqlOutputMode): Promise<void> => {
+    const revision = operationRevision.current + 1;
+    operationRevision.current = revision;
     if (!source.trim()) {
       setInputError(t("tool.sql-formatter.empty"));
       setWorkflowError(null);
@@ -74,10 +89,12 @@ export function SqlFormatterPage(): JSX.Element {
     trackEvent("process_start", { tool: tool.id, action: mode });
     try {
       const result = await formatSql(source, { dialect, keywordCase, indent, mode });
+      if (operationRevision.current !== revision) return;
       setOutput(result);
       setState("success");
       trackEvent("process_success", { tool: tool.id, action: mode });
     } catch (error) {
+      if (operationRevision.current !== revision) return;
       setOutput("");
       setState("error");
       const message = error instanceof SqlFormatError && error.code === "empty-input"
@@ -106,10 +123,7 @@ export function SqlFormatterPage(): JSX.Element {
               value={source}
               onChange={(event) => {
                 setSource(event.target.value);
-                setInputError(null);
-                setWorkflowError(null);
-                setOutput("");
-                setState(event.target.value.trim() ? "ready" : "idle");
+                invalidateResult(event.target.value.trim() ? "ready" : "idle");
               }}
               aria-describedby={inputError ? inputErrorId : undefined}
               aria-invalid={Boolean(inputError)}
@@ -123,7 +137,10 @@ export function SqlFormatterPage(): JSX.Element {
             <div className="issue26-control-grid">
               <label>
                 {t("tool.sql-formatter.dialect")}
-                <select value={dialect} onChange={(event) => setDialect(event.target.value as SqlDialect)}>
+                <select value={dialect} onChange={(event) => {
+                  setDialect(event.target.value as SqlDialect);
+                  invalidateResult(source.trim() ? "ready" : "idle");
+                }}>
                   {(["transactsql", "postgresql", "mysql"] as const).map((value) => (
                     <option key={value} value={value}>{t(`tool.sql-formatter.dialect.${value}`)}</option>
                   ))}
@@ -131,7 +148,10 @@ export function SqlFormatterPage(): JSX.Element {
               </label>
               <label>
                 {t("tool.sql-formatter.keywordCase")}
-                <select value={keywordCase} onChange={(event) => setKeywordCase(event.target.value as SqlKeywordCase)}>
+                <select value={keywordCase} onChange={(event) => {
+                  setKeywordCase(event.target.value as SqlKeywordCase);
+                  invalidateResult(source.trim() ? "ready" : "idle");
+                }}>
                   {(["preserve", "upper", "lower"] as const).map((value) => (
                     <option key={value} value={value}>{t(`tool.sql-formatter.keywordCase.${value}`)}</option>
                   ))}
@@ -141,7 +161,10 @@ export function SqlFormatterPage(): JSX.Element {
                 {t("tool.sql-formatter.indent")}
                 <select
                   value={String(indent)}
-                  onChange={(event) => setIndent(event.target.value === "tab" ? "tab" : Number(event.target.value) as 2 | 4)}
+                  onChange={(event) => {
+                    setIndent(event.target.value === "tab" ? "tab" : Number(event.target.value) as 2 | 4);
+                    invalidateResult(source.trim() ? "ready" : "idle");
+                  }}
                 >
                   <option value="2">{t("tool.sql-formatter.indent.2")}</option>
                   <option value="4">{t("tool.sql-formatter.indent.4")}</option>

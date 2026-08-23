@@ -1,4 +1,4 @@
-import { formatIdentifier, generateIdentifiers } from "./uuidService";
+import { formatIdentifier, generateIdentifiers, SecureUuidUnavailableError } from "./uuidService";
 
 const generatedV4 = "109156be-c4fb-41ea-b1b4-efe1671c5836";
 const generatedV7 = [
@@ -50,5 +50,15 @@ describe("UUID service", () => {
   it("rejects values that are not canonical UUIDs before formatting", () => {
     expect(() => formatIdentifier("not-a-uuid", { case: "lower", format: "compact" }))
       .toThrow("identifier");
+  });
+
+  it("reports a typed error when Web Crypto is unavailable", () => {
+    vi.stubGlobal("crypto", undefined);
+    try {
+      expect(() => generateIdentifiers({ kind: "v4", count: 1, case: "lower", format: "standard" }))
+        .toThrow(SecureUuidUnavailableError);
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 });

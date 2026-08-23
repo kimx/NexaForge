@@ -37,7 +37,6 @@ describe("UuidPage", () => {
   });
 
   it("shows an error and retains controls when generation fails", async () => {
-    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
     vi.spyOn(uuidService, "generateIdentifiers").mockImplementation(() => {
       throw new Error("failure");
     });
@@ -47,6 +46,18 @@ describe("UuidPage", () => {
 
     expect(await screen.findByRole("alert")).toHaveTextContent("Unable to generate identifiers.");
     expect(screen.getByLabelText("Identifier type")).toHaveValue("v4");
-    consoleError.mockRestore();
+  });
+
+  it("explains how to recover when secure randomness is unavailable", () => {
+    vi.spyOn(uuidService, "generateIdentifiers").mockImplementation(() => {
+      throw new uuidService.SecureUuidUnavailableError();
+    });
+    renderWithProviders(<UuidPage />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Generate identifiers" }));
+
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "Secure random generation is unavailable. Use a modern browser with Web Crypto support."
+    );
   });
 });

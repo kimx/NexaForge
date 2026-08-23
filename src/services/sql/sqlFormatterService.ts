@@ -38,7 +38,7 @@ function dollarQuoteAt(source: string, index: number): string | null {
   return match?.[0] ?? null;
 }
 
-export function compactSql(source: string): string {
+export function compactSql(source: string, dialect: SqlDialect = "transactsql"): string {
   type State = "normal" | "single" | "double" | "backtick" | "bracket" | "line-comment" | "block-comment" | "dollar";
 
   const output: string[] = [];
@@ -71,6 +71,13 @@ export function compactSql(source: string): string {
         flushSpace();
         output.push("--");
         index += 1;
+        state = "line-comment";
+        continue;
+      }
+
+      if (dialect === "mysql" && character === "#") {
+        flushSpace();
+        output.push(character);
         state = "line-comment";
         continue;
       }
@@ -185,7 +192,7 @@ export async function formatSql(
       tabWidth: options.indent === "tab" ? 2 : options.indent,
       useTabs: options.indent === "tab",
     });
-    return options.mode === "minify" ? compactSql(formatted) : formatted;
+    return options.mode === "minify" ? compactSql(formatted, options.dialect) : formatted;
   } catch (error) {
     if (error instanceof SqlFormatError) throw error;
     throw new SqlFormatError("format-failed", error);

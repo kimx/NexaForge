@@ -3,7 +3,7 @@ import { ToolPageTemplate } from "../../components/ToolPageTemplate";
 import { useLanguage } from "../../context/LanguageContext";
 import { FILE_TOOLS } from "../../data/tools";
 import { useSeo } from "../../hooks/useSeo";
-import { generateSecret, type PasswordCharacterSets, type SecretRequest, type SecretResult } from "../../services/security/secretService";
+import { generateSecret, SecureRandomUnavailableError, type PasswordCharacterSets, type SecretRequest, type SecretResult } from "../../services/security/secretService";
 import type { ToolDefinition, ToolMeta } from "../../types/tool";
 import { trackEvent } from "../../utils/analytics";
 import { getRelatedTools } from "../../utils/toolHelpers";
@@ -60,8 +60,10 @@ export function SecretGeneratorPage(): JSX.Element {
           : { kind, bytes };
       setResult(generateSecret(request));
       trackEvent("process_success", { tool: "secret-generator" });
-    } catch {
-      setError(t("tool.secret-generator.failed"));
+    } catch (caught) {
+      setError(caught instanceof SecureRandomUnavailableError
+        ? t("tool.secret-generator.cryptoUnavailable")
+        : t("tool.secret-generator.failed"));
       trackEvent("process_failed", { tool: "secret-generator" });
     }
   };
@@ -79,7 +81,14 @@ export function SecretGeneratorPage(): JSX.Element {
           <div className="tool-form issue26-control-grid">
             <label>
               {t("tool.secret-generator.kind")}
-              <select value={kind} onChange={(event) => { setKind(event.target.value as SecretKind); clearResult(); }}>
+              <select value={kind} onChange={(event) => {
+                const nextKind = event.target.value as SecretKind;
+                setKind(nextKind);
+                if (nextKind === "api-key") {
+                  setLength((current) => Math.max(16, current));
+                }
+                clearResult();
+              }}>
                 {(["password", "api-key", "hex", "base64"] as const).map((value) => (
                   <option key={value} value={value}>{t(`tool.secret-generator.kind.${value}`)}</option>
                 ))}
@@ -130,9 +139,13 @@ export function SecretGeneratorPage(): JSX.Element {
               <textarea className="issue26-secret-output" value={result?.value ?? ""} placeholder={t("tool.secret-generator.noOutput")} readOnly rows={4} spellCheck={false} />
             </label>
             {result ? (
-              <p className="issue26-entropy" aria-live="polite">
-                {t(`tool.secret-generator.entropy.${result.entropyKind}`, { bits: result.entropyBits.toFixed(1) })}
-              </p>
+              <div className="issue26-entropy" aria-live="polite">
+                <p>{t("tool.secret-generator.outputLength", { count: result.value.length })}</p>
+                {kind === "hex" || kind === "base64" ? (
+                  <p>{t("tool.secret-generator.sourceBytes", { count: bytes })}</p>
+                ) : null}
+                <p>{t(`tool.secret-generator.entropy.${result.entropyKind}`, { bits: result.entropyBits.toFixed(1) })}</p>
+              </div>
             ) : null}
             <div className="tool-actions">
               <button type="button" className="btn secondary" disabled={!result} onClick={async () => {

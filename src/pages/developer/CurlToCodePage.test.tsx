@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { renderWithProviders } from "../../test/renderWithProviders";
 import {
@@ -53,6 +53,39 @@ describe("CurlToCodePage", () => {
     const error = await screen.findByText("Enter a valid cURL command.");
     expect(input).toHaveValue("echo nope");
     expect(input).toHaveAttribute("aria-describedby", error.id);
+    expect(screen.queryByLabelText("Generated code")).not.toBeInTheDocument();
+  });
+
+  it("does not publish a stale conversion after the command changes", async () => {
+    let resolveConversion!: (value: Awaited<ReturnType<typeof convertCurl>>) => void;
+    convertCurlMock.mockReturnValueOnce(new Promise((resolve) => {
+      resolveConversion = resolve;
+    }));
+    renderWithProviders(<CurlToCodePage />);
+
+    fireEvent.change(screen.getByLabelText("cURL command"), {
+      target: { value: "curl https://old.example" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Convert cURL" }));
+    fireEvent.change(screen.getByLabelText("cURL command"), {
+      target: { value: "curl https://new.example" },
+    });
+    await act(async () => resolveConversion({ code: "STALE", fileExtension: ".cs", warnings: [] }));
+
+    expect(screen.queryByLabelText("Generated code")).not.toBeInTheDocument();
+  });
+
+  it("clears generated code when the target language changes", async () => {
+    convertCurlMock.mockResolvedValue({ code: "C# output", fileExtension: ".cs", warnings: [] });
+    renderWithProviders(<CurlToCodePage />);
+
+    fireEvent.change(screen.getByLabelText("cURL command"), {
+      target: { value: "curl https://example.com" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Convert cURL" }));
+    expect(await screen.findByLabelText("Generated code")).toBeVisible();
+
+    fireEvent.change(screen.getByLabelText("Target language"), { target: { value: "python" } });
     expect(screen.queryByLabelText("Generated code")).not.toBeInTheDocument();
   });
 });

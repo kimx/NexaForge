@@ -4,7 +4,7 @@ import { ToolPageTemplate } from "../../components/ToolPageTemplate";
 import { useLanguage } from "../../context/LanguageContext";
 import { FILE_TOOLS } from "../../data/tools";
 import { useSeo } from "../../hooks/useSeo";
-import { generateIdentifiers, type UuidCase, type UuidFormat, type UuidKind } from "../../services/text/uuidService";
+import { generateIdentifiers, SecureUuidUnavailableError, type UuidCase, type UuidFormat, type UuidKind } from "../../services/text/uuidService";
 import type { FileProcessResult, ProcessingState, ToolMeta } from "../../types/tool";
 import { trackEvent } from "../../utils/analytics";
 import { getRelatedTools } from "../../utils/toolHelpers";
@@ -53,9 +53,10 @@ export function UuidPage(): JSX.Element {
       setResultText("");
       setResult(null);
       setProcessing("error");
-      setError(t("tool.uuid.v2.failed"));
+      setError(caught instanceof SecureUuidUnavailableError
+        ? t("tool.uuid.v2.cryptoUnavailable")
+        : t("tool.uuid.v2.failed"));
       trackEvent("process_failed", { tool: "uuid" });
-      console.error(caught);
     }
   };
 

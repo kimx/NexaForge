@@ -1,4 +1,4 @@
-import { useId, useMemo, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { CodeOutputPanel } from "../../components/CodeOutputPanel";
 import { ToolPageTemplate } from "../../components/ToolPageTemplate";
 import { useLanguage } from "../../context/LanguageContext";
@@ -32,12 +32,26 @@ export function CurlToCodePage(): JSX.Element {
   const [warnings, setWarnings] = useState<CurlConversionWarning[]>([]);
   const [inputError, setInputError] = useState<string | null>(null);
   const [workflowError, setWorkflowError] = useState<string | null>(null);
+  const operationRevision = useRef(0);
   const inputErrorId = useId();
   const tool = FILE_TOOLS.find((item) => item.id === "curl-to-code") ?? FALLBACK_TOOL;
   const title = t("tool.curl-to-code.title");
   const description = t("tool.curl-to-code.description");
   const meta: ToolMeta = { title: `${title} - ${t("header.title")}`, description, canonical: tool.path, h1: title };
   useSeo(meta);
+
+  useEffect(() => () => {
+    operationRevision.current += 1;
+  }, []);
+
+  const invalidateResult = (nextState: ProcessingState): void => {
+    operationRevision.current += 1;
+    setInputError(null);
+    setWorkflowError(null);
+    setOutput("");
+    setWarnings([]);
+    setState(nextState);
+  };
 
   const howItWorks = useMemo(() => [0, 1, 2].map((index) => t(`tool.curl-to-code.how.${index}`)), [t]);
   const faq = useMemo(() => [0, 1].map((index) => ({
@@ -46,6 +60,8 @@ export function CurlToCodePage(): JSX.Element {
   })), [t]);
 
   const handleConvert = async (): Promise<void> => {
+    const revision = operationRevision.current + 1;
+    operationRevision.current = revision;
     if (!source.trim()) {
       setInputError(t("tool.curl-to-code.empty"));
       setState("error");
@@ -58,12 +74,14 @@ export function CurlToCodePage(): JSX.Element {
     trackEvent("process_start", { tool: tool.id });
     try {
       const result = await convertCurl(source, target);
+      if (operationRevision.current !== revision) return;
       setOutput(result.code);
       setFileExtension(result.fileExtension);
       setWarnings(result.warnings);
       setState("success");
       trackEvent("process_success", { tool: tool.id });
     } catch (error) {
+      if (operationRevision.current !== revision) return;
       setOutput("");
       setWarnings([]);
       setState("error");
@@ -93,11 +111,7 @@ export function CurlToCodePage(): JSX.Element {
               value={source}
               onChange={(event) => {
                 setSource(event.target.value);
-                setInputError(null);
-                setWorkflowError(null);
-                setOutput("");
-                setWarnings([]);
-                setState(event.target.value.trim() ? "ready" : "idle");
+                invalidateResult(event.target.value.trim() ? "ready" : "idle");
               }}
               aria-invalid={Boolean(inputError)}
               aria-describedby={inputError ? inputErrorId : undefined}
@@ -110,7 +124,10 @@ export function CurlToCodePage(): JSX.Element {
           <div className="tool-form">
             <label>
               {t("tool.curl-to-code.target")}
-              <select value={target} onChange={(event) => setTarget(event.target.value as CurlTarget)}>
+              <select value={target} onChange={(event) => {
+                setTarget(event.target.value as CurlTarget);
+                invalidateResult(source.trim() ? "ready" : "idle");
+              }}>
                 {(["csharp", "javascript", "python", "powershell"] as const).map((value) => (
                   <option key={value} value={value}>{t(`tool.curl-to-code.target.${value}`)}</option>
                 ))}

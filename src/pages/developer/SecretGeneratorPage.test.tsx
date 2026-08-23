@@ -26,6 +26,7 @@ describe("SecretGeneratorPage", () => {
 
     expect(screen.getByLabelText("Generated secret")).toHaveValue("aB3!secureValue");
     expect(screen.getByText("Estimated upper-bound entropy: 91.2 bits")).toBeVisible();
+    expect(screen.getByText("Output length: 15 characters")).toBeVisible();
     expect(screen.getByLabelText("Privacy Notice")).toHaveTextContent("never uploaded");
     expect(trackEvent.mock.calls).toEqual([
       ["tool_open", { tool: "secret-generator" }],
@@ -42,6 +43,15 @@ describe("SecretGeneratorPage", () => {
     expect(screen.getByLabelText("Byte count")).toBeVisible();
     expect(screen.queryByLabelText("Length")).not.toBeInTheDocument();
     expect(screen.queryByRole("group", { name: "Character sets" })).not.toBeInTheDocument();
+  });
+
+  it("normalizes password length when switching to the stricter API key mode", () => {
+    renderWithProviders(<SecretGeneratorPage />);
+    fireEvent.change(screen.getByLabelText("Length"), { target: { value: "8" } });
+
+    fireEvent.change(screen.getByLabelText("Secret type"), { target: { value: "api-key" } });
+
+    expect(screen.getByLabelText("Length")).toHaveValue(16);
   });
 
   it("keeps selectable output when clipboard access fails", async () => {
@@ -61,6 +71,8 @@ describe("SecretGeneratorPage", () => {
 
     expect(await screen.findByRole("alert")).toHaveTextContent("Unable to copy. Select the secret manually.");
     expect(screen.getByLabelText("Generated secret")).toHaveValue("0123456789abcdef");
+    expect(screen.getByText("Output length: 16 characters")).toBeVisible();
+    expect(screen.getByText("Random source: 16 bytes")).toBeVisible();
   });
 
   it("associates an actionable error when every password character set is disabled", () => {
@@ -76,5 +88,18 @@ describe("SecretGeneratorPage", () => {
     expect(error).toHaveTextContent("Select at least one character set.");
     expect(group).toHaveAttribute("aria-describedby", error.id);
     expect(group).toHaveAttribute("aria-invalid", "true");
+  });
+
+  it("explains how to recover when secure randomness is unavailable", () => {
+    vi.spyOn(secretService, "generateSecret").mockImplementation(() => {
+      throw new secretService.SecureRandomUnavailableError();
+    });
+    renderWithProviders(<SecretGeneratorPage />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Generate secret" }));
+
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "Secure random generation is unavailable. Use a modern browser with Web Crypto support."
+    );
   });
 });
