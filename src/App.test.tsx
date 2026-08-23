@@ -37,6 +37,7 @@ const ROUTE_HEADINGS: Record<string, string> = {
   "/developer/cron-builder": "Cron Expression Builder",
   "/developer/url-parser": "URL Parser",
   "/developer/curl-to-code": "cURL to Code",
+  "/developer/secret-generator": "Password & Key Generator",
   "/text/hash": "Hash Generator",
   "/text/uuid": "Free Online UUID Generator",
   "/text/word-counter": "Word Counter",
@@ -239,6 +240,14 @@ describe("App routes", () => {
     });
     expect(FILE_TOOLS.find((tool) => tool.id === "url-parser")?.aliases).toContain("parse url");
     expect(FILE_TOOLS.find((tool) => tool.id === "curl-to-code")?.keywords).toContain("powershell");
+  });
+
+  it("publishes Secret Generator and upgrades UUID discovery", () => {
+    expect(BASE_INDEXABLE_ROUTES).toContain("/developer/secret-generator");
+    expect(INDEXABLE_ROUTES).toContain("/en/developer/secret-generator");
+    expect(FILE_TOOLS.find((tool) => tool.id === "secret-generator")?.keywords).toContain("api key");
+    expect(FILE_TOOLS.find((tool) => tool.id === "uuid")?.aliases).toContain("uuid v7");
+    expect(FILE_TOOLS.find((tool) => tool.id === "uuid")?.description).toContain(".NET Guid");
   });
 
   it("places the tool-page brand in the header instead of the sidebar", async () => {

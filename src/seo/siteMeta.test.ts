@@ -97,6 +97,20 @@ describe("buildPageSeo", () => {
     ]));
   });
 
+  it("indexes Secret Generator and upgraded UUID metadata in both locales", () => {
+    const secret = buildPageSeo("/developer/secret-generator", "en");
+    const uuid = buildPageSeo("/text/uuid", "en");
+
+    expect(secret.title).toContain("Password & Key Generator");
+    expect(secret.canonical).toBe(`${SITE_ORIGIN}/en/developer/secret-generator`);
+    expect(secret.alternates["zh-Hant"]).toBe(`${SITE_ORIGIN}/developer/secret-generator`);
+    expect(secret.jsonLd).toEqual(expect.arrayContaining([
+      expect.objectContaining({ applicationCategory: "DeveloperApplication" }),
+    ]));
+    expect(uuid.description).toContain("UUID v7");
+    expect(uuid.canonical).toBe(`${SITE_ORIGIN}/en/text/uuid`);
+  });
+
   it("builds localized metadata for a QR reader route", () => {
     const seo = buildPageSeo("/qr-code/reader", "en");
 

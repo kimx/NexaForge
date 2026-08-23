@@ -202,11 +202,11 @@ export const FILE_TOOLS: ToolDefinition[] = [
   {
     id: "uuid",
     title: "UUID Generator",
-    description: "Generate one UUID or batch up to 1000.",
+    description: "Generate UUID v4, UUID v7, or .NET Guid-compatible identifiers in batches.",
     path: "/text/uuid",
     category: "Text",
-    aliases: ["uuid", "guid", "unique id", "id generator"],
-    keywords: ["uuid", "uid", "identifier", "random"],
+    aliases: ["uuid", "uuid v4", "uuid v7", ".net guid", "guid", "unique id", "id generator"],
+    keywords: ["uuid", "v4", "v7", "guid", "identifier", "random", "rfc 9562"],
   },
   {
     id: "word-counter",
@@ -405,6 +405,15 @@ export const FILE_TOOLS: ToolDefinition[] = [
     category: "Developer",
     aliases: ["curl converter", "curl to csharp", "curl to python", "curl to javascript"],
     keywords: ["developer", "curl", "http", "c#", "javascript", "python", "powershell"],
+  },
+  {
+    id: "secret-generator",
+    title: "Password & Key Generator",
+    description: "Generate passwords, API keys, Hex, and Base64 secrets with Web Crypto.",
+    path: "/developer/secret-generator",
+    category: "Developer",
+    aliases: ["password generator", "api key generator", "secret generator", "random hex"],
+    keywords: ["developer", "password", "api key", "secret", "hex", "base64", "entropy", "web crypto"],
   },
   {
     id: "json-to-csharp",

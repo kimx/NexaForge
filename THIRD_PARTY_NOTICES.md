@@ -9,5 +9,6 @@ NexaForge uses the following third-party browser libraries:
 - `curlconverter` — MIT, source: https://github.com/curlconverter/curlconverter
 - `web-tree-sitter` — MIT, source: https://github.com/tree-sitter/tree-sitter
 - `tree-sitter-bash` — MIT, source: https://github.com/tree-sitter/tree-sitter-bash
+- `uuid` — MIT, source: https://github.com/uuidjs/uuid
 
 The corresponding license terms apply to those dependencies.

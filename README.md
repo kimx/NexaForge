@@ -54,7 +54,7 @@ NexaForge 將常見工具集中到一個站點，從圖片到 PDF、從 JSON 到
 - **Remove Duplicate Lines**：移除重複行並保留首次出現
 - **Sort Lines**：將文字逐行排序
 - **Hash Generator**：生成安全雜湊
-- **UUID Generator**：快速建立 UUID
+- **UUID Generator**：批次建立 UUID v4、UUID v7 與相容 .NET Guid 的格式
 
 ### 開發者工具
 - **Base64**：文字與檔案的 Base64 互轉
@@ -64,6 +64,7 @@ NexaForge 將常見工具集中到一個站點，從圖片到 PDF、從 JSON 到
 - **Cron Expression Builder**：建立五欄 Cron 並預覽未來五次執行時間
 - **URL Parser**：拆解 URL 結構並保留重複的查詢參數
 - **cURL → Code**：將 cURL 轉成 C#、JavaScript、Python 或 PowerShell
+- **Password & Key Generator**：產生密碼、API Key、Hex、Base64 並顯示熵資訊
 - **JSON → C# Class**：產生巢狀類別、可空型別與 JSON 欄位對應
 - **JSON → TypeScript Interface**：產生 interface、聯集與可選欄位
 

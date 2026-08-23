@@ -4,8 +4,12 @@ import * as secretService from "../../services/security/secretService";
 import { renderWithProviders } from "../../test/renderWithProviders";
 import { SecretGeneratorPage } from "./SecretGeneratorPage";
 
+const { trackEvent } = vi.hoisted(() => ({ trackEvent: vi.fn() }));
+vi.mock("../../utils/analytics", () => ({ trackEvent }));
+
 afterEach(() => {
   vi.restoreAllMocks();
+  trackEvent.mockClear();
 });
 
 describe("SecretGeneratorPage", () => {
@@ -22,6 +26,12 @@ describe("SecretGeneratorPage", () => {
 
     expect(screen.getByLabelText("Generated secret")).toHaveValue("aB3!secureValue");
     expect(screen.getByText("Estimated upper-bound entropy: 91.2 bits")).toBeVisible();
+    expect(screen.getByLabelText("Privacy Notice")).toHaveTextContent("never uploaded");
+    expect(trackEvent.mock.calls).toEqual([
+      ["tool_open", { tool: "secret-generator" }],
+      ["process_start", { tool: "secret-generator" }],
+      ["process_success", { tool: "secret-generator" }],
+    ]);
   });
 
   it("shows only the options relevant to byte-based output", () => {
@@ -51,5 +61,20 @@ describe("SecretGeneratorPage", () => {
 
     expect(await screen.findByRole("alert")).toHaveTextContent("Unable to copy. Select the secret manually.");
     expect(screen.getByLabelText("Generated secret")).toHaveValue("0123456789abcdef");
+  });
+
+  it("associates an actionable error when every password character set is disabled", () => {
+    renderWithProviders(<SecretGeneratorPage />);
+    const group = screen.getByRole("group", { name: "Character sets" });
+    for (const checkbox of screen.getAllByRole("checkbox")) {
+      fireEvent.click(checkbox);
+    }
+
+    fireEvent.click(screen.getByRole("button", { name: "Generate secret" }));
+
+    const error = screen.getByRole("alert");
+    expect(error).toHaveTextContent("Select at least one character set.");
+    expect(group).toHaveAttribute("aria-describedby", error.id);
+    expect(group).toHaveAttribute("aria-invalid", "true");
   });
 });

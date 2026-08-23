@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useId, useMemo, useState } from "react";
 import { ToolPageTemplate } from "../../components/ToolPageTemplate";
 import { useLanguage } from "../../context/LanguageContext";
 import { FILE_TOOLS } from "../../data/tools";
@@ -30,6 +30,7 @@ export function SecretGeneratorPage(): JSX.Element {
   const [error, setError] = useState<string | null>(null);
   const [copyError, setCopyError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const errorId = useId();
 
   const tool = FILE_TOOLS.find((item) => item.id === "secret-generator") ?? FALLBACK_TOOL;
   const title = t("tool.secret-generator.title");
@@ -46,6 +47,10 @@ export function SecretGeneratorPage(): JSX.Element {
 
   const handleGenerate = (): void => {
     clearResult();
+    if (kind === "password" && !Object.values(sets).some(Boolean)) {
+      setError(t("tool.secret-generator.invalidSets"));
+      return;
+    }
     trackEvent("process_start", { tool: "secret-generator" });
     try {
       const request: SecretRequest = kind === "password"
@@ -96,7 +101,11 @@ export function SecretGeneratorPage(): JSX.Element {
         options: (
           <div className="tool-form">
             {kind === "password" ? (
-              <fieldset className="issue26-character-sets">
+              <fieldset
+                className="issue26-character-sets"
+                aria-describedby={error ? errorId : undefined}
+                aria-invalid={Boolean(error)}
+              >
                 <legend>{t("tool.secret-generator.sets")}</legend>
                 {(Object.keys(DEFAULT_SETS) as Array<keyof PasswordCharacterSets>).map((key) => (
                   <label key={key}>
@@ -114,7 +123,7 @@ export function SecretGeneratorPage(): JSX.Element {
         ),
         result: (
           <>
-            {error ? <p className="error" role="alert">{error}</p> : null}
+            {error ? <p className="error" id={errorId} role="alert">{error}</p> : null}
             {copyError ? <p className="error" role="alert">{copyError}</p> : null}
             <label>
               {t("tool.secret-generator.output")}

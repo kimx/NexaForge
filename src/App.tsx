@@ -58,6 +58,9 @@ const UrlParserPage = lazy(() =>
 const CurlToCodePage = lazy(() =>
   import("./pages/developer/CurlToCodePage").then((module) => ({ default: module.CurlToCodePage }))
 );
+const SecretGeneratorPage = lazy(() =>
+  import("./pages/developer/SecretGeneratorPage").then((module) => ({ default: module.SecretGeneratorPage }))
+);
 const JsonToCSharpPage = lazy(() =>
   import("./pages/developer/JsonToCSharpPage").then((module) => ({ default: module.JsonToCSharpPage }))
 );
@@ -212,6 +215,7 @@ const APP_ROUTES: AppRoute[] = [
   { path: "/developer/cron-builder", element: <CronBuilderPage /> },
   { path: "/developer/url-parser", element: <UrlParserPage /> },
   { path: "/developer/curl-to-code", element: <CurlToCodePage /> },
+  { path: "/developer/secret-generator", element: <SecretGeneratorPage /> },
   { path: "/developer/json-to-csharp", element: <JsonToCSharpPage /> },
   { path: "/developer/json-to-typescript", element: <JsonToTypeScriptPage /> },
   { path: "/qr-code", element: <QrPage /> },
