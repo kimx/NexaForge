@@ -126,3 +126,46 @@
     gap: 0.25rem;
   }
 }
+
+.issue26-identifier-output,
+.issue26-secret-output {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.issue26-identifier-output {
+  max-height: 24rem;
+  overflow: auto;
+  white-space: pre-wrap;
+}
+
+.issue26-character-sets {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem 1rem;
+  margin: 0;
+  padding: 0.9rem;
+}
+
+.issue26-character-sets legend {
+  padding: 0 0.35rem;
+  font-weight: 700;
+}
+
+.issue26-character-sets label {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.issue26-entropy {
+  margin-block: 0.75rem;
+  font-weight: 700;
+}
+
+@media (max-width: 520px) {
+  .issue26-character-sets {
+    grid-template-columns: 1fr;
+  }
+}
