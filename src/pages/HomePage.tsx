@@ -21,15 +21,6 @@ const categoryOrder: ToolDefinition["category"][] = [
   "QR & Barcode",
 ];
 
-const CATEGORY_VISUALS: Record<ToolDefinition["category"], { className: string; label: string }> = {
-  Image: { className: "image", label: "IMG" },
-  PDF: { className: "pdf", label: "PDF" },
-  Data: { className: "data", label: "CSV" },
-  Developer: { className: "developer", label: "</>" },
-  Text: { className: "text", label: "TXT" },
-  "QR & Barcode": { className: "qr", label: "QR" },
-};
-
 const FEATURED_TOOL_IDS = [
   "image-resize",
   "image-compress",
@@ -74,6 +65,16 @@ const TOOL_VISUALS: Record<string, { label: string; tone: string }> = {
   "json-diff": { label: "DIFF", tone: "violet" },
   "qr-code": { label: "QR", tone: "blue" },
 };
+
+function searchMatchScore(values: string[], query: string): number {
+  return values.reduce((best, value) => {
+    const normalized = value.trim().toLowerCase();
+    if (normalized === query) return Math.max(best, 1_000);
+    if (normalized.startsWith(query)) return Math.max(best, 600);
+    if (normalized.includes(query)) return Math.max(best, 300);
+    return best;
+  }, 0);
+}
 
 function ToolCard({ tool, onOpen, className = "" }: { tool: ToolDefinition; onOpen?: (toolId: string) => void; className?: string }): JSX.Element {
   const { t, locale } = useLanguage();
@@ -175,19 +176,38 @@ export function HomePage(): JSX.Element {
 
   const filteredTools = useMemo(() => {
     const lowered = keyword.trim().toLowerCase();
-    return FILE_TOOLS.filter(
-      (tool) =>
-        (categoryFilter === "All" || tool.category === categoryFilter) &&
-        (!lowered || [
-          tool.title,
+    return FILE_TOOLS.map((tool, index) => {
+      const titleScore = searchMatchScore(
+        [tool.title, toolMeta(tool.id, "title")],
+        lowered
+      );
+      const aliasScore = searchMatchScore(tool.aliases ?? [], lowered);
+      const supportingScore = searchMatchScore(
+        [
           tool.description,
           tool.category,
-          ...(tool.aliases ?? []),
           ...(tool.keywords ?? []),
-          toolMeta(tool.id, "title"),
           toolMeta(tool.id, "description"),
-        ].some((value) => value.toLowerCase().includes(lowered)))
-    );
+        ],
+        lowered
+      );
+      return {
+        tool,
+        index,
+        score: lowered
+          ? Math.max(
+              titleScore > 0 ? titleScore + 400 : 0,
+              aliasScore > 0 ? aliasScore + 200 : 0,
+              supportingScore
+            )
+          : 1,
+      };
+    })
+      .filter(({ tool, score }) =>
+        (categoryFilter === "All" || tool.category === categoryFilter) && score > 0
+      )
+      .sort((left, right) => right.score - left.score || left.index - right.index)
+      .map(({ tool }) => tool);
   }, [categoryFilter, keyword, toolMeta]);
 
   useEffect(() => {
@@ -218,21 +238,6 @@ export function HomePage(): JSX.Element {
   const displayedTools = isFilterActive
     ? filteredTools
     : FEATURED_TOOLS.filter((tool) => !recentToolIdSet.has(tool.id));
-
-  const categoryCounts = categoryOrder.reduce(
-    (counts, category) => {
-      counts[category] = FILE_TOOLS.filter((tool) => tool.category === category).length;
-      return counts;
-    },
-    {} as Record<ToolDefinition["category"], number>
-  );
-
-  const focusCategory = (category: ToolDefinition["category"]) => {
-    setCategoryFilter(category);
-    window.setTimeout(() => {
-      document.getElementById("popular-tools")?.scrollIntoView({ behavior: "smooth", block: "start" });
-    }, 0);
-  };
 
   return (
     <div className={`home-page${keywordActive ? " home-page--searching" : ""}`}>
@@ -329,36 +334,6 @@ export function HomePage(): JSX.Element {
               </div>
             )}
           </div>
-
-          {!isFilterActive ? (
-          <div className="workspace-section category-section" data-testid="category-browser">
-            <div className="workspace-section__heading">
-              <div>
-                <h2>{t("home.browseCategories")}</h2>
-                <p>{t("home.browseCategoriesSubtitle")}</p>
-              </div>
-            </div>
-            <div className="category-grid">
-              {categoryOrder.map((category) => (
-                <button
-                  type="button"
-                  className="category-card"
-                  key={category}
-                  onClick={() => focusCategory(category)}
-                >
-                  <span className={`category-card__icon category-card__icon--${CATEGORY_VISUALS[category].className}`} aria-hidden="true">
-                    {CATEGORY_VISUALS[category].label}
-                  </span>
-                  <span className="category-card__copy">
-                    <strong>{localizedCategoryLabel(category, t)}</strong>
-                    <small>{t("home.categoryCount", { count: categoryCounts[category] })}</small>
-                  </span>
-                  <span className="category-card__arrow" aria-hidden="true">→</span>
-                </button>
-              ))}
-            </div>
-          </div>
-          ) : null}
 
       <AdSlot position="home" adSlotId={homeAdSlotId} />
     </div>
