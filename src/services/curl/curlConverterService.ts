@@ -1,5 +1,10 @@
 export type CurlTarget = "csharp" | "javascript" | "python" | "powershell";
 
+export const DEFAULT_CURL_SAMPLE = `curl 'https://api.example.com/v1/messages' \\
+  -X POST \\
+  -H 'Content-Type: application/json' \\
+  -d '{"message":"Hello, NexaForge!"}'`;
+
 export interface CurlConversionWarning {
   code: string;
   message: string;

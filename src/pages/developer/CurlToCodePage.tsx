@@ -6,6 +6,7 @@ import { FILE_TOOLS } from "../../data/tools";
 import { useSeo } from "../../hooks/useSeo";
 import {
   CurlConversionError,
+  DEFAULT_CURL_SAMPLE,
   convertCurl,
   type CurlConversionWarning,
   type CurlTarget,
@@ -21,11 +22,6 @@ const FALLBACK_TOOL: ToolDefinition = {
   path: "/developer/curl-to-code",
   category: "Developer",
 };
-
-const DEFAULT_CURL_SAMPLE = `curl 'https://api.example.com/v1/messages' \\
-  -X POST \\
-  -H 'Content-Type: application/json' \\
-  -d '{"message":"Hello, NexaForge!"}'`;
 
 export function CurlToCodePage(): JSX.Element {
   const { t } = useLanguage();

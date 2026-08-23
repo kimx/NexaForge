@@ -20,12 +20,22 @@ describe("CronBuilderPage", () => {
     expect(screen.getByRole("checkbox", { name: "Monday" })).toBeChecked();
     expect(screen.getByRole("checkbox", { name: "Sunday" })).not.toBeChecked();
 
+    fireEvent.click(screen.getByRole("checkbox", { name: "Saturday" }));
+    expect(screen.getByLabelText("Cron expression")).toHaveValue("* * * * 1,2,3,4,5,6");
+    expect(weekdays).toHaveAttribute("aria-pressed", "false");
+
     fireEvent.click(weekends);
     expect(screen.getByLabelText("Cron expression")).toHaveValue("* * * * 0,6");
     expect(weekends).toHaveAttribute("aria-pressed", "true");
 
     fireEvent.click(everyDay);
     expect(screen.getByLabelText("Cron expression")).toHaveValue("* * * * *");
+    expect(everyDay).toHaveAttribute("aria-pressed", "true");
+
+    for (const day of ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]) {
+      fireEvent.click(screen.getByRole("checkbox", { name: day }));
+    }
+    expect(screen.getByLabelText("Cron expression")).toHaveValue("* * * * 0,1,2,3,4,5,6");
     expect(everyDay).toHaveAttribute("aria-pressed", "true");
   });
 
@@ -55,7 +65,7 @@ describe("CronBuilderPage", () => {
     });
   });
 
-  it("resets day of month when a weekday is selected", async () => {
+  it("resets day of month when a weekday preset is selected", async () => {
     renderWithProviders(<CronBuilderPage />);
 
     fireEvent.change(screen.getByLabelText("Day of month schedule"), {
@@ -66,10 +76,10 @@ describe("CronBuilderPage", () => {
     });
     expect(screen.getByLabelText("Cron expression")).toHaveValue("* * 12 * *");
 
-    fireEvent.click(screen.getByRole("checkbox", { name: "Monday" }));
+    fireEvent.click(screen.getByRole("button", { name: "Weekdays" }));
 
     expect(screen.getByLabelText("Day of month schedule")).toHaveValue("every");
-    expect(screen.getByLabelText("Cron expression")).toHaveValue("* * * * 1");
+    expect(screen.getByLabelText("Cron expression")).toHaveValue("* * * * 1,2,3,4,5");
     expect(await screen.findByRole("status")).toHaveTextContent(
       "Day of month was reset because weekdays are selected."
     );

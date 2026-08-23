@@ -282,9 +282,11 @@ export function CronBuilderPage(): JSX.Element {
             </div>
             <fieldset className="issue26-weekdays">
               <legend>{t("tool.cron-builder.weekdays")}</legend>
-              <div className="tool-actions" role="group" aria-label={t("tool.cron-builder.weekdayPresets")}>
+              <div className="tool-actions issue26-weekday-presets" role="group" aria-label={t("tool.cron-builder.weekdayPresets")}>
                 {WEEKDAY_PRESETS.map((preset) => {
-                  const pressed = selectedWeekdays === preset.values.join(",");
+                  const pressed = preset.values.length === 0
+                    ? schedule.weekdays.length === 0 || schedule.weekdays.length === WEEKDAYS.length
+                    : selectedWeekdays === preset.values.join(",");
                   return (
                     <button
                       key={preset.key}

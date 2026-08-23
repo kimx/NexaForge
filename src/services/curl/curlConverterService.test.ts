@@ -1,9 +1,22 @@
 import { describe, expect, it, vi } from "vitest";
-import { CurlConversionError, convertCurl } from "./curlConverterService";
+import {
+  CurlConversionError,
+  DEFAULT_CURL_SAMPLE,
+  convertCurl,
+} from "./curlConverterService";
 
 const command = "curl 'https://example.com/api' -H 'Accept: application/json'";
 
 describe("convertCurl", () => {
+  it("converts the bundled POST JSON sample with the real adapter", async () => {
+    const result = await convertCurl(DEFAULT_CURL_SAMPLE, "csharp");
+
+    expect(result.code).toContain("HttpClient");
+    expect(result.code).toContain("HttpMethod.Post");
+    expect(result.code).toContain("Hello, NexaForge!");
+    expect(result.warnings).toEqual([]);
+  });
+
   it.each([
     ["csharp", "using var client = new HttpClient();", ".cs"],
     ["javascript", "const response = await fetch(url);", ".js"],
