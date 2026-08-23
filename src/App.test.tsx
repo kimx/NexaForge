@@ -35,6 +35,8 @@ const ROUTE_HEADINGS: Record<string, string> = {
   "/developer/regex-tester": "Regex Tester",
   "/developer/sql-formatter": "SQL Formatter",
   "/developer/cron-builder": "Cron Expression Builder",
+  "/developer/url-parser": "URL Parser",
+  "/developer/curl-to-code": "cURL to Code",
   "/text/hash": "Hash Generator",
   "/text/uuid": "Free Online UUID Generator",
   "/text/word-counter": "Word Counter",
@@ -228,6 +230,15 @@ describe("App routes", () => {
     });
     expect(FILE_TOOLS.find((tool) => tool.id === "sql-formatter")?.aliases).toContain("format sql");
     expect(FILE_TOOLS.find((tool) => tool.id === "cron-builder")?.keywords).toContain("schedule");
+  });
+
+  it("publishes URL Parser and cURL to Code in both locales", () => {
+    ["/developer/url-parser", "/developer/curl-to-code"].forEach((path) => {
+      expect(BASE_INDEXABLE_ROUTES).toContain(path);
+      expect(INDEXABLE_ROUTES).toContain(`/en${path}`);
+    });
+    expect(FILE_TOOLS.find((tool) => tool.id === "url-parser")?.aliases).toContain("parse url");
+    expect(FILE_TOOLS.find((tool) => tool.id === "curl-to-code")?.keywords).toContain("powershell");
   });
 
   it("places the tool-page brand in the header instead of the sidebar", async () => {

@@ -59,6 +59,49 @@
   padding-inline-start: 1.5rem;
 }
 
+.issue26-url-fields {
+  display: grid;
+  grid-template-columns: minmax(8rem, 0.35fr) minmax(0, 1fr);
+  gap: 0.65rem 1rem;
+  margin: 0 0 1.25rem;
+}
+
+.issue26-url-fields__row {
+  display: contents;
+}
+
+.issue26-url-fields dt {
+  font-weight: 700;
+}
+
+.issue26-url-fields dd {
+  display: flex;
+  min-width: 0;
+  gap: 0.75rem;
+  align-items: flex-start;
+  margin: 0;
+}
+
+.issue26-url-fields code {
+  overflow-wrap: anywhere;
+  flex: 1;
+}
+
+.issue26-query-table {
+  width: 100%;
+  table-layout: fixed;
+}
+
+.issue26-query-table th,
+.issue26-query-table td {
+  overflow-wrap: anywhere;
+}
+
+.issue26-warning-list {
+  margin-block: 0 1rem;
+  padding-inline-start: 1.5rem;
+}
+
 .issue26-time-zone {
   color: var(--text-muted, #5f6470);
 }
@@ -72,5 +115,14 @@
   .issue26-actions .btn,
   .issue26-inline-actions .btn {
     flex: 1 1 100%;
+  }
+
+  .issue26-url-fields {
+    grid-template-columns: 1fr;
+  }
+
+  .issue26-url-fields__row {
+    display: grid;
+    gap: 0.25rem;
   }
 }

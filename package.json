@@ -6,8 +6,10 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && npm run build:client && npm run build:ssr && node scripts/prerender.mjs",
-    "build:client": "vite build",
+    "build:client": "npm run prepare:curl-wasm && vite build",
     "build:ssr": "vite build --ssr src/entry-server.tsx --outDir .ssr-dist",
+    "postinstall": "npm run prepare:curl-wasm",
+    "prepare:curl-wasm": "node scripts/copy-curl-wasm.mjs",
     "preview": "vite preview",
     "test": "vitest"
   },
@@ -16,6 +18,7 @@
     "@zxing/browser": "^0.2.1",
     "bwip-js": "^4.11.4",
     "cron-parser": "^5.10.0",
+    "curlconverter": "^4.12.0",
     "fflate": "^0.8.3",
     "heic-to": "^1.5.2",
     "papaparse": "^5.4.1",

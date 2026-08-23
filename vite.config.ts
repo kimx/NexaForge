@@ -7,6 +7,7 @@ export default defineConfig({
     format: "es",
   },
   build: {
+    target: "esnext",
     rollupOptions: {
       output: {
         manualChunks(id: string) {

@@ -83,6 +83,20 @@ describe("buildPageSeo", () => {
     ]));
   });
 
+  it("classifies URL Parser and cURL to Code as bilingual developer applications", () => {
+    const url = buildPageSeo("/developer/url-parser", "en");
+    const curl = buildPageSeo("/developer/curl-to-code", "en");
+
+    expect(url.title).toContain("URL Parser");
+    expect(url.canonical).toBe(`${SITE_ORIGIN}/en/developer/url-parser`);
+    expect(url.alternates["zh-Hant"]).toBe(`${SITE_ORIGIN}/developer/url-parser`);
+    expect(curl.title).toContain("cURL to Code");
+    expect(curl.canonical).toBe(`${SITE_ORIGIN}/en/developer/curl-to-code`);
+    expect(curl.jsonLd).toEqual(expect.arrayContaining([
+      expect.objectContaining({ applicationCategory: "DeveloperApplication" }),
+    ]));
+  });
+
   it("builds localized metadata for a QR reader route", () => {
     const seo = buildPageSeo("/qr-code/reader", "en");
 
