@@ -1,6 +1,7 @@
 import { readFileAsArrayBuffer } from "../file/fileService";
 
 import type { HashOptions } from "../../types/tool";
+import { generateIdentifiers } from "./uuidService";
 
 export type CaseMode = "upper" | "lower" | "title" | "sentence";
 export type SortDirection = "asc" | "desc";
@@ -120,5 +121,10 @@ export function sortTextLines(text: string, options?: { direction?: SortDirectio
 
 export function generateUuids(count: number): string[] {
   const limit = Math.min(1000, Math.max(1, Math.floor(count)));
-  return Array.from({ length: limit }, () => crypto.randomUUID());
+  return generateIdentifiers({
+    kind: "v4",
+    count: limit,
+    case: "lower",
+    format: "standard",
+  });
 }
