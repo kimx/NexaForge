@@ -31,7 +31,7 @@ describe("JsonFormatterPage", () => {
 
     const editor = screen.getByRole("textbox", { name: "JSON input" });
     expect(editor).toHaveValue("");
-    expect(screen.getByRole("button", { name: "Process" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Format JSON" })).toBeDisabled();
 
     fireEvent.click(screen.getByRole("button", { name: "Load sample" }));
 
@@ -40,7 +40,7 @@ describe("JsonFormatterPage", () => {
       active: true,
       tags: ["json", "sample"],
     });
-    expect(screen.getByRole("button", { name: "Process" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Format JSON" })).toBeEnabled();
   });
 
   it("keeps mode and the primary action inside the input workspace", () => {
@@ -52,7 +52,7 @@ describe("JsonFormatterPage", () => {
 
     expect(workspace).not.toBeNull();
     expect(within(workspace as HTMLElement).getByRole("combobox", { name: "Mode" })).toBeInTheDocument();
-    expect(within(workspace as HTMLElement).getByRole("button", { name: "Process" })).toBeInTheDocument();
+    expect(within(workspace as HTMLElement).getByRole("button", { name: "Format JSON" })).toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "Options" })).not.toBeInTheDocument();
   });
 
@@ -63,7 +63,7 @@ describe("JsonFormatterPage", () => {
 
     expect(result).not.toBeNull();
     expect(within(result as HTMLElement).getByText(
-      "Paste or upload JSON, then choose Process to see the result."
+      "Paste or upload JSON, then choose Format JSON to see the result."
     )).toBeInTheDocument();
   });
 
@@ -125,7 +125,7 @@ describe("JsonFormatterPage", () => {
     const editor = screen.getByRole("textbox", { name: "JSON input" });
     fireEvent.change(editor, { target: { value: '{"keep":"me"}' } });
 
-    fireEvent.click(screen.getByRole("button", { name: "Process" }));
+    fireEvent.click(screen.getByRole("button", { name: "Format JSON" }));
 
     await waitFor(() => {
       expect(screen.getByRole("alert")).toHaveTextContent("Unable to process this file.");
@@ -144,7 +144,7 @@ describe("JsonFormatterPage", () => {
       await screen.findByText("Large input: validation will run when you process.")
     ).toBeInTheDocument();
     expect(editor).toHaveAttribute("aria-invalid", "false");
-    expect(screen.getByRole("button", { name: "Process" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Format JSON" })).toBeEnabled();
   });
 
   it("disables the process button while reading a selected file", async () => {
@@ -164,7 +164,7 @@ describe("JsonFormatterPage", () => {
         files: [new File(['{"a":1}'], "sample.json", { type: "application/json" })],
       },
     });
-    fireEvent.click(screen.getByRole("button", { name: "Process" }));
+    fireEvent.click(screen.getByRole("button", { name: "Format JSON" }));
 
     await waitFor(() => {
       expect(screen.getByRole("button", { name: "Processing..." })).toBeDisabled();
@@ -190,7 +190,7 @@ describe("JsonFormatterPage", () => {
         files: [new File(['{"a":1}'], "sample.json", { type: "application/json" })],
       },
     });
-    fireEvent.click(screen.getByRole("button", { name: "Process" }));
+    fireEvent.click(screen.getByRole("button", { name: "Minify JSON" }));
 
     await waitFor(() => expect(minifySpy).toHaveBeenCalledWith('{"a":1}'));
   });

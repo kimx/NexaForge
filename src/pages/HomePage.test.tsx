@@ -58,12 +58,13 @@ describe("HomePage task-first hierarchy", () => {
     );
   });
 
-  it("uses level-two headings for the homepage working regions", () => {
+  it("keeps the homepage focused on recent and featured tools without a repeated category grid", () => {
     renderWithProviders(<HomePage />);
 
     expect(screen.getByRole("heading", { level: 2, name: "Recent Tools" })).toBeVisible();
     expect(screen.getByRole("heading", { level: 2, name: "Popular Tools" })).toBeVisible();
-    expect(screen.getByRole("heading", { level: 2, name: "Browse by Category" })).toBeVisible();
+    expect(screen.queryByRole("heading", { level: 2, name: "Browse by Category" })).not.toBeInTheDocument();
+    expect(screen.queryByTestId("category-browser")).not.toBeInTheDocument();
   });
 
   it("caps recent tools at four and removes them from the featured collection", () => {
@@ -81,15 +82,26 @@ describe("HomePage task-first hierarchy", () => {
     expect(within(featured).queryByRole("heading", { name: "PDF Merge" })).not.toBeInTheDocument();
   });
 
-  it("offers QR and barcode discovery in both filtering and category browsing", () => {
+  it("offers QR and barcode discovery in the single category filter row", () => {
     renderWithProviders(<HomePage />);
 
     const qrCategoryButtons = screen.getAllByRole("button", { name: /QR & Barcode/i });
-    expect(qrCategoryButtons).toHaveLength(2);
+    expect(qrCategoryButtons).toHaveLength(1);
 
     fireEvent.click(qrCategoryButtons[0]);
     expect(screen.getByRole("heading", { name: "QR Code" })).toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "Image Resize" })).not.toBeInTheDocument();
+  });
+
+  it("ranks the closest task match ahead of broad keyword matches", () => {
+    renderWithProviders(<HomePage />);
+    fireEvent.change(screen.getByRole("textbox", { name: "Search Tools" }), {
+      target: { value: "base64" },
+    });
+
+    expect(screen.getByRole("heading", { name: "Search results" })).toBeVisible();
+    const firstCard = screen.getAllByRole("article")[0];
+    expect(within(firstCard).getByRole("heading", { name: "Base64" })).toBeVisible();
   });
 
   it("shows one focused result collection while search is active", () => {

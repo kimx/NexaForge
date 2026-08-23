@@ -38,7 +38,7 @@ export function Header({
         {showBrand ? (
           <Link
             to={localizePath("/", locale)}
-            className="top-banner__brand"
+            className="top-banner__brand top-banner__brand--mobile-visible"
             aria-label="NexaForge Utility File Workspace"
           >
             <img
@@ -47,6 +47,14 @@ export function Header({
               alt="NexaForge"
               width="168"
               height="45"
+            />
+            <img
+              className="top-banner__brand-mark"
+              src="/nexaforge-icon.png"
+              alt=""
+              width="36"
+              height="36"
+              aria-hidden="true"
             />
           </Link>
         ) : null}

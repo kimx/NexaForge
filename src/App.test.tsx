@@ -277,6 +277,30 @@ describe("App routes", () => {
     expect(within(sidebar).getByRole("textbox", { name: /search/i })).toBeVisible();
   });
 
+  it("keeps a compact home link visible in the mobile header", async () => {
+    setNarrowViewport(true);
+    render(
+      <MemoryRouter
+        initialEntries={["/en/data/json-formatter"]}
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+      >
+        <LanguageProvider initialLocale="en">
+          <App />
+        </LanguageProvider>
+      </MemoryRouter>
+    );
+
+    await screen.findByRole("heading", { name: "Free Online JSON Formatter", level: 1 });
+    const mobileBrand = within(screen.getByRole("banner")).getByRole("link", {
+        name: /NexaForge Utility File Workspace/i,
+      });
+    expect(mobileBrand).toHaveClass("top-banner__brand--mobile-visible");
+    expect(mobileBrand.querySelector(".top-banner__brand-mark")).toHaveAttribute(
+      "src",
+      "/nexaforge-icon.png"
+    );
+  });
+
   it("opens mobile tool navigation as a modal and returns focus when closed", async () => {
     setNarrowViewport(true);
     render(
