@@ -22,11 +22,16 @@ const FALLBACK_TOOL: ToolDefinition = {
   category: "Developer",
 };
 
+const DEFAULT_CURL_SAMPLE = `curl 'https://api.example.com/v1/messages' \\
+  -X POST \\
+  -H 'Content-Type: application/json' \\
+  -d '{"message":"Hello, NexaForge!"}'`;
+
 export function CurlToCodePage(): JSX.Element {
   const { t } = useLanguage();
-  const [source, setSource] = useState("");
+  const [source, setSource] = useState(DEFAULT_CURL_SAMPLE);
   const [target, setTarget] = useState<CurlTarget>("csharp");
-  const [state, setState] = useState<ProcessingState>("idle");
+  const [state, setState] = useState<ProcessingState>("ready");
   const [output, setOutput] = useState("");
   const [fileExtension, setFileExtension] = useState(".cs");
   const [warnings, setWarnings] = useState<CurlConversionWarning[]>([]);

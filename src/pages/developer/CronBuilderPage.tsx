@@ -23,7 +23,12 @@ const FALLBACK_TOOL: ToolDefinition = {
   category: "Developer",
 };
 
-const WEEKDAYS = [0, 1, 2, 3, 4, 5, 6] as const;
+const WEEKDAYS = [1, 2, 3, 4, 5, 6, 0] as const;
+const WEEKDAY_PRESETS = [
+  { key: "every-day", values: [] },
+  { key: "weekdays", values: [1, 2, 3, 4, 5] },
+  { key: "weekends", values: [0, 6] },
+] as const;
 
 export function CronBuilderPage(): JSX.Element {
   const { t, locale } = useLanguage();
@@ -139,6 +144,17 @@ export function CronBuilderPage(): JSX.Element {
       return withWeekdays(current, values);
     });
   };
+
+  const selectWeekdayPreset = (values: readonly number[]): void => {
+    setSchedule((current) => {
+      if (values.length > 0 && current.dayOfMonth.mode !== "every") {
+        setAnnouncement(t("tool.cron-builder.resetDayOfMonth"));
+      }
+      return withWeekdays(current, [...values]);
+    });
+  };
+
+  const selectedWeekdays = schedule.weekdays.join(",");
 
   return (
     <ToolPageTemplate tool={tool} meta={meta} breadcrumb={["Home", title]}>
@@ -266,6 +282,22 @@ export function CronBuilderPage(): JSX.Element {
             </div>
             <fieldset className="issue26-weekdays">
               <legend>{t("tool.cron-builder.weekdays")}</legend>
+              <div className="tool-actions" role="group" aria-label={t("tool.cron-builder.weekdayPresets")}>
+                {WEEKDAY_PRESETS.map((preset) => {
+                  const pressed = selectedWeekdays === preset.values.join(",");
+                  return (
+                    <button
+                      key={preset.key}
+                      type="button"
+                      className={`btn ${pressed ? "primary" : "secondary"}`}
+                      aria-pressed={pressed}
+                      onClick={() => selectWeekdayPreset(preset.values)}
+                    >
+                      {t(`tool.cron-builder.weekdayPreset.${preset.key}`)}
+                    </button>
+                  );
+                })}
+              </div>
               {WEEKDAYS.map((weekday) => (
                 <label key={weekday}>
                   <input

@@ -3,6 +3,32 @@ import { renderWithProviders } from "../../test/renderWithProviders";
 import { CronBuilderPage } from "./CronBuilderPage";
 
 describe("CronBuilderPage", () => {
+  it("offers accessible presets and keeps individual weekdays editable", () => {
+    renderWithProviders(<CronBuilderPage />);
+
+    const everyDay = screen.getByRole("button", { name: "Every day" });
+    const weekdays = screen.getByRole("button", { name: "Weekdays" });
+    const weekends = screen.getByRole("button", { name: "Weekends" });
+    expect(everyDay).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getAllByRole("checkbox").map((checkbox) => checkbox.parentElement?.textContent)).toEqual([
+      "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday",
+    ]);
+
+    fireEvent.click(weekdays);
+    expect(screen.getByLabelText("Cron expression")).toHaveValue("* * * * 1,2,3,4,5");
+    expect(weekdays).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByRole("checkbox", { name: "Monday" })).toBeChecked();
+    expect(screen.getByRole("checkbox", { name: "Sunday" })).not.toBeChecked();
+
+    fireEvent.click(weekends);
+    expect(screen.getByLabelText("Cron expression")).toHaveValue("* * * * 0,6");
+    expect(weekends).toHaveAttribute("aria-pressed", "true");
+
+    fireEvent.click(everyDay);
+    expect(screen.getByLabelText("Cron expression")).toHaveValue("* * * * *");
+    expect(everyDay).toHaveAttribute("aria-pressed", "true");
+  });
+
   it("builds an expression and shows five future executions", async () => {
     renderWithProviders(<CronBuilderPage />);
 

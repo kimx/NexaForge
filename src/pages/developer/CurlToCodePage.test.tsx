@@ -19,6 +19,25 @@ describe("CurlToCodePage", () => {
     convertCurlMock.mockReset();
   });
 
+  it("starts with a ready-to-convert POST JSON sample", async () => {
+    convertCurlMock.mockResolvedValue({
+      code: "using var client = new HttpClient();",
+      fileExtension: ".cs",
+      warnings: [],
+    });
+    renderWithProviders(<CurlToCodePage />);
+
+    const source = screen.getByLabelText("cURL command");
+    expect(source).toHaveValue(
+      "curl 'https://api.example.com/v1/messages' \\\n  -X POST \\\n  -H 'Content-Type: application/json' \\\n  -d '{\"message\":\"Hello, NexaForge!\"}'"
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Convert cURL" }));
+
+    expect(await screen.findByLabelText("Generated code")).toHaveValue(
+      "using var client = new HttpClient();"
+    );
+  });
+
   it("converts cURL to C# and shows non-blocking warnings", async () => {
     convertCurlMock.mockResolvedValue({
       code: "using var client = new HttpClient();",
