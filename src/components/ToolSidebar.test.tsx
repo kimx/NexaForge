@@ -49,6 +49,20 @@ describe("ToolSidebar", () => {
     expect(screen.getByRole("link", { name: /json formatter|json 格式化/i })).toHaveClass("is-active");
   });
 
+  it("keeps the reused tool visible and active on a search-intent alias", () => {
+    render(
+      <MemoryRouter initialEntries={["/en/image/jpg-to-webp"]}>
+        <LanguageProvider initialLocale="en">
+          <ToolSidebar />
+        </LanguageProvider>
+      </MemoryRouter>
+    );
+
+    const imageCategory = screen.getByRole("button", { name: /image.*tools/i });
+    expect(imageCategory).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByRole("link", { name: "Image Converter" })).toHaveClass("is-active");
+  });
+
   it("expands a category to show its tools", () => {
     render(
       <MemoryRouter>

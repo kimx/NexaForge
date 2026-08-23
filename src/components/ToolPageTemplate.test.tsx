@@ -12,11 +12,14 @@ const tool: ToolDefinition = {
   category: "Data",
 };
 
-function Template({ state }: { state: ProcessingState }): JSX.Element {
+function Template({ state, route = "/" }: { state: ProcessingState; route?: string }): JSX.Element {
   const workflow: ToolWorkflow = { state };
 
   return (
-    <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+    <MemoryRouter
+      initialEntries={[route]}
+      future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+    >
       <LanguageProvider initialLocale="en">
         <ToolPageTemplate
           tool={tool}
@@ -76,6 +79,21 @@ describe("ToolPageTemplate result focus", () => {
 
     expect(guidance.compareDocumentPosition(advertisement) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(advertisement.compareDocumentPosition(faq) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it("uses route-specific page identity and avoids duplicate FAQ content", () => {
+    render(<Template state="ready" route="/en/image/jpg-to-webp" />);
+
+    expect(
+      screen.getByRole("heading", { level: 1, name: "Free Online JPG to WebP Converter" })
+    ).toBeVisible();
+    expect(screen.getByText(
+      "Convert JPG images to WebP for free with private, browser-local processing and no upload, installation, or registration."
+    )).toBeVisible();
+    expect(
+      screen.getByRole("heading", { level: 2, name: "Frequently asked questions" })
+    ).toBeVisible();
+    expect(screen.queryByRole("heading", { level: 2, name: "FAQ" })).not.toBeInTheDocument();
   });
 
   it("focuses a newly completed result when it is outside the viewport", () => {

@@ -1,4 +1,4 @@
-import { useId, useMemo, useState } from "react";
+import { useEffect, useId, useMemo, useState } from "react";
 import type { ProcessingState, ToolMeta } from "../../types/tool";
 import { FILE_TOOLS } from "../../data/tools";
 import { ToolPageTemplate } from "../../components/ToolPageTemplate";
@@ -6,6 +6,7 @@ import { useLanguage, useLocalizedToolMeta } from "../../context/LanguageContext
 import { getRelatedTools } from "../../utils/toolHelpers";
 import { trackEvent } from "../../utils/analytics";
 import { useSeo } from "../../hooks/useSeo";
+import { useSeoLanding } from "../../hooks/useSeoLanding";
 
 type DeveloperToolKind = "url-encoder" | "unix-timestamp" | "json-yaml" | "json-diff";
 
@@ -193,11 +194,16 @@ function JsonDiffOutput({ output }: { output: string }): JSX.Element {
 
 export function DeveloperToolsPage({ kind }: DeveloperToolsPageProps): JSX.Element {
   const { t } = useLanguage();
+  const landing = useSeoLanding();
   const localToolMeta = useLocalizedToolMeta();
   const tool = FILE_TOOLS.find((item) => item.id === kind) ?? FILE_TOOLS[0];
   const [input, setInput] = useState(() => initialInputFor(kind));
   const [secondInput, setSecondInput] = useState(() => kind === "json-diff" ? JSON_DIFF_RIGHT_SAMPLE : "");
-  const [mode, setMode] = useState(() => initialModeFor(kind));
+  const presetMode = kind === "url-encoder"
+    && (landing?.definition.preset.mode === "encode" || landing?.definition.preset.mode === "decode")
+      ? landing.definition.preset.mode
+      : initialModeFor(kind);
+  const [mode, setMode] = useState(() => presetMode);
   const [output, setOutput] = useState("");
   const [state, setState] = useState<ProcessingState>(() => initialInputFor(kind).trim() ? "ready" : "idle");
   const [error, setError] = useState<string | null>(null);
@@ -207,8 +213,22 @@ export function DeveloperToolsPage({ kind }: DeveloperToolsPageProps): JSX.Eleme
   const secondInputErrorId = useId();
   const title = localToolMeta(tool.id, "title");
   const description = localToolMeta(tool.id, "description");
-  const toolMeta: ToolMeta = { title: `${title} - ${t("header.title")}`, description, canonical: tool.path, h1: title };
+  const toolMeta: ToolMeta = {
+    title: landing?.content.title ?? `${title} - ${t("header.title")}`,
+    description: landing?.content.description ?? description,
+    canonical: landing?.definition.path ?? tool.path,
+    h1: landing?.content.h1 ?? title,
+  };
   useSeo(toolMeta);
+
+  useEffect(() => {
+    setMode(presetMode);
+    setOutput("");
+    setError(null);
+    setInputError(null);
+    setSecondInputError(null);
+    setState(input.trim() && (kind !== "json-diff" || secondInput.trim()) ? "ready" : "idle");
+  }, [kind, landing?.definition.path, presetMode]);
 
   const options = useMemo(() => {
     if (kind === "url-encoder") return [["encode", t("developerTools.encode")], ["decode", t("developerTools.decode")]];

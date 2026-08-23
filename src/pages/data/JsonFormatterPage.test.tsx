@@ -14,6 +14,18 @@ describe("JsonFormatterPage", () => {
     vi.restoreAllMocks();
   });
 
+  it("uses validator-specific page identity while retaining real parser feedback", async () => {
+    renderWithProviders(<JsonFormatterPage />, { route: "/en/data/json-validator" });
+
+    expect(screen.getByRole("heading", { level: 1, name: "Free Online JSON Validator" })).toBeVisible();
+    const editor = screen.getByRole("textbox", { name: "JSON input" });
+    fireEvent.change(editor, { target: { value: '{"broken":}' } });
+
+    await waitFor(() => expect(editor).toHaveAttribute("aria-invalid", "true"), {
+      timeout: 1200,
+    });
+  });
+
   it("starts empty and loads an explicit sample on request", () => {
     renderWithProviders(<JsonFormatterPage />, { route: "/data/json-formatter" });
 

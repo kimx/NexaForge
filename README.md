@@ -88,6 +88,16 @@ npm run dev
 - 測試：`npm run test`
 - 預覽建置結果：`npm run preview -- --host 127.0.0.1 --port 4173 --strictPort`
 
+### SEO 靜態輸出
+
+`npm run build` 會在 `dist/` 產生每個繁中與英文索引路由的預渲染 HTML，並同步輸出：
+
+- `dist/sitemap.xml`：正式網域的雙語 URL 與 reciprocal `hreflang`
+- `dist/robots.txt`：允許索引並指向正式 sitemap
+- 各路由的 `index.html`：包含 canonical、Open Graph、Twitter Card、結構化資料與可見頁面內容
+
+部署正式站後，可在 Google Search Console 新增 `https://nexaforge.kimx.info/sitemap.xml`，再以網址檢查抽查重要搜尋頁面。提交 sitemap 與要求重新建立索引屬於部署後的站長操作，不由本機 build 自動執行。
+
 ## 開源與關注
 
 - 專案原始碼：<https://github.com/kimx/NexaForge>

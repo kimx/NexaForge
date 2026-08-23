@@ -4,9 +4,9 @@ import type { ReactElement } from "react";
 import { DeveloperToolsPage, jsonDiff } from "./DeveloperToolsPage";
 import { LanguageProvider } from "../../context/LanguageContext";
 
-function renderWithRouter(ui: ReactElement): ReturnType<typeof render> {
+function renderWithRouter(ui: ReactElement, route = "/"): ReturnType<typeof render> {
   return render(
-    <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+    <MemoryRouter initialEntries={[route]} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <LanguageProvider initialLocale="en">{ui}</LanguageProvider>
     </MemoryRouter>
   );
@@ -32,6 +32,16 @@ describe("jsonDiff", () => {
 describe("DeveloperToolsPage JSON samples", () => {
   beforeEach(() => {
     window.localStorage.setItem("nexaforge-locale", "en");
+  });
+
+  it("starts the URL decode search route in decode mode", () => {
+    renderWithRouter(
+      <DeveloperToolsPage kind="url-encoder" />,
+      "/en/developer/url-decode"
+    );
+
+    expect(screen.getByRole("heading", { level: 1, name: "Free Online URL Decoder" })).toBeVisible();
+    expect(screen.getByRole("combobox", { name: "Mode" })).toHaveValue("decode");
   });
 
   it("starts JSON to YAML with a processable JSON sample", () => {

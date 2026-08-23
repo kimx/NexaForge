@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ProcessingState, ToolMeta, FileProcessResult } from "../../types/tool";
 import { FILE_TOOLS } from "../../data/tools";
 import { ToolPageTemplate } from "../../components/ToolPageTemplate";
@@ -11,10 +11,15 @@ import { trackEvent } from "../../utils/analytics";
 import { useSeo } from "../../hooks/useSeo";
 import { validateFileSize, validateMime } from "../../utils/validation";
 import { useLanguage } from "../../context/LanguageContext";
+import { useSeoLanding } from "../../hooks/useSeoLanding";
 
 export function Base64Page(): JSX.Element {
   const { t } = useLanguage();
-  const [mode, setMode] = useState<"textToBase64" | "base64ToText" | "fileToBase64">("textToBase64");
+  const landing = useSeoLanding();
+  const presetMode = landing?.definition.preset.mode === "base64ToText"
+    ? "base64ToText"
+    : "textToBase64";
+  const [mode, setMode] = useState<"textToBase64" | "base64ToText" | "fileToBase64">(presetMode);
   const [text, setText] = useState("");
   const [resultText, setResultText] = useState("");
   const [files, setFiles] = useState<File[]>([]);
@@ -27,12 +32,23 @@ export function Base64Page(): JSX.Element {
   const title = t("tool.base64.title");
   const description = t("tool.base64.description");
   const toolMeta: ToolMeta = {
-    title: `${title} - ${t("header.title")}`,
-    description,
-    canonical: tool?.path ?? "/developer/base64",
-    h1: title,
+    title: landing?.content.title ?? `${title} - ${t("header.title")}`,
+    description: landing?.content.description ?? description,
+    canonical: landing?.definition.path ?? tool?.path ?? "/developer/base64",
+    h1: landing?.content.h1 ?? title,
   };
   useSeo(toolMeta);
+
+  useEffect(() => {
+    setMode(presetMode);
+    setText("");
+    setResultText("");
+    setFiles([]);
+    setResultFile(null);
+    setError(null);
+    setCopyError(null);
+    setProcessing("idle");
+  }, [landing?.definition.path, presetMode]);
 
   const relatedTools = getRelatedTools("base64");
   const howItWorks = useMemo(

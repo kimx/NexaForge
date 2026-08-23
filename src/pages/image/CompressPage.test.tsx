@@ -10,6 +10,19 @@ afterEach(() => {
 });
 
 describe("ImageCompressPage", () => {
+  it("starts a PNG compression search page with PNG-specific controls", () => {
+    const { container } = renderWithProviders(<ImageCompressPage />, {
+      route: "/en/image/png-compress",
+    });
+
+    expect(screen.getByRole("heading", { level: 1, name: "Free Online PNG Image Compressor" })).toBeVisible();
+    expect(screen.getByRole("combobox", { name: /Output format/i })).toHaveValue("png");
+    expect(container.querySelector('input[type="file"]')).toHaveAttribute(
+      "accept",
+      "image/png,.png"
+    );
+  });
+
   it("enables processing only after an image is selected", () => {
     const { container } = renderWithProviders(<ImageCompressPage />);
     const action = screen.getByRole("button", { name: "Process" });

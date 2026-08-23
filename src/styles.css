@@ -3266,6 +3266,46 @@ section,
   border-color: rgba(83, 159, 239, 0.55);
 }
 
+.seo-landing {
+  display: grid;
+  gap: var(--space-8);
+}
+
+.seo-landing__intro,
+.seo-landing__section,
+.seo-landing__related {
+  max-width: 76ch;
+}
+
+.seo-landing__intro {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: var(--text-lg);
+  line-height: var(--leading-relaxed);
+}
+
+.seo-landing__section,
+.seo-landing__related {
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.seo-landing__section h2,
+.seo-landing__related h2 {
+  margin-top: 0;
+}
+
+.seo-landing__section p {
+  line-height: var(--leading-relaxed);
+}
+
+.seo-landing__steps {
+  margin: 0;
+  padding-left: 1.35rem;
+  display: grid;
+  gap: var(--space-2);
+}
+
 .tool-container pre,
 .tool-container .error-block {
   margin: 10px 0 0;

@@ -12,6 +12,7 @@ import {
   localizePath,
   stripLocalePrefix,
 } from "./routing/localePaths";
+import { SEO_ALIAS_PAGES } from "./seo/landingPages";
 
 const useIsomorphicLayoutEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
 
@@ -138,6 +139,23 @@ interface AppRoute {
   element: JSX.Element;
 }
 
+const SEO_ALIAS_ELEMENTS: Record<string, JSX.Element> = {
+  "image-convert": <ImageConvertPage />,
+  "image-compress": <ImageCompressPage />,
+  "heic-converter": <HeicConverterPage />,
+  "json-formatter": <JsonFormatterPage />,
+  base64: <Base64Page />,
+  "url-encoder": <DeveloperToolsPage kind="url-encoder" />,
+};
+
+const SEO_ALIAS_ROUTES: AppRoute[] = SEO_ALIAS_PAGES.map(({ path, toolId }) => {
+  const element = SEO_ALIAS_ELEMENTS[toolId];
+  if (!element) {
+    throw new Error(`Missing React route component for SEO landing tool: ${toolId}`);
+  }
+  return { path, element };
+});
+
 const APP_ROUTES: AppRoute[] = [
   { path: "/", element: <HomePage /> },
   { path: "/json", element: <JsonHubPage /> },
@@ -185,6 +203,7 @@ const APP_ROUTES: AppRoute[] = [
   { path: "/barcode/generator", element: <BarcodeGeneratorPage /> },
   { path: "/qr-code/wifi", element: <WifiQrPage /> },
   { path: "/qr-code/vcard", element: <VCardQrPage /> },
+  ...SEO_ALIAS_ROUTES,
 ];
 
 function RouteLocaleSync(): null {

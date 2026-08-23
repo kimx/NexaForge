@@ -1,8 +1,14 @@
 import { FILE_TOOLS } from "../data/tools";
+import { SEO_SEARCH_PAGES } from "../seo/landingPages";
 import { localizePath } from "./localePaths";
 
 export const BASE_INDEXABLE_ROUTES = Array.from(
-  new Set(["/", "/json", ...FILE_TOOLS.map((tool) => tool.path)])
+  new Set([
+    "/",
+    "/json",
+    ...FILE_TOOLS.map((tool) => tool.path),
+    ...SEO_SEARCH_PAGES.map(({ path }) => path),
+  ])
 ).sort((left, right) => {
   if (left === "/") return -1;
   if (right === "/") return 1;

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ProcessingState, ToolMeta, FileProcessResult } from "../../types/tool";
 import { ToolPageTemplate } from "../../components/ToolPageTemplate";
 import { FILE_TOOLS } from "../../data/tools";
@@ -13,13 +13,24 @@ import { useBlobUrl } from "../../hooks/useBlobUrl";
 import { validateFileSize, validateMime } from "../../utils/validation";
 import { useLanguage } from "../../context/LanguageContext";
 import { SizeComparison } from "../../components/SizeComparison";
+import { useSeoLanding } from "../../hooks/useSeoLanding";
 
 const IMAGE_ACCEPT = "image/jpeg,image/png,image/webp,image/avif,.avif";
 
 export function ImageConvertPage(): JSX.Element {
   const { t } = useLanguage();
+  const landing = useSeoLanding();
+  const presetFormat = landing?.definition.preset.outputFormat ?? "png";
+  const sourceFormat = landing?.definition.preset.sourceFormat;
+  const imageAccept = sourceFormat === "jpeg"
+    ? "image/jpeg,.jpg,.jpeg"
+    : sourceFormat === "png"
+      ? "image/png,.png"
+      : sourceFormat === "webp"
+        ? "image/webp,.webp"
+        : IMAGE_ACCEPT;
   const [files, setFiles] = useState<File[]>([]);
-  const [format, setFormat] = useState<"jpeg" | "png" | "webp" | "avif">("png");
+  const [format, setFormat] = useState<"jpeg" | "png" | "webp" | "avif">(presetFormat);
   const [processing, setProcessing] = useState<ProcessingState>("idle");
   const [result, setResult] = useState<FileProcessResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -28,12 +39,20 @@ export function ImageConvertPage(): JSX.Element {
   const title = t("tool.image-convert.title");
   const description = t("tool.image-convert.description");
   const toolMeta: ToolMeta = {
-    title: `${title} - ${t("header.title")}`,
-    description,
-    canonical: "/image/convert",
-    h1: title,
+    title: landing?.content.title ?? `${title} - ${t("header.title")}`,
+    description: landing?.content.description ?? description,
+    canonical: landing?.definition.path ?? "/image/convert",
+    h1: landing?.content.h1 ?? title,
   };
   useSeo(toolMeta);
+
+  useEffect(() => {
+    setFormat(presetFormat);
+    setFiles([]);
+    setResult(null);
+    setError(null);
+    setProcessing("idle");
+  }, [landing?.definition.path, presetFormat]);
 
   const relatedTools = getRelatedTools("image-convert");
   const previewUrl = useBlobUrl(result?.blob);
@@ -69,7 +88,7 @@ export function ImageConvertPage(): JSX.Element {
     }
 
     const source = files[0];
-    const mimeError = validateMime(source, IMAGE_ACCEPT);
+    const mimeError = validateMime(source, imageAccept);
     const sizeError = validateFileSize(source);
     if (mimeError || sizeError) {
       setError(mimeError?.message ?? sizeError?.message ?? t("error.invalidFile"));
@@ -112,7 +131,7 @@ export function ImageConvertPage(): JSX.Element {
           <>
             <FileDropzone
               label={t("label.dropImage")}
-              accept={IMAGE_ACCEPT}
+              accept={imageAccept}
               onFiles={setFiles}
               multiple={false}
               compact={files.length > 0}

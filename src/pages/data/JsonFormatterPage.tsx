@@ -14,6 +14,7 @@ import { validateFileSize, validateMime } from "../../utils/validation";
 import type { FileProcessResult } from "../../types/tool";
 import { JsonTreeEditor, type JsonValue } from "../../components/JsonTreeEditor";
 import { useLanguage } from "../../context/LanguageContext";
+import { useSeoLanding } from "../../hooks/useSeoLanding";
 
 interface ParseError {
   line: number | null;
@@ -66,6 +67,7 @@ function getParseMessageFromError(error: unknown): string {
 
 export function JsonFormatterPage(): JSX.Element {
   const { t } = useLanguage();
+  const landing = useSeoLanding();
   const [files, setFiles] = useState<File[]>([]);
   const [inputSource, setInputSource] = useState<"text" | "file">("text");
   const [editorMode, setEditorMode] = useState<"text" | "tree">("text");
@@ -120,10 +122,10 @@ export function JsonFormatterPage(): JSX.Element {
   const title = t("tool.json-formatter.title");
   const description = t("tool.json-formatter.description");
   const toolMeta: ToolMeta = {
-    title: `${title} - ${t("header.title")}`,
-    description,
-    canonical: "/data/json-formatter",
-    h1: title,
+    title: landing?.content.title ?? `${title} - ${t("header.title")}`,
+    description: landing?.content.description ?? description,
+    canonical: landing?.definition.path ?? "/data/json-formatter",
+    h1: landing?.content.h1 ?? title,
   };
   useSeo(toolMeta);
 
