@@ -11,6 +11,15 @@ export const FILE_TOOLS: ToolDefinition[] = [
     keywords: ["image", "pdf", "combine", "pages", "document"],
   },
   {
+    id: "image-watermark",
+    title: "Image Watermark",
+    description: "Batch-add a text or logo watermark to JPG, PNG, or WebP images locally.",
+    path: "/image/watermark",
+    category: "Image",
+    aliases: ["watermark image", "add logo", "圖片浮水印", "圖片加浮水印"],
+    keywords: ["image", "watermark", "logo", "copyright", "batch"],
+  },
+  {
     id: "image-resize",
     title: "Image Resize",
     description: "Batch resize JPG, PNG, or WebP directly in the browser.",

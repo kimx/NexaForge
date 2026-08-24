@@ -35,6 +35,7 @@ NexaForge 將常見工具集中到一個站點，從圖片到 PDF、從 JSON 到
 - **Favicon Generator**：產生 ICO、平台 PNG 圖示與 web manifest
 - **Social Media Image Resizer**：產生 Instagram、Facebook、X、LinkedIn、YouTube 與自訂尺寸
 - **Image → PDF**：多張 JPG、PNG、WebP 依指定順序合併，每張圖片各佔一頁
+- **Image Watermark**：批次加入文字或 Logo 浮水印，支援即時預覽、定位、單檔與 ZIP 下載
 
 ### PDF 工具
 - **PDF Merge**：合併多份 PDF
