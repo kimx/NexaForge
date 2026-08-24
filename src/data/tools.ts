@@ -2,15 +2,6 @@ import type { ToolDefinition } from "../types/tool";
 
 export const FILE_TOOLS: ToolDefinition[] = [
   {
-    id: "image-watermark",
-    title: "Image Watermark",
-    description: "Batch-add a text or logo watermark to JPG, PNG, or WebP images locally.",
-    path: "/image/watermark",
-    category: "Image",
-    aliases: ["watermark image", "add logo", "圖片浮水印", "圖片加浮水印"],
-    keywords: ["image", "watermark", "logo", "copyright", "batch"],
-  },
-  {
     id: "image-to-pdf",
     title: "Image to PDF",
     description: "Combine ordered JPG, PNG, and WebP images into one PDF with one image per page.",
@@ -18,6 +9,15 @@ export const FILE_TOOLS: ToolDefinition[] = [
     category: "Image",
     aliases: ["images to pdf", "jpg to pdf", "png to pdf"],
     keywords: ["image", "pdf", "combine", "pages", "document"],
+  },
+  {
+    id: "image-watermark",
+    title: "Image Watermark",
+    description: "Batch-add a text or logo watermark to JPG, PNG, or WebP images locally.",
+    path: "/image/watermark",
+    category: "Image",
+    aliases: ["watermark image", "add logo", "圖片浮水印", "圖片加浮水印"],
+    keywords: ["image", "watermark", "logo", "copyright", "batch"],
   },
   {
     id: "image-resize",
