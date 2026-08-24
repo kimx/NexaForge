@@ -21,6 +21,7 @@ const ROUTE_HEADINGS: Record<string, string> = {
   "/image/favicon-generator": "Favicon Generator",
   "/image/social-resizer": "Social Media Image Resizer",
   "/image/to-pdf": "Image to PDF",
+  "/image/watermark": "Image Watermark",
   "/pdf/merge": "Free Online PDF Merger",
   "/pdf/split": "Free Online PDF Splitter",
   "/pdf/rotate": "Free Online PDF Rotator",
@@ -150,6 +151,12 @@ describe("App routes", () => {
     expect(FILE_TOOLS.find((tool) => tool.id === "image-convert")?.description).toContain("AVIF");
     expect(FILE_TOOLS.find((tool) => tool.id === "image-resize")?.description).toMatch(/batch/i);
     expect(FILE_TOOLS.find((tool) => tool.id === "image-compress")?.description).toMatch(/batch/i);
+  });
+
+  it("publishes the image watermark tool in both locales", () => {
+    expect(BASE_INDEXABLE_ROUTES).toContain("/image/watermark");
+    expect(INDEXABLE_ROUTES).toContain("/en/image/watermark");
+    expect(FILE_TOOLS.find((tool) => tool.id === "image-watermark")?.aliases).toContain("圖片加浮水印");
   });
 
   it("announces route loading while a lazy page module is pending", () => {

@@ -106,6 +106,9 @@ const SocialResizerPage = lazy(() =>
 const ImageToPdfPage = lazy(() =>
   import("./pages/image/ImageToPdfPage").then((module) => ({ default: module.ImageToPdfPage }))
 );
+const ImageWatermarkPage = lazy(() =>
+  import("./pages/image/ImageWatermarkPage").then((module) => ({ default: module.ImageWatermarkPage }))
+);
 const PdfMergePage = lazy(() =>
   import("./pages/pdf/MergePage").then((module) => ({ default: module.PdfMergePage }))
 );
@@ -192,6 +195,7 @@ const APP_ROUTES: AppRoute[] = [
   { path: "/image/favicon-generator", element: <FaviconGeneratorPage /> },
   { path: "/image/social-resizer", element: <SocialResizerPage /> },
   { path: "/image/to-pdf", element: <ImageToPdfPage /> },
+  { path: "/image/watermark", element: <ImageWatermarkPage /> },
   { path: "/pdf/merge", element: <PdfMergePage /> },
   { path: "/pdf/split", element: <PdfSplitPage /> },
   { path: "/pdf/rotate", element: <PdfRotatePage /> },
