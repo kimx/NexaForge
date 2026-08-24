@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from "@testing-library/react";
+import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { renderWithProviders } from "../../test/renderWithProviders";
 import { ImageWatermarkPage } from "./ImageWatermarkPage";
@@ -48,6 +48,27 @@ describe("ImageWatermarkPage", () => {
     await waitFor(() => expect(screen.getByRole("img", { name: "Watermark preview" })).toBeInTheDocument());
     expect(processButton).toBeEnabled();
     expect(screen.getByDisplayValue("© NexaForge")).toBeInTheDocument();
+  });
+
+  it("keeps content, appearance, and position settings together in the options panel", async () => {
+    renderWithProviders(<ImageWatermarkPage />);
+    fireEvent.change(sourceInput(), {
+      target: { files: [new File(["photo"], "photo.png", { type: "image/png" })] },
+    });
+
+    await screen.findByRole("img", { name: "Watermark preview" });
+    const optionsPanel = screen.getByRole("heading", { level: 2, name: "Options" }).closest("section");
+    expect(optionsPanel).not.toBeNull();
+    const settings = within(optionsPanel as HTMLElement);
+    expect(settings.getByRole("heading", { level: 3, name: "Watermark content" })).toBeVisible();
+    expect(settings.getByRole("heading", { level: 3, name: "Appearance" })).toBeVisible();
+    expect(settings.getByRole("heading", { level: 3, name: "Position" })).toBeVisible();
+    expect(settings.getByRole("slider", { name: "Text size" })).toBeVisible();
+    expect(settings.getByRole("slider", { name: "Opacity" })).toBeVisible();
+    expect(settings.getByRole("slider", { name: "Rotation" })).toBeVisible();
+    expect(settings.getByRole("group", { name: "Watermark position" })).toBeVisible();
+    const workspacePanel = screen.getByRole("heading", { level: 2, name: "Tool Workspace" }).closest("section");
+    expect(within(workspacePanel as HTMLElement).queryByRole("group", { name: "Watermark position" })).not.toBeInTheDocument();
   });
 
   it("requires a logo before enabling logo watermark processing", async () => {

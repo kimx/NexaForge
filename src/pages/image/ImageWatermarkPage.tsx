@@ -4,7 +4,11 @@ import { DownloadCollectionButton } from "../../components/DownloadCollectionBut
 import { FileDropzone } from "../../components/FileDropzone";
 import { FileInfo } from "../../components/FileInfo";
 import { ToolPageTemplate } from "../../components/ToolPageTemplate";
-import { WatermarkEditor, type WatermarkEditorLabels } from "../../components/WatermarkEditor";
+import {
+  WatermarkEditor,
+  WatermarkPositionControls,
+  type WatermarkEditorLabels,
+} from "../../components/WatermarkEditor";
 import { useLanguage } from "../../context/LanguageContext";
 import { FILE_TOOLS } from "../../data/tools";
 import { useSeo } from "../../hooks/useSeo";
@@ -162,6 +166,7 @@ export function ImageWatermarkPage(): JSX.Element {
       options={activeOptions}
       labels={editorLabels}
       onPositionChange={setPositionAndClear}
+      showPositionControls={false}
     />
   ) : null;
 
@@ -170,7 +175,7 @@ export function ImageWatermarkPage(): JSX.Element {
       tool={tool}
       meta={meta}
       breadcrumb={["Home", title]}
-      layout="split"
+      layout="default"
       workflow={{
         state: processing,
         error,
@@ -212,86 +217,110 @@ export function ImageWatermarkPage(): JSX.Element {
         ),
         options: (
           <div className="tool-form watermark-options">
-            <fieldset>
-              <legend>{t("tool.image-watermark.mode")}</legend>
-              <label className="radio">
-                <input
-                  type="radio"
-                  name="watermark-mode"
-                  checked={mode === "text"}
-                  onChange={() => { setMode("text"); clearOutputs(); }}
-                />
-                {t("tool.image-watermark.mode.text")}
-              </label>
-              <label className="radio">
-                <input
-                  type="radio"
-                  name="watermark-mode"
-                  checked={mode === "image"}
-                  onChange={() => { setMode("image"); clearOutputs(); }}
-                />
-                {t("tool.image-watermark.mode.image")}
-              </label>
-            </fieldset>
-            {mode === "text" ? (
-              <>
+            <section className="watermark-options__group">
+              <h3>{t("tool.image-watermark.group.content")}</h3>
+              <fieldset className="watermark-mode-switch">
+                <legend className="sr-only">{t("tool.image-watermark.mode")}</legend>
+                <label>
+                  <input
+                    type="radio"
+                    name="watermark-mode"
+                    checked={mode === "text"}
+                    onChange={() => { setMode("text"); clearOutputs(); }}
+                  />
+                  <span>{t("tool.image-watermark.mode.text")}</span>
+                </label>
+                <label>
+                  <input
+                    type="radio"
+                    name="watermark-mode"
+                    checked={mode === "image"}
+                    onChange={() => { setMode("image"); clearOutputs(); }}
+                  />
+                  <span>{t("tool.image-watermark.mode.image")}</span>
+                </label>
+              </fieldset>
+              {mode === "text" ? (
                 <label>
                   {t("tool.image-watermark.text")}
                   <input value={text} onChange={(event) => { setText(event.currentTarget.value); clearOutputs(); }} />
                 </label>
+              ) : (
+                <div className="watermark-logo-control">
+                  <FileDropzone
+                    label={t("tool.image-watermark.logo")}
+                    accept={WATERMARK_ACCEPT}
+                    maxSize={WATERMARK_MAX_BYTES}
+                    onFiles={(next) => { setLogo(next[0] ?? null); clearOutputs(); }}
+                    onRejectedFiles={(rejections) => setError(rejections[0]?.message ?? t("tool.image-watermark.error.logo"))}
+                    compact={Boolean(logo)}
+                  />
+                  <FileInfo files={logo ? [logo] : []} mode="single" compact={Boolean(logo)} onClear={() => { setLogo(null); clearOutputs(); }} />
+                </div>
+              )}
+            </section>
+
+            <section className="watermark-options__group">
+              <h3>{t("tool.image-watermark.group.appearance")}</h3>
+              {mode === "text" ? (
+                <div className="watermark-options__inline-fields">
+                  <label>
+                    {t("tool.image-watermark.font")}
+                    <select value={fontFamily} onChange={(event) => { setFontFamily(event.currentTarget.value); clearOutputs(); }}>
+                      <option value="Arial, sans-serif">Arial</option>
+                      <option value="Georgia, serif">Georgia</option>
+                      <option value="Courier New, monospace">Courier New</option>
+                    </select>
+                  </label>
+                  <label className="watermark-color-control">
+                    {t("tool.image-watermark.color")}
+                    <input type="color" value={color} onChange={(event) => { setColor(event.currentTarget.value); clearOutputs(); }} />
+                  </label>
+                </div>
+              ) : null}
+              {mode === "text" ? (
                 <label>
-                  {t("tool.image-watermark.font")}
-                  <select value={fontFamily} onChange={(event) => { setFontFamily(event.currentTarget.value); clearOutputs(); }}>
-                    <option value="Arial, sans-serif">Arial</option>
-                    <option value="Georgia, serif">Georgia</option>
-                    <option value="Courier New, monospace">Courier New</option>
-                  </select>
+                  <span className="watermark-control-label"><span>{t("tool.image-watermark.size")}</span><output>{textSize}%</output></span>
+                  <input aria-label={t("tool.image-watermark.size")} type="range" min="1" max="50" value={textSize} onChange={(event) => { setTextSize(Number(event.currentTarget.value)); clearOutputs(); }} />
                 </label>
+              ) : (
                 <label>
-                  {t("tool.image-watermark.color")}
-                  <input type="color" value={color} onChange={(event) => { setColor(event.currentTarget.value); clearOutputs(); }} />
+                  <span className="watermark-control-label"><span>{t("tool.image-watermark.logoWidth")}</span><output>{logoWidth}%</output></span>
+                  <input aria-label={t("tool.image-watermark.logoWidth")} type="range" min="1" max="100" value={logoWidth} onChange={(event) => { setLogoWidth(Number(event.currentTarget.value)); clearOutputs(); }} />
                 </label>
-                <label>
-                  {t("tool.image-watermark.size")}: {textSize}%
-                  <input type="range" min="1" max="50" value={textSize} onChange={(event) => { setTextSize(Number(event.currentTarget.value)); clearOutputs(); }} />
-                </label>
-              </>
-            ) : (
-              <>
-                <FileDropzone
-                  label={t("tool.image-watermark.logo")}
-                  accept={WATERMARK_ACCEPT}
-                  maxSize={WATERMARK_MAX_BYTES}
-                  onFiles={(next) => { setLogo(next[0] ?? null); clearOutputs(); }}
-                  onRejectedFiles={(rejections) => setError(rejections[0]?.message ?? t("tool.image-watermark.error.logo"))}
-                  compact={Boolean(logo)}
-                />
-                <FileInfo files={logo ? [logo] : []} mode="single" compact={Boolean(logo)} onClear={() => { setLogo(null); clearOutputs(); }} />
-                <label>
-                  {t("tool.image-watermark.logoWidth")}: {logoWidth}%
-                  <input type="range" min="1" max="100" value={logoWidth} onChange={(event) => { setLogoWidth(Number(event.currentTarget.value)); clearOutputs(); }} />
-                </label>
-              </>
-            )}
-            <label>
-              {t("tool.image-watermark.opacity")}: {opacity}%
-              <input type="range" min="5" max="100" value={opacity} onChange={(event) => { setOpacity(Number(event.currentTarget.value)); clearOutputs(); }} />
-            </label>
-            <label>
-              {t("tool.image-watermark.rotation")}: {rotation}°
-              <input type="range" min="-180" max="180" value={rotation} onChange={(event) => { setRotation(Number(event.currentTarget.value)); clearOutputs(); }} />
-            </label>
-            {mode === "text" && !text.trim() ? <p className="error" role="alert">{t("tool.image-watermark.error.text")}</p> : null}
-            {mode === "image" && !logo ? <p className="error" role="alert">{t("tool.image-watermark.error.logo")}</p> : null}
-            <button
-              type="button"
-              className="btn primary"
-              disabled={!canProcess}
-              aria-busy={processing === "processing"}
-              onClick={process}
-            >
-              {processing === "processing" ? t("tool.image-watermark.applying") : t("tool.image-watermark.apply")}
-            </button>
+              )}
+              <label>
+                <span className="watermark-control-label"><span>{t("tool.image-watermark.opacity")}</span><output>{opacity}%</output></span>
+                <input aria-label={t("tool.image-watermark.opacity")} type="range" min="5" max="100" value={opacity} onChange={(event) => { setOpacity(Number(event.currentTarget.value)); clearOutputs(); }} />
+              </label>
+              <label>
+                <span className="watermark-control-label"><span>{t("tool.image-watermark.rotation")}</span><output>{rotation}°</output></span>
+                <input aria-label={t("tool.image-watermark.rotation")} type="range" min="-180" max="180" value={rotation} onChange={(event) => { setRotation(Number(event.currentTarget.value)); clearOutputs(); }} />
+              </label>
+            </section>
+
+            <section className="watermark-options__group">
+              <h3>{t("tool.image-watermark.group.position")}</h3>
+              <WatermarkPositionControls
+                position={position}
+                labels={editorLabels}
+                onPositionChange={setPositionAndClear}
+              />
+            </section>
+
+            <div className="watermark-options__action">
+              {mode === "text" && !text.trim() ? <p className="error" role="alert">{t("tool.image-watermark.error.text")}</p> : null}
+              {mode === "image" && !logo ? <p className="error" role="alert">{t("tool.image-watermark.error.logo")}</p> : null}
+              <button
+                type="button"
+                className="btn primary"
+                disabled={!canProcess}
+                aria-busy={processing === "processing"}
+                onClick={process}
+              >
+                {processing === "processing" ? t("tool.image-watermark.applying") : t("tool.image-watermark.apply")}
+              </button>
+            </div>
           </div>
         ),
         result: items.length ? (

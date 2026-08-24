@@ -30,13 +30,90 @@ export interface WatermarkEditorProps {
   options: WatermarkOptions;
   labels: WatermarkEditorLabels;
   onPositionChange: (position: WatermarkPosition) => void;
+  showPositionControls?: boolean;
 }
 
 function positionsMatch(left: WatermarkPosition, right: WatermarkPosition): boolean {
   return Math.abs(left.x - right.x) < 0.001 && Math.abs(left.y - right.y) < 0.001;
 }
 
-export function WatermarkEditor({ source, options, labels, onPositionChange }: WatermarkEditorProps): JSX.Element {
+interface WatermarkPositionControlsProps {
+  position: WatermarkPosition;
+  labels: WatermarkEditorLabels;
+  onPositionChange: (position: WatermarkPosition) => void;
+}
+
+export function WatermarkPositionControls({
+  position: currentPosition,
+  labels,
+  onPositionChange,
+}: WatermarkPositionControlsProps): JSX.Element {
+  return (
+    <fieldset className="watermark-position-controls-group">
+      <legend className="sr-only">{labels.position}</legend>
+      <div className="watermark-position-grid">
+        {PRESETS.map((preset) => {
+          const position = getPresetPosition(preset);
+          return (
+            <button
+              key={preset}
+              type="button"
+              aria-label={labels.positions[preset]}
+              aria-pressed={positionsMatch(currentPosition, position)}
+              onClick={() => onPositionChange(position)}
+            >
+              <span aria-hidden="true">●</span>
+            </button>
+          );
+        })}
+      </div>
+      <div className="watermark-position-controls">
+        <label>
+          <span className="watermark-control-label">
+            <span>{labels.horizontal}</span>
+            <output>{Math.round(currentPosition.x * 100)}%</output>
+          </span>
+          <input
+            aria-label={labels.horizontal}
+            type="range"
+            min="0"
+            max="100"
+            value={Math.round(currentPosition.x * 100)}
+            onChange={(event) => onPositionChange({
+              x: Number(event.currentTarget.value) / 100,
+              y: currentPosition.y,
+            })}
+          />
+        </label>
+        <label>
+          <span className="watermark-control-label">
+            <span>{labels.vertical}</span>
+            <output>{Math.round(currentPosition.y * 100)}%</output>
+          </span>
+          <input
+            aria-label={labels.vertical}
+            type="range"
+            min="0"
+            max="100"
+            value={Math.round(currentPosition.y * 100)}
+            onChange={(event) => onPositionChange({
+              x: currentPosition.x,
+              y: Number(event.currentTarget.value) / 100,
+            })}
+          />
+        </label>
+      </div>
+    </fieldset>
+  );
+}
+
+export function WatermarkEditor({
+  source,
+  options,
+  labels,
+  onPositionChange,
+  showPositionControls = true,
+}: WatermarkEditorProps): JSX.Element {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const draggingRef = useRef(false);
   const [sourceBitmap, setSourceBitmap] = useState<ImageBitmap | null>(null);
@@ -133,55 +210,13 @@ export function WatermarkEditor({ source, options, labels, onPositionChange }: W
         {previewState === "loading" ? <p role="status">{labels.loading}</p> : null}
         {previewState === "error" ? <p role="alert">{labels.error}</p> : null}
       </div>
-      <fieldset>
-        <legend>{labels.position}</legend>
-        <div className="watermark-position-grid">
-          {PRESETS.map((preset) => {
-            const position = getPresetPosition(preset);
-            return (
-              <button
-                key={preset}
-                type="button"
-                aria-label={labels.positions[preset]}
-                aria-pressed={positionsMatch(options.position, position)}
-                onClick={() => onPositionChange(position)}
-              >
-                <span aria-hidden="true">●</span>
-              </button>
-            );
-          })}
-        </div>
-        <div className="watermark-position-controls">
-          <label>
-            {labels.horizontal}: {Math.round(options.position.x * 100)}%
-            <input
-              aria-label={labels.horizontal}
-              type="range"
-              min="0"
-              max="100"
-              value={Math.round(options.position.x * 100)}
-              onChange={(event) => onPositionChange({
-                x: Number(event.currentTarget.value) / 100,
-                y: options.position.y,
-              })}
-            />
-          </label>
-          <label>
-            {labels.vertical}: {Math.round(options.position.y * 100)}%
-            <input
-              aria-label={labels.vertical}
-              type="range"
-              min="0"
-              max="100"
-              value={Math.round(options.position.y * 100)}
-              onChange={(event) => onPositionChange({
-                x: options.position.x,
-                y: Number(event.currentTarget.value) / 100,
-              })}
-            />
-          </label>
-        </div>
-      </fieldset>
+      {showPositionControls ? (
+        <WatermarkPositionControls
+          position={options.position}
+          labels={labels}
+          onPositionChange={onPositionChange}
+        />
+      ) : null}
     </section>
   );
 }
