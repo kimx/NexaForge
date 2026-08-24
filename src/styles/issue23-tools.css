@@ -161,6 +161,74 @@
   accent-color: var(--brand-primary);
 }
 
+.tool-page--image-resize .tool-page__duo {
+  grid-template-columns: minmax(0, 1fr) minmax(19rem, 24rem);
+  align-items: start;
+  gap: var(--space-4);
+}
+
+.tool-page--image-resize .tool-page__panel--options {
+  position: sticky;
+  top: var(--space-4);
+  max-height: calc(100vh - var(--space-8));
+  overflow: auto;
+  border-color: color-mix(in srgb, var(--brand-primary) 26%, var(--border-subtle) 74%);
+  background: color-mix(in srgb, var(--surface) 97%, var(--surface-soft) 3%);
+}
+
+.image-resize-options {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.image-resize-options__hint {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+  line-height: 1.45;
+}
+
+.image-resize-options__dimensions {
+  width: 100%;
+}
+
+.image-resize-options__quality-row {
+  display: grid;
+  grid-template-columns: minmax(max-content, 2fr) minmax(0, 8fr);
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.image-resize-options__quality {
+  display: grid;
+  gap: var(--space-1);
+  min-width: 0;
+  grid-template-columns: auto minmax(2.5rem, auto) minmax(0, 1fr);
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.image-resize-options__quality label {
+  margin: 0;
+  white-space: nowrap;
+}
+
+.image-resize-options__quality input[type="range"] {
+  min-width: 0;
+}
+
+.image-resize-options__quality output {
+  margin-left: var(--space-2);
+  color: var(--brand-primary-active);
+  font-weight: var(--font-weight-semibold);
+  font-variant-numeric: tabular-nums;
+}
+
+.image-resize-options__action {
+  width: 100%;
+  min-height: 44px;
+}
+
 .issue23-actions {
   display: flex;
   flex-wrap: wrap;
@@ -268,6 +336,20 @@
 
   .code-workspace__process {
     width: 100%;
+  }
+
+  .image-resize-options__quality-row {
+    grid-template-columns: 1fr;
+  }
+
+  .tool-page--image-resize .tool-page__duo {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .tool-page--image-resize .tool-page__panel--options {
+    position: static;
+    max-height: none;
+    overflow: visible;
   }
 }
 
