@@ -12,6 +12,7 @@ import { ISSUE_23_EN_MESSAGES, ISSUE_23_ZH_MESSAGES } from "../i18n/issue23Messa
 import { ISSUE_26_EN_MESSAGES, ISSUE_26_ZH_MESSAGES } from "../i18n/issue26Messages";
 import { PDF_CONVERSION_EN_MESSAGES, PDF_CONVERSION_ZH_MESSAGES } from "../i18n/pdfConversionMessages";
 import { WATERMARK_EN_MESSAGES, WATERMARK_ZH_MESSAGES } from "../i18n/watermarkMessages";
+import { QR_DESIGNER_EN_MESSAGES, QR_DESIGNER_ZH_MESSAGES } from "../i18n/qrDesignerMessages";
 
 export type Locale = "zh-TW" | "en";
 
@@ -72,6 +73,7 @@ const zhMessages: Record<string, string> = {
   ...ISSUE_26_ZH_MESSAGES,
   ...PDF_CONVERSION_ZH_MESSAGES,
   ...WATERMARK_ZH_MESSAGES,
+  ...QR_DESIGNER_ZH_MESSAGES,
   "top.banner": "給設計師、學生、研究員、工程師的多功能檔案工具站。",
   "top.banner.cta": "你處理 PDF、圖片、JSON、文字的每一步都在本機完成，適合忙著出成果、又重視隱私的人。",
   "top.languageSwitcherLabel": "語言切換",
@@ -296,7 +298,7 @@ const zhMessages: Record<string, string> = {
   "tool.uuid.title": "UUID 產生器",
   "tool.uuid.description": "批次產生 UUID v4、UUID v7 或相容 .NET Guid 的識別碼。",
   "tool.qr-code.title": "QR 代碼",
-  "tool.qr-code.description": "由文字或網址快速產生 PNG 二維碼。",
+  "tool.qr-code.description": "在瀏覽器本機設計並下載 PNG 或 SVG QR Code。",
 
   "tool.url-encoder.title": "URL 編碼 / 解碼",
   "tool.url-encoder.description": "在本機編碼與解碼 URL 元件。",
@@ -740,12 +742,12 @@ const zhMessages: Record<string, string> = {
   "tool.uuid.faq.1.answer": "UUID v4 與 v7 都使用瀏覽器提供的密碼學安全隨機來源產生。",
   "tool.uuid.label.noOutput": "尚未產生 UUID。",
   "tool.qr-code.how.0": "輸入文字或網址。",
-  "tool.qr-code.how.1": "選擇尺寸與容錯等級。",
-  "tool.qr-code.how.2": "產生並下載 QR Code。",
+  "tool.qr-code.how.1": "調整樣式、顏色、Logo 與容錯等級。",
+  "tool.qr-code.how.2": "即時預覽並下載 PNG 或 SVG。",
   "tool.qr-code.faq.0.question": "需要網路連線嗎？",
   "tool.qr-code.faq.0.answer": "不需要，全部在本機完成。",
   "tool.qr-code.faq.1.question": "可以產生 SVG 嗎？",
-  "tool.qr-code.faq.1.answer": "目前第一階段僅提供 PNG 下載。",
+  "tool.qr-code.faq.1.answer": "可以，SVG 會保留向量 QR 模組，適合印刷。",
   "tool.qr-code.label.noDropzone": "文字輸入工具不需要拖放區。",
   "tool.qr-code.label.noPreview": "完成後可預覽。",
   "tool.qr-code.label.preview": "QR Code 預覽",
@@ -798,6 +800,7 @@ const enMessages: Record<string, string> = {
   ...ISSUE_26_EN_MESSAGES,
   ...PDF_CONVERSION_EN_MESSAGES,
   ...WATERMARK_EN_MESSAGES,
+  ...QR_DESIGNER_EN_MESSAGES,
   "top.banner": "Built for designers, students, researchers, and engineers.",
   "top.banner.cta": "Image, PDF, JSON, and text workflows stay on your device, from upload to download.",
   "top.languageSwitcherLabel": "Language switch",
@@ -1003,7 +1006,7 @@ const enMessages: Record<string, string> = {
   "tool.uuid.title": "UUID Generator",
   "tool.uuid.description": "Generate UUID v4, UUID v7, or .NET Guid-compatible identifiers in batches.",
   "tool.qr-code.title": "QR Code",
-  "tool.qr-code.description": "Create and download PNG QR codes from text or URL.",
+  "tool.qr-code.description": "Design and download PNG or SVG QR codes locally in your browser.",
 
   "tool.url-encoder.title": "URL Encoder / Decoder",
   "tool.url-encoder.description": "Encode and decode URL components locally.",
@@ -1466,12 +1469,12 @@ const enMessages: Record<string, string> = {
   "tool.uuid.faq.1.answer": "UUID v4 and v7 use the browser's cryptographically secure random source.",
   "tool.uuid.label.noOutput": "No output.",
   "tool.qr-code.how.0": "Input text or URL.",
-  "tool.qr-code.how.1": "Choose size and error-correction level.",
-  "tool.qr-code.how.2": "Generate and download.",
+  "tool.qr-code.how.1": "Adjust style, color, logo, and error correction.",
+  "tool.qr-code.how.2": "Preview live and download PNG or SVG.",
   "tool.qr-code.faq.0.question": "Is internet needed?",
   "tool.qr-code.faq.0.answer": "No. Generation uses a local library in browser.",
   "tool.qr-code.faq.1.question": "Can we generate SVG?",
-  "tool.qr-code.faq.1.answer": "First phase supports PNG download only.",
+  "tool.qr-code.faq.1.answer": "Yes. The SVG keeps the QR modules as vectors for print.",
   "tool.qr-code.label.noDropzone": "Dropzone is not required for text input tools.",
   "tool.qr-code.label.noPreview": "Generate to preview.",
   "tool.qr-code.label.preview": "QR Code preview",
