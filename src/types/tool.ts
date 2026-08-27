@@ -45,6 +45,34 @@ export interface QrCodeOptions {
   errorCorrectionLevel: "L" | "M" | "Q" | "H";
 }
 
+export type QrModuleStyle = "square" | "rounded" | "dots" | "extra-rounded";
+export type QrCornerStyle = "square" | "rounded" | "dot";
+export type QrGradientType = "none" | "linear" | "radial";
+export type QrLogoSource = "none" | "line" | "custom";
+export type QrLogoBackground = "circle" | "rounded" | "transparent";
+
+export interface QrDesignerOptions extends QrCodeOptions {
+  margin: number;
+  moduleStyle: QrModuleStyle;
+  cornerOuterStyle: QrCornerStyle;
+  cornerInnerStyle: QrCornerStyle;
+  foregroundColor: string;
+  backgroundColor: string;
+  transparentBackground: boolean;
+  cornerOuterColor: string;
+  cornerInnerColor: string;
+  gradient: QrGradientType;
+  gradientStartColor: string;
+  gradientEndColor: string;
+  gradientAngle: number;
+  logoSource: QrLogoSource;
+  logoDataUrl?: string;
+  logoSize: number;
+  logoBackground: QrLogoBackground;
+  logoPadding: number;
+  logoCornerRadius: number;
+}
+
 export interface ToolDefinition {
   id: string;
   title: string;
