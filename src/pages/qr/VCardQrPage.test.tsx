@@ -26,22 +26,30 @@ afterAll(() => {
 afterEach(() => vi.restoreAllMocks());
 
 describe("VCardQrPage", () => {
-  it("builds a vCard payload and renders a downloadable QR code", async () => {
-    vi.spyOn(qrService, "generateQrImage").mockResolvedValue({
-      blob: new Blob(["png"], { type: "image/png" }),
-      fileName: "vcard-qr.png",
-      mimeType: "image/png",
-      size: 3,
+  it("uses the shared designer for a live vCard QR preview", async () => {
+    vi.spyOn(qrService, "generateQrDesign").mockResolvedValue({
+      png: {
+        blob: new Blob(["png"], { type: "image/png" }),
+        fileName: "vcard-qr.png",
+        mimeType: "image/png",
+        size: 3,
+      },
+      svg: {
+        blob: new Blob(["<svg/>"], { type: "image/svg+xml" }),
+        fileName: "vcard-qr.svg",
+        mimeType: "image/svg+xml",
+        size: 6,
+      },
     });
     renderWithProviders(<VCardQrPage />);
 
     fireEvent.change(screen.getByLabelText("First name"), { target: { value: "Ada" } });
     fireEvent.change(screen.getByLabelText("Last name"), { target: { value: "Lovelace" } });
     fireEvent.change(screen.getByLabelText("Email"), { target: { value: "ada@example.com" } });
-    fireEvent.click(screen.getByRole("button", { name: "Generate vCard QR code" }));
 
     expect(await screen.findByText(/BEGIN:VCARD/)).toBeInTheDocument();
     expect(screen.getByText(/EMAIL;TYPE=INTERNET:ada@example.com/)).toBeInTheDocument();
-    expect(screen.getByAltText("vCard QR code preview")).toBeInTheDocument();
+    expect(screen.getByAltText("QR Code preview")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Download SVG" })).toBeEnabled();
   });
 });

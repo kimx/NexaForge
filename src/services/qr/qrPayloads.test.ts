@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildEmailPayload,
+  buildLinePayload,
+  buildPhonePayload,
+  buildSmsPayload,
   buildVCardPayload,
   buildWifiPayload,
   normalizeEan13,
@@ -87,5 +91,26 @@ describe("buildVCardPayload", () => {
     expect(buildVCardPayload({ firstName: "Grace", lastName: "" })).toBe(
       "BEGIN:VCARD\r\nVERSION:3.0\r\nN:;Grace;;;\r\nFN:Grace\r\nEND:VCARD"
     );
+  });
+});
+
+describe("contact QR payloads", () => {
+  it("builds email, phone, SMS, and LINE payloads", () => {
+    expect(buildEmailPayload("ada@example.com", "Hello there", "Can we talk?")).toBe(
+      "mailto:ada@example.com?subject=Hello+there&body=Can+we+talk%3F"
+    );
+    expect(buildPhonePayload(" +44 123 ")).toBe("tel:+44 123");
+    expect(buildSmsPayload("+44 123", "Hello there")).toBe("sms:+44 123?body=Hello+there");
+    expect(buildLinePayload("@nexaforge")).toBe("https://line.me/R/ti/p/@nexaforge");
+  });
+
+  it("keeps an entered LINE URL and rejects missing contact values", () => {
+    expect(buildLinePayload("https://line.me/R/ti/p/@nexaforge")).toBe(
+      "https://line.me/R/ti/p/@nexaforge"
+    );
+    expect(() => buildEmailPayload("", "", "")).toThrow("Email is required");
+    expect(() => buildPhonePayload("")).toThrow("Phone number is required");
+    expect(() => buildSmsPayload("", "")).toThrow("Phone number is required");
+    expect(() => buildLinePayload("")).toThrow("LINE ID is required");
   });
 });

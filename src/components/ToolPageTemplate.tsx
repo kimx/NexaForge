@@ -122,7 +122,7 @@ export function ToolPageTemplate({
 
         <div className="tool-page__title-row">
           <h1 className="tool-page__title">{displayTitle}</h1>
-          <PrivacyNotice inline />
+          <PrivacyNotice inline contentOnly={tool.category === "QR & Barcode"} />
         </div>
         <p className="short-description tool-page__description">{displayDescription}</p>
         <JsonWorkspaceNav />
@@ -187,30 +187,30 @@ export function ToolPageTemplate({
         />
 
         {!seoContent ? (
-          <>
-            <section className="tool-card">
-              <h2>{t("toolPage.faq")}</h2>
-              <div className="tool-faq">
-                {children.faq.map((item) => (
-                  <details key={item.q} className="tool-faq__item">
-                    <summary>{item.q}</summary>
-                    <p>{item.a}</p>
-                  </details>
-                ))}
-              </div>
-            </section>
+          <section className="tool-card">
+            <h2>{t("toolPage.faq")}</h2>
+            <div className="tool-faq">
+              {children.faq.map((item) => (
+                <details key={item.q} className="tool-faq__item">
+                  <summary>{item.q}</summary>
+                  <p>{item.a}</p>
+                </details>
+              ))}
+            </div>
+          </section>
+        ) : null}
 
-            <section className="tool-card">
-              <h2>{t("toolPage.related")}</h2>
-              <ul className="related-tools">
-                {children.relatedTools.map((relatedTool) => (
-                  <li key={relatedTool.id}>
-                    <Link to={localizePath(relatedTool.path, locale)}>{localToolMeta(relatedTool.id, "title")}</Link>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          </>
+        {(!seoContent || tool.category === "QR & Barcode") ? (
+          <section className="tool-card">
+            <h2>{t("toolPage.related")}</h2>
+            <ul className="related-tools">
+              {children.relatedTools.map((relatedTool) => (
+                <li key={relatedTool.id}>
+                  <Link to={localizePath(relatedTool.path, locale)}>{localToolMeta(relatedTool.id, "title")}</Link>
+                </li>
+              ))}
+            </ul>
+          </section>
         ) : null}
       </div>
     </div>
