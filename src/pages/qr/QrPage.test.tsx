@@ -123,6 +123,41 @@ describe("QrPage", () => {
       expect(screen.getByText("✓ QR code can be decoded")).toBeInTheDocument();
   });
 
+  it("auto-selects LINE icon when content type is Line", async () => {
+    vi.spyOn(qrService, "generateQrDesign").mockResolvedValue(designResult);
+
+    renderWithProviders(<QrPage />);
+    fireEvent.change(screen.getByLabelText("Content type"), { target: { value: "line" } });
+
+    await waitFor(() => {
+      expect(screen.getByRole("radio", { name: "LINE icon" })).toBeChecked();
+      expect(screen.getByLabelText("Error correction level")).toHaveValue("H");
+      expect(screen.getByLabelText("Error correction level")).toBeDisabled();
+    });
+  });
+
+  it("restores the previous logo and error correction settings after leaving Line content type", async () => {
+    vi.spyOn(qrService, "generateQrDesign").mockResolvedValue(designResult);
+
+    renderWithProviders(<QrPage />);
+    fireEvent.change(screen.getByLabelText("Error correction level"), { target: { value: "Q" } });
+    fireEvent.click(screen.getByRole("radio", { name: "Upload custom image" }));
+
+    fireEvent.change(screen.getByLabelText("Content type"), { target: { value: "line" } });
+    await waitFor(() => {
+      expect(screen.getByRole("radio", { name: "LINE icon" })).toBeChecked();
+      expect(screen.getByLabelText("Error correction level")).toHaveValue("H");
+      expect(screen.getByLabelText("Error correction level")).toBeDisabled();
+    });
+
+    fireEvent.change(screen.getByLabelText("Content type"), { target: { value: "url" } });
+    await waitFor(() => {
+      expect(screen.getByRole("radio", { name: "Upload custom image" })).toBeChecked();
+      expect(screen.getByLabelText("Error correction level")).toHaveValue("Q");
+      expect(screen.getByLabelText("Error correction level")).toBeEnabled();
+    });
+  });
+
   it("copies a share link containing settings but not QR content", async () => {
       vi.spyOn(qrService, "generateQrDesign").mockResolvedValue(designResult);
       const writeText = vi.mocked(navigator.clipboard.writeText);

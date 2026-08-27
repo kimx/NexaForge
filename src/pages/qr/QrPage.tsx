@@ -209,6 +209,11 @@ export function QrPage({ initialContentType = "url", toolId = "qr-code" }: QrPag
     h1: title,
   };
   useSeo(toolMeta);
+  const lineModeLogoState = useRef<{
+    logoSource: QrLogoSource;
+    logoDataUrl: string | undefined;
+    errorCorrectionLevel: QrCodeOptions["errorCorrectionLevel"];
+  } | null>(null);
 
   const payload = useMemo(() => {
     try {
@@ -328,6 +333,35 @@ export function QrPage({ initialContentType = "url", toolId = "qr-code" }: QrPag
     }));
   };
 
+  const restoreLogoState = (): void => {
+    if (!lineModeLogoState.current) {
+      return;
+    }
+    setSettings((current) => ({
+      ...current,
+      logoSource: lineModeLogoState.current?.logoSource ?? "none",
+      logoDataUrl: lineModeLogoState.current?.logoDataUrl,
+      errorCorrectionLevel: lineModeLogoState.current?.errorCorrectionLevel ?? current.errorCorrectionLevel,
+    }));
+    lineModeLogoState.current = null;
+  };
+
+  const applyLineLogo = (): void => {
+    if (settings.logoSource !== "line" && lineModeLogoState.current === null) {
+      lineModeLogoState.current = {
+        logoSource: settings.logoSource,
+        logoDataUrl: settings.logoSource === "custom" ? settings.logoDataUrl : undefined,
+        errorCorrectionLevel: settings.errorCorrectionLevel,
+      };
+    }
+    setSettings((current) => ({
+      ...current,
+      logoSource: "line",
+      logoDataUrl: undefined,
+      errorCorrectionLevel: "H",
+    }));
+  };
+
   const handleLogoUpload = (file: File | undefined): void => {
     if (!file) {
       return;
@@ -364,12 +398,33 @@ export function QrPage({ initialContentType = "url", toolId = "qr-code" }: QrPag
   };
 
   const applyExample = (type: QrContentType): void => {
-    setContentType(type);
+    handleContentTypeChange(type);
     if (type === "url") setText("https://nexaforge.kimx.info");
-    if (type === "line") setLine("@nexaforge");
+    if (type === "line") {
+      setLine("@nexaforge");
+    }
     if (type === "email") setEmail({ address: "hello@example.com", subject: "Hello", body: "" });
     if (type === "phone") setPhone("+886 912 345 678");
     if (type === "text") setText("Hello from NexaForge");
+  };
+
+  const handleContentTypeChange = (type: QrContentType): void => {
+    if (type === contentType) {
+      return;
+    }
+    if (type === "line") {
+      applyLineLogo();
+    } else if (contentType === "line") {
+      restoreLogoState();
+    }
+    setContentType(type);
+  };
+
+  const handleContentTypeChange = (type: QrContentType): void => {
+    setContentType(type);
+    if (type === "line") {
+      applyLineLogo();
+    }
   };
 
   const handleCopyImage = async (): Promise<void> => {
@@ -486,7 +541,7 @@ export function QrPage({ initialContentType = "url", toolId = "qr-code" }: QrPag
         workspace: (
           <div className="tool-form qr-designer">
             <label>{t("tool.qr-code.contentType")}
-              <select value={contentType} onChange={(event) => setContentType(event.target.value as QrContentType)}>
+              <select value={contentType} onChange={(event) => handleContentTypeChange(event.target.value as QrContentType)}>
                 {(["url", "text", "wifi", "vcard", "email", "phone", "sms", "line"] as QrContentType[]).map((type) => <option key={type} value={type}>{t(`tool.qr-code.contentType.${type}`)}</option>)}
               </select>
             </label>
