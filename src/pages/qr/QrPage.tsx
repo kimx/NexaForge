@@ -8,6 +8,19 @@ import { useBlobUrl } from "../../hooks/useBlobUrl";
 import { getRelatedTools } from "../../utils/toolHelpers";
 import { trackEvent } from "../../utils/analytics";
 import { generateQrDesign } from "../../services/qr/qrService";
+import { readQrFromImage } from "../../services/qr/qrReaderService";
+import {
+  buildEmailPayload,
+  buildLinePayload,
+  buildPhonePayload,
+  buildSmsPayload,
+  buildVCardPayload,
+  buildWifiPayload,
+  type QrContentType,
+  type VCardQrInput,
+  type WifiQrInput,
+  type WifiSecurity,
+} from "../../services/qr/qrPayloads";
 import type {
   FileProcessResult,
   ProcessingState,
@@ -49,6 +62,12 @@ const DEFAULT_SETTINGS: QrDesignerOptions = {
 };
 
 type QrPreset = "classic" | "rounded" | "dots" | "line" | "dark" | "colorful";
+type QrToolId = "qr-code" | "wifi-qr" | "vcard-qr";
+
+interface QrPageProps {
+  initialContentType?: QrContentType;
+  toolId?: QrToolId;
+}
 
 function readSettings(): QrDesignerOptions {
   if (typeof window === "undefined") {
@@ -57,9 +76,23 @@ function readSettings(): QrDesignerOptions {
 
   try {
     const stored = JSON.parse(window.localStorage.getItem(QR_DESIGNER_STORAGE_KEY) ?? "{}") as Partial<QrDesignerOptions>;
+    const parameters = new URLSearchParams(window.location.search);
+    const style = parameters.get("style");
+    const color = parameters.get("color");
+    const size = Number(parameters.get("size"));
+    const margin = Number(parameters.get("margin"));
+    const urlSettings: Partial<QrDesignerOptions> = {
+      ...(style === "square" || style === "rounded" || style === "dots" || style === "extra-rounded"
+        ? { moduleStyle: style }
+        : {}),
+      ...(color && /^[\da-f]{6}$/i.test(color) ? { foregroundColor: `#${color}` } : {}),
+      ...(Number.isInteger(size) && size >= 128 && size <= 1024 ? { size } : {}),
+      ...(Number.isInteger(margin) && margin >= 0 && margin <= 64 ? { margin } : {}),
+    };
     return {
       ...DEFAULT_SETTINGS,
       ...stored,
+      ...urlSettings,
       logoSource: "none",
       logoDataUrl: undefined,
     };
@@ -137,26 +170,68 @@ function hasLowContrast(foreground: string, background: string): boolean {
     (Math.min(foregroundLuminance, backgroundLuminance) + 0.05) < 4.5;
 }
 
-export function QrPage(): JSX.Element {
+export function createSettingsShareUrl(settings: QrDesignerOptions): string {
+  const parameters = new URLSearchParams({
+    style: settings.moduleStyle,
+    color: settings.foregroundColor.slice(1),
+    size: String(settings.size),
+    margin: String(settings.margin),
+  });
+  return `${window.location.origin}${window.location.pathname}?${parameters.toString()}`;
+}
+
+export function QrPage({ initialContentType = "url", toolId = "qr-code" }: QrPageProps): JSX.Element {
   const { t } = useLanguage();
+  const [contentType, setContentType] = useState<QrContentType>(initialContentType);
   const [text, setText] = useState("https://example.com");
+  const [wifi, setWifi] = useState<WifiQrInput>({ ssid: "", password: "", security: "WPA", hidden: false });
+  const [card, setCard] = useState<VCardQrInput>({ firstName: "", lastName: "", phone: "", email: "", organization: "", title: "", url: "", address: "" });
+  const [email, setEmail] = useState({ address: "", subject: "", body: "" });
+  const [phone, setPhone] = useState("");
+  const [sms, setSms] = useState({ phone: "", message: "" });
+  const [line, setLine] = useState("");
   const [settings, setSettings] = useState<QrDesignerOptions>(readSettings);
   const [processing, setProcessing] = useState<ProcessingState>("idle");
   const [pngResult, setPngResult] = useState<FileProcessResult | null>(null);
   const [svgResult, setSvgResult] = useState<FileProcessResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [logoError, setLogoError] = useState<string | null>(null);
+  const [scanState, setScanState] = useState<"idle" | "testing" | "success" | "warning">("idle");
+  const [actionStatus, setActionStatus] = useState("");
   const previewUrl = useBlobUrl(pngResult?.blob);
   const renderVersion = useRef(0);
-  const tool = FILE_TOOLS.find((item) => item.id === "qr-code") ?? FILE_TOOLS[0];
-  const title = t("tool.qr-code.title");
+  const tool = FILE_TOOLS.find((item) => item.id === toolId) ?? FILE_TOOLS[0];
+  const title = t(`tool.${toolId}.title`);
   const toolMeta: ToolMeta = {
     title: `${title} - ${t("header.title")}`,
-    description: t("tool.qr-code.description"),
-    canonical: "/qr-code",
+    description: t(`tool.${toolId}.description`),
+    canonical: tool.path,
     h1: title,
   };
   useSeo(toolMeta);
+
+  const payload = useMemo(() => {
+    try {
+      switch (contentType) {
+        case "wifi":
+          return buildWifiPayload(wifi);
+        case "vcard":
+          return buildVCardPayload(card);
+        case "email":
+          return buildEmailPayload(email.address, email.subject, email.body);
+        case "phone":
+          return buildPhonePayload(phone);
+        case "sms":
+          return buildSmsPayload(sms.phone, sms.message);
+        case "line":
+          return buildLinePayload(line);
+        default:
+          return text.trim();
+      }
+    } catch {
+      return "";
+    }
+  }, [card, contentType, email, line, phone, sms, text, wifi]);
 
   const logoEnabled = settings.logoSource === "line" || (settings.logoSource === "custom" && Boolean(settings.logoDataUrl));
   const maxMargin = Math.min(64, Math.floor(settings.size / 4));
@@ -194,7 +269,8 @@ export function QrPage(): JSX.Element {
 
   useEffect(() => {
     const version = ++renderVersion.current;
-    if (!text.trim()) {
+    setScanState("idle");
+    if (!payload) {
       setPngResult(null);
       setSvgResult(null);
       setProcessing("idle");
@@ -205,8 +281,8 @@ export function QrPage(): JSX.Element {
     const timer = window.setTimeout(() => {
       setProcessing("processing");
       setError(null);
-      trackEvent("process_start", { tool: "qr-code" });
-      void generateQrDesign(text, settings)
+      trackEvent("process_start", { tool: toolId });
+      void generateQrDesign(payload, settings)
         .then((result) => {
           if (renderVersion.current !== version) {
             return;
@@ -214,7 +290,7 @@ export function QrPage(): JSX.Element {
           setPngResult(result.png);
           setSvgResult(result.svg);
           setProcessing("success");
-          trackEvent("process_success", { tool: "qr-code" });
+          trackEvent("process_success", { tool: toolId });
         })
         .catch((cause: unknown) => {
           if (renderVersion.current !== version) {
@@ -223,14 +299,14 @@ export function QrPage(): JSX.Element {
           console.error(cause);
           setProcessing("error");
           setError(t("error.processingFailed"));
-          trackEvent("process_failed", { tool: "qr-code" });
+          trackEvent("process_failed", { tool: toolId });
         });
     }, 150);
 
     return () => {
       window.clearTimeout(timer);
     };
-  }, [settings, t, text]);
+  }, [payload, settings, t, toolId]);
 
   const updateSetting = <Key extends keyof QrDesignerOptions>(key: Key, value: QrDesignerOptions[Key]): void => {
     setSettings((current) => ({ ...current, [key]: value }));
@@ -287,6 +363,58 @@ export function QrPage(): JSX.Element {
     }));
   };
 
+  const applyExample = (type: QrContentType): void => {
+    setContentType(type);
+    if (type === "url") setText("https://nexaforge.kimx.info");
+    if (type === "line") setLine("@nexaforge");
+    if (type === "email") setEmail({ address: "hello@example.com", subject: "Hello", body: "" });
+    if (type === "phone") setPhone("+886 912 345 678");
+    if (type === "text") setText("Hello from NexaForge");
+  };
+
+  const handleCopyImage = async (): Promise<void> => {
+    if (!pngResult || !navigator.clipboard?.write || typeof ClipboardItem === "undefined") {
+      setActionStatus(t("tool.qr-code.copyImageUnavailable"));
+      return;
+    }
+    try {
+      await navigator.clipboard.write([new ClipboardItem({ "image/png": pngResult.blob })]);
+      setActionStatus(t("tool.qr-code.copyImageSuccess"));
+      trackEvent("result_action_used", { tool: toolId, action: "copy_qr_image" });
+    } catch {
+      setActionStatus(t("tool.qr-code.copyImageUnavailable"));
+    }
+  };
+
+  const handleCopySettingsLink = async (): Promise<void> => {
+    if (!navigator.clipboard?.writeText) {
+      setActionStatus(t("tool.qr-code.copySettingsUnavailable"));
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(createSettingsShareUrl(settings));
+      setActionStatus(t("tool.qr-code.copySettingsSuccess"));
+      trackEvent("result_action_used", { tool: toolId, action: "copy_qr_settings_link" });
+    } catch {
+      setActionStatus(t("tool.qr-code.copySettingsUnavailable"));
+    }
+  };
+
+  const handleScanTest = async (): Promise<void> => {
+    if (!pngResult || !payload) {
+      return;
+    }
+    setScanState("testing");
+    try {
+      const decoded = await readQrFromImage(pngResult.blob);
+      setScanState(decoded.text === payload ? "success" : "warning");
+      trackEvent("result_action_used", { tool: toolId, action: "scan_test" });
+    } catch {
+      setScanState("warning");
+      trackEvent("result_action_used", { tool: toolId, action: "scan_test" });
+    }
+  };
+
   const colorInput = (
     key:
       | "foregroundColor"
@@ -309,6 +437,43 @@ export function QrPage(): JSX.Element {
     </label>
   );
 
+  const contentFields = (() => {
+    switch (contentType) {
+      case "wifi":
+        return (
+          <>
+            <label>{t("tool.qr-code.content.ssid")}<input value={wifi.ssid} onChange={(event) => setWifi((current) => ({ ...current, ssid: event.target.value }))} /></label>
+            <label>{t("tool.qr-code.content.password")}<input type="password" value={wifi.password} disabled={wifi.security === "nopass"} onChange={(event) => setWifi((current) => ({ ...current, password: event.target.value }))} /></label>
+            <label>{t("tool.qr-code.content.security")}<select value={wifi.security} onChange={(event) => setWifi((current) => ({ ...current, security: event.target.value as WifiSecurity }))}>
+              <option value="WPA">WPA / WPA2</option><option value="WEP">WEP</option><option value="nopass">{t("tool.qr-code.content.openNetwork")}</option>
+            </select></label>
+            <label className="qr-designer__checkbox"><input type="checkbox" checked={wifi.hidden} onChange={(event) => setWifi((current) => ({ ...current, hidden: event.target.checked }))} />{t("tool.qr-code.content.hidden")}</label>
+          </>
+        );
+      case "vcard": {
+        const fields: Array<[keyof VCardQrInput, string, string]> = [
+          ["firstName", t("tool.qr-code.content.firstName"), "text"], ["lastName", t("tool.qr-code.content.lastName"), "text"],
+          ["phone", t("tool.qr-code.content.phone"), "tel"], ["email", t("tool.qr-code.content.email"), "email"],
+          ["organization", t("tool.qr-code.content.organization"), "text"], ["title", t("tool.qr-code.content.jobTitle"), "text"],
+          ["url", t("tool.qr-code.content.url"), "url"], ["address", t("tool.qr-code.content.address"), "text"],
+        ];
+        return <div className="qr-designer__field-grid">{fields.map(([key, label, type]) => <label key={key}>{label}<input type={type} value={card[key] ?? ""} onChange={(event) => setCard((current) => ({ ...current, [key]: event.target.value }))} /></label>)}</div>;
+      }
+      case "email":
+        return <><label>{t("tool.qr-code.content.email")}<input type="email" value={email.address} onChange={(event) => setEmail((current) => ({ ...current, address: event.target.value }))} /></label><label>{t("tool.qr-code.content.subject")}<input value={email.subject} onChange={(event) => setEmail((current) => ({ ...current, subject: event.target.value }))} /></label><label>{t("tool.qr-code.content.message")}<textarea rows={3} value={email.body} onChange={(event) => setEmail((current) => ({ ...current, body: event.target.value }))} /></label></>;
+      case "phone":
+        return <label>{t("tool.qr-code.content.phone")}<input type="tel" value={phone} onChange={(event) => setPhone(event.target.value)} /></label>;
+      case "sms":
+        return <><label>{t("tool.qr-code.content.phone")}<input type="tel" value={sms.phone} onChange={(event) => setSms((current) => ({ ...current, phone: event.target.value }))} /></label><label>{t("tool.qr-code.content.message")}<textarea rows={3} value={sms.message} onChange={(event) => setSms((current) => ({ ...current, message: event.target.value }))} /></label></>;
+      case "line":
+        return <label>{t("tool.qr-code.content.line")}<input value={line} onChange={(event) => setLine(event.target.value)} /></label>;
+      case "text":
+        return <label>{t("tool.qr-code.content.text")}<textarea rows={4} value={text} onChange={(event) => setText(event.target.value)} /></label>;
+      default:
+        return <label>{t("tool.qr-code.content.url")}<input type="url" value={text} onChange={(event) => setText(event.target.value)} /></label>;
+    }
+  })();
+
   return (
     <ToolPageTemplate
       tool={tool}
@@ -320,11 +485,18 @@ export function QrPage(): JSX.Element {
       children={{
         workspace: (
           <div className="tool-form qr-designer">
-            <label>
-              {t("label.textOrUrl")}
-              <textarea rows={4} value={text} onChange={(event) => setText(event.target.value)} />
+            <label>{t("tool.qr-code.contentType")}
+              <select value={contentType} onChange={(event) => setContentType(event.target.value as QrContentType)}>
+                {(["url", "text", "wifi", "vcard", "email", "phone", "sms", "line"] as QrContentType[]).map((type) => <option key={type} value={type}>{t(`tool.qr-code.contentType.${type}`)}</option>)}
+              </select>
             </label>
-            <p className="qr-designer__local-note">{t("tool.qr-code.label.noDropzone")}</p>
+            {contentFields}
+            <fieldset className="qr-designer__section">
+              <legend>{t("tool.qr-code.quickExamples")}</legend>
+              <div className="qr-designer__presets">
+                {(["url", "line", "email", "phone", "text"] as QrContentType[]).map((type) => <button key={type} type="button" className="btn secondary" aria-label={`${t(`tool.qr-code.example.${type}`)} ${t("tool.qr-code.quickExamples")}`} onClick={() => applyExample(type)}>{t(`tool.qr-code.example.${type}`)}</button>)}
+              </div>
+            </fieldset>
           </div>
         ),
         options: (
@@ -543,11 +715,18 @@ export function QrPage(): JSX.Element {
           <div className="qr-designer__preview" aria-live="polite">
             {pngResult ? (
               <>
+                <code className="issue23-code-output">{payload}</code>
                 <img className="preview-image" src={previewUrl} alt={t("tool.qr-code.label.preview")} />
                 <div className="qr-designer__downloads">
-                  <DownloadButton result={pngResult} label={t("tool.qr-code.downloadPng")} onDownloaded={() => trackEvent("download", { tool: "qr-code" })} />
-                  <DownloadButton result={svgResult} label={t("tool.qr-code.downloadSvg")} onDownloaded={() => trackEvent("download", { tool: "qr-code" })} />
+                  <DownloadButton result={pngResult} label={t("tool.qr-code.downloadPng")} onDownloaded={() => trackEvent("download", { tool: toolId })} />
+                  <DownloadButton result={svgResult} label={t("tool.qr-code.downloadSvg")} onDownloaded={() => trackEvent("download", { tool: toolId })} />
+                  <button type="button" className="btn secondary" onClick={handleCopyImage}>{t("tool.qr-code.copyImage")}</button>
+                  <button type="button" className="btn secondary" onClick={handleScanTest} disabled={scanState === "testing"}>{scanState === "testing" ? t("tool.qr-code.scanTesting") : t("tool.qr-code.scanTest")}</button>
+                  <button type="button" className="btn secondary" onClick={handleCopySettingsLink}>{t("tool.qr-code.copySettings")}</button>
                 </div>
+                {scanState === "success" ? <p role="status">{t("tool.qr-code.scanSuccess")}</p> : null}
+                {scanState === "warning" ? <p className="error" role="alert">{t("tool.qr-code.scanWarning")}</p> : null}
+                <span role="status" aria-live="polite">{actionStatus}</span>
               </>
             ) : (
               <p>{t("tool.qr-code.label.noPreview")}</p>
@@ -556,7 +735,7 @@ export function QrPage(): JSX.Element {
         ),
         howItWorks,
         faq,
-        relatedTools: getRelatedTools("qr-code"),
+        relatedTools: getRelatedTools(toolId),
       }}
     />
   );

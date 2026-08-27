@@ -18,6 +18,8 @@ export interface VCardQrInput {
   address?: string;
 }
 
+export type QrContentType = "url" | "text" | "wifi" | "vcard" | "email" | "phone" | "sms" | "line";
+
 function escapeWifiValue(value: string): string {
   return value.replace(/[\\;,:"]/g, "\\$&");
 }
@@ -95,4 +97,42 @@ export function buildVCardPayload(input: VCardQrInput): string {
 
   lines.push("END:VCARD");
   return lines.join("\r\n");
+}
+
+export function buildEmailPayload(email: string, subject: string, body: string): string {
+  const address = email.trim();
+  if (!address) {
+    throw new Error("Email is required");
+  }
+
+  const parameters = new URLSearchParams();
+  if (subject.trim()) parameters.set("subject", subject.trim());
+  if (body.trim()) parameters.set("body", body.trim());
+  const query = parameters.toString();
+  return `mailto:${address}${query ? `?${query}` : ""}`;
+}
+
+export function buildPhonePayload(phone: string): string {
+  const value = phone.trim();
+  if (!value) {
+    throw new Error("Phone number is required");
+  }
+  return `tel:${value}`;
+}
+
+export function buildSmsPayload(phone: string, message: string): string {
+  const value = phone.trim();
+  if (!value) {
+    throw new Error("Phone number is required");
+  }
+  const body = message.trim();
+  return `sms:${value}${body ? `?${new URLSearchParams({ body }).toString()}` : ""}`;
+}
+
+export function buildLinePayload(lineIdOrUrl: string): string {
+  const value = lineIdOrUrl.trim();
+  if (!value) {
+    throw new Error("LINE ID is required");
+  }
+  return /^https?:\/\//i.test(value) ? value : `https://line.me/R/ti/p/${value}`;
 }
