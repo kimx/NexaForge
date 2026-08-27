@@ -59,7 +59,7 @@ const defaultDependencies: QrReaderDependencies = {
 };
 
 export async function readQrFromImage(
-  file: File,
+  file: Blob,
   dependencies: Partial<QrReaderDependencies> = {}
 ): Promise<QrReadResult> {
   const resolved = { ...defaultDependencies, ...dependencies };
@@ -103,4 +103,3 @@ export async function startQrCamera(
 
   return { stop };
 }
-
