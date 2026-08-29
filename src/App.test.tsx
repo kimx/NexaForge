@@ -27,6 +27,7 @@ const ROUTE_HEADINGS: Record<string, string> = {
   "/pdf/rotate": "Free Online PDF Rotator",
   "/pdf/to-image": "PDF to Image",
   "/data/json-formatter": "Free Online JSON Formatter",
+  "/data/json-diff": "JSON Diff Online",
   "/data/csv-viewer": "CSV Viewer",
   "/data/csv-to-json": "CSV to JSON",
   "/data/json-to-csv": "JSON to CSV",
@@ -373,20 +374,18 @@ describe("App routes", () => {
     expect(
       await screen.findByRole("heading", { level: 1, name: "Free Online JSON Formatter" })
     ).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "JSON Diff" })).toHaveAttribute(
-      "href",
-      "/en/developer/json-diff"
-    );
+    screen.getAllByRole("link", { name: "JSON Diff" }).forEach((link) => {
+      expect(link).toHaveAttribute("href", "/en/data/json-diff");
+    });
 
     fireEvent.click(screen.getByRole("button", { name: "繁中" }));
 
     expect(
       await screen.findByRole("heading", { level: 1, name: "免費線上 JSON 格式化" })
     ).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "JSON Diff" })).toHaveAttribute(
-      "href",
-      "/developer/json-diff"
-    );
+    screen.getAllByRole("link", { name: "JSON Diff" }).forEach((link) => {
+      expect(link).toHaveAttribute("href", "/data/json-diff");
+    });
   });
 
 

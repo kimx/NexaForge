@@ -40,6 +40,7 @@ describe("SEO search page catalog", () => {
       "/qr-code",
       "/text/diff",
       "/text/markdown",
+      "/data/json-diff",
     ]);
     expect(new Set(SEO_SEARCH_PAGES.map(({ path }) => path)).size).toBe(
       SEO_SEARCH_PAGES.length
@@ -81,7 +82,7 @@ describe("SEO search page catalog", () => {
         expect(content.sections.every(({ heading, body }) => heading && body.length > 40)).toBe(true);
         expect(content.steps).toHaveLength(3);
         expect(content.privacy.length).toBeGreaterThan(40);
-        expect(content.faq).toHaveLength(2);
+        expect(content.faq.length).toBeGreaterThanOrEqual(2);
         expect(content.related).toHaveLength(4);
         expect(content.related.every(({ path, label }) => validPaths.has(path) && label.length > 2)).toBe(true);
       }

@@ -1,4 +1,5 @@
 import { useEffect, useId, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { ProcessingState, ToolMeta } from "../../types/tool";
 import { FILE_TOOLS } from "../../data/tools";
 import { ToolPageTemplate } from "../../components/ToolPageTemplate";
@@ -66,7 +67,8 @@ function getParseMessageFromError(error: unknown): string {
 }
 
 export function JsonFormatterPage(): JSX.Element {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
+  const navigate = useNavigate();
   const landing = useSeoLanding();
   const [files, setFiles] = useState<File[]>([]);
   const [inputSource, setInputSource] = useState<"text" | "file">("text");
@@ -377,9 +379,21 @@ export function JsonFormatterPage(): JSX.Element {
                   <label htmlFor="json-formatter-input">
                     {t("tool.json-formatter.label.jsonInput")}
                   </label>
-                  <button type="button" className="btn secondary" onClick={loadSample}>
-                    {t("tool.json-formatter.action.loadSample")}
-                  </button>
+                    <div className="tool-actions">
+                      <button type="button" className="btn secondary" onClick={loadSample}>
+                        {t("tool.json-formatter.action.loadSample")}
+                      </button>
+                      <button
+                        type="button"
+                        className="btn secondary"
+                        disabled={!jsonInput.trim()}
+                        onClick={() => navigate(locale === "en" ? "/en/data/json-diff" : "/data/json-diff", {
+                          state: { leftJson: jsonInput },
+                        })}
+                      >
+                        {locale === "en" ? "Compare with another JSON" : "與另一份 JSON 比較"}
+                      </button>
+                    </div>
                 </div>
                 <textarea
                   id="json-formatter-input"
@@ -456,6 +470,8 @@ export function JsonFormatterPage(): JSX.Element {
       jsonTree,
       largeInputHintId,
       mode,
+      navigate,
+      locale,
       processing,
       t,
       treeError,

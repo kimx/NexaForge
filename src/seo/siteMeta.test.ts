@@ -7,6 +7,7 @@ describe("buildPageSeo", () => {
     expect(BASE_INDEXABLE_ROUTES).toEqual(expect.arrayContaining([
       "/image/jpg-to-webp",
       "/data/json-validator",
+      "/data/json-diff",
       "/developer/base64-decode",
     ]));
     expect(INDEXABLE_ROUTES).toContain("/en/developer/url-decode");
@@ -175,6 +176,18 @@ describe("buildPageSeo", () => {
     expect(seo.alternates["x-default"]).toBe(
       `${SITE_ORIGIN}/developer/json-diff`
     );
+  });
+
+  it("uses the requested metadata and FAQ schema for JSON Diff", () => {
+    const seo = buildPageSeo("/en/data/json-diff", "en");
+
+    expect(seo.title).toBe("JSON Diff Online – Compare JSON Differences | NexaForge");
+    expect(seo.description).toContain("Compare two JSON documents");
+    expect(seo.canonical).toBe(`${SITE_ORIGIN}/en/data/json-diff`);
+    expect(seo.jsonLd).toEqual(expect.arrayContaining([
+      expect.objectContaining({ "@type": "FAQPage" }),
+      expect.objectContaining({ applicationCategory: "DeveloperApplication" }),
+    ]));
   });
 
   it("provides non-empty route-specific metadata for every indexable route", () => {
