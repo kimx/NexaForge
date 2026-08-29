@@ -106,6 +106,15 @@ npm run dev
 
 部署正式站後，可在 Google Search Console 新增 `https://nexaforge.kimx.info/sitemap.xml`，再以網址檢查抽查重要搜尋頁面。提交 sitemap 與要求重新建立索引屬於部署後的站長操作，不由本機 build 自動執行。
 
+## 授權條款
+
+本專案採用 MIT License：
+
+- [MIT License（英文原文）](LICENSE)
+- [MIT License（繁體中文翻譯）](LICENSE.zh-TW.md)
+
+繁體中文版本僅供閱讀與理解；如與英文原文有差異，以英文 `LICENSE` 為準。
+
 ## 開源與關注
 
 - 專案原始碼：<https://github.com/kimx/NexaForge>
