@@ -124,6 +124,9 @@ const PdfSplitPage = lazy(() =>
 const PdfToImagePage = lazy(() =>
   import("./pages/pdf/PdfToImagePage").then((module) => ({ default: module.PdfToImagePage }))
 );
+const PdfPageEditorPage = lazy(() =>
+  import("./pages/pdf/PageEditorPage").then((module) => ({ default: module.PdfPageEditorPage }))
+);
 const QrPage = lazy(() =>
   import("./pages/qr/QrPage").then((module) => ({ default: module.QrPage }))
 );
@@ -208,6 +211,9 @@ const APP_ROUTES: AppRoute[] = [
   { path: "/pdf/split", element: <PdfSplitPage /> },
   { path: "/pdf/rotate", element: <PdfRotatePage /> },
   { path: "/pdf/to-image", element: <PdfToImagePage /> },
+  { path: "/pdf/reorder-pages", element: <PdfPageEditorPage mode="reorder" /> },
+  { path: "/pdf/delete-pages", element: <PdfPageEditorPage mode="delete" /> },
+  { path: "/pdf/extract-pages", element: <PdfPageEditorPage mode="extract" /> },
   { path: "/data/json-formatter", element: <JsonFormatterPage /> },
   { path: "/data/json-diff", element: <JsonDiffPage /> },
   { path: "/data/csv-viewer", element: <CsvViewerPage /> },

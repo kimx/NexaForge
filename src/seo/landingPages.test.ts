@@ -40,6 +40,9 @@ describe("SEO search page catalog", () => {
       "/qr-code",
       "/text/diff",
       "/text/markdown",
+      "/pdf/reorder-pages",
+      "/pdf/delete-pages",
+      "/pdf/extract-pages",
       "/data/json-diff",
     ]);
     expect(new Set(SEO_SEARCH_PAGES.map(({ path }) => path)).size).toBe(

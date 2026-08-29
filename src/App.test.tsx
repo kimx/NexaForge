@@ -142,6 +142,31 @@ describe("App routes", () => {
       expect(BASE_INDEXABLE_ROUTES).toContain(path);
       expect(INDEXABLE_ROUTES).toContain(`/en${path}`);
     });
+
+  });
+
+  it.each([
+    ["/pdf/reorder-pages", "Reorder PDF Pages Online", "Reorder PDF Pages Online – Private Browser Tool | NexaForge"],
+    ["/pdf/delete-pages", "Delete Pages from PDF", "Delete PDF Pages Online – Private & Free | NexaForge"],
+    ["/pdf/extract-pages", "Extract Pages from PDF", "Extract PDF Pages Online – Select & Save Pages | NexaForge"],
+  ])("renders PDF page editor route %s with its required title and H1", async (path, heading, title) => {
+    render(
+      <MemoryRouter
+        initialEntries={[`/en${path}`]}
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+      >
+        <LanguageProvider initialLocale="en">
+          <App />
+        </LanguageProvider>
+      </MemoryRouter>
+    );
+
+    expect(await screen.findByRole("heading", { level: 1, name: heading })).toBeVisible();
+    await waitFor(() => expect(document.title).toBe(title));
+    expect(document.querySelector('link[rel="canonical"]')).toHaveAttribute(
+      "href",
+      `https://nexaforge.kimx.info/en${path}`
+    );
   });
 
   it("publishes every advanced image route and advertises batch/AVIF upgrades", () => {

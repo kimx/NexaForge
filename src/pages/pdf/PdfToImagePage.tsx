@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { DownloadCollectionButton } from "../../components/DownloadCollectionButton";
 import { FileDropzone } from "../../components/FileDropzone";
 import { ToolPageTemplate } from "../../components/ToolPageTemplate";
@@ -11,6 +12,7 @@ import type { FileProcessResult, ProcessingState, ToolMeta } from "../../types/t
 import { trackEvent } from "../../utils/analytics";
 import { downloadBlob } from "../../utils/download";
 import { getRelatedTools } from "../../utils/toolHelpers";
+import { localizePath } from "../../routing/localePaths";
 
 function PagePreview({ result, page }: { result: FileProcessResult; page: number }): JSX.Element {
   const { t } = useLanguage();
@@ -31,7 +33,7 @@ function PagePreview({ result, page }: { result: FileProcessResult; page: number
 }
 
 export function PdfToImagePage(): JSX.Element {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const [file, setFile] = useState<File | null>(null);
   const [results, setResults] = useState<FileProcessResult[]>([]);
   const [processing, setProcessing] = useState<ProcessingState>("idle");
@@ -129,7 +131,13 @@ export function PdfToImagePage(): JSX.Element {
             </ul>
           </>
         ),
-        nextActions: <DownloadCollectionButton results={results} fileName="pdf-pages.zip" />,
+        nextActions: <>
+          <DownloadCollectionButton results={results} fileName="pdf-pages.zip" />
+          <Link className="btn secondary" to={localizePath("/image/compress", locale)}>{locale === "en" ? "Compress Images" : "壓縮圖片"}</Link>
+          <Link className="btn secondary" to={localizePath("/image/resize", locale)}>{locale === "en" ? "Resize Images" : "調整圖片尺寸"}</Link>
+          <Link className="btn secondary" to={localizePath("/image/convert", locale)}>{locale === "en" ? "Convert Image Format" : "轉換圖片格式"}</Link>
+          <Link className="btn secondary" to={localizePath("/image/to-pdf", locale)}>{locale === "en" ? "Image to PDF" : "圖片轉 PDF"}</Link>
+        </>,
         howItWorks,
         faq,
         relatedTools: getRelatedTools("pdf-to-image"),
