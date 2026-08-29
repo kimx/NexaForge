@@ -420,13 +420,6 @@ export function QrPage({ initialContentType = "url", toolId = "qr-code" }: QrPag
     setContentType(type);
   };
 
-  const handleContentTypeChange = (type: QrContentType): void => {
-    setContentType(type);
-    if (type === "line") {
-      applyLineLogo();
-    }
-  };
-
   const handleCopyImage = async (): Promise<void> => {
     if (!pngResult || !navigator.clipboard?.write || typeof ClipboardItem === "undefined") {
       setActionStatus(t("tool.qr-code.copyImageUnavailable"));
