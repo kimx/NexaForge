@@ -9,7 +9,7 @@ describe("JsonWorkspaceNav", () => {
   });
 
   it("links every JSON workflow and marks the current tool", () => {
-    renderWithProviders(<JsonWorkspaceNav />, { route: "/developer/json-diff" });
+    renderWithProviders(<JsonWorkspaceNav />, { route: "/data/json-diff" });
 
     const nav = screen.getByRole("navigation", { name: "JSON workspace" });
     const links = Array.from(nav.querySelectorAll("a"));
