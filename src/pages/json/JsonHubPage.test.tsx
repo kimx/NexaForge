@@ -29,7 +29,7 @@ describe("JsonHubPage", () => {
     );
     expect(screen.getByRole("link", { name: /json diff/i })).toHaveAttribute(
       "href",
-      "/en/developer/json-diff"
+      "/en/data/json-diff"
     );
     expect(screen.getAllByRole("link")).toHaveLength(JSON_TOOLS.length);
   });
