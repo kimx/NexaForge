@@ -65,7 +65,11 @@ const RELATED_LABELS: Record<string, Record<Locale, string>> = {
   "/pdf/rotate": { "zh-TW": "旋轉 PDF", en: "Rotate PDF" },
   "/data/json-formatter": { "zh-TW": "JSON 格式化", en: "JSON Formatter" },
   "/data/json-validator": { "zh-TW": "JSON 驗證", en: "JSON Validator" },
+  "/data/json-diff": { "zh-TW": "JSON Diff", en: "JSON Diff" },
+  "/data/json-to-csv": { "zh-TW": "JSON 轉 CSV", en: "JSON to CSV" },
   "/json": { "zh-TW": "JSON 工具中心", en: "JSON Tool Hub" },
+  "/developer/json-to-typescript": { "zh-TW": "JSON 轉 TypeScript", en: "JSON to TypeScript" },
+  "/developer/json-to-csharp": { "zh-TW": "JSON 轉 C#", en: "JSON to C#" },
   "/developer/base64-encode": { "zh-TW": "Base64 編碼", en: "Base64 Encode" },
   "/developer/base64-decode": { "zh-TW": "Base64 解碼", en: "Base64 Decode" },
   "/developer/base64": { "zh-TW": "Base64 工具", en: "Base64 Tool" },
@@ -470,9 +474,79 @@ const EXISTING_PAGE_SEEDS: PageSeed[] = [
   },
 }));
 
+const JSON_DIFF_LANDING: SeoLandingDefinition = {
+  path: "/data/json-diff",
+  toolId: "json-diff",
+  isAlias: false,
+  preset: {},
+  content: {
+    "zh-TW": {
+      title: "JSON Diff 線上比較工具｜比較 JSON 差異 - NexaForge",
+      description: "免費線上 JSON Diff 工具，比較兩份 JSON 的新增、刪除與修改內容。所有 JSON 都在瀏覽器本機處理，不會上傳伺服器。",
+      h1: "JSON Diff 線上比較工具",
+      intro: "JSON Diff 會以資料結構比較兩份 JSON，協助你在 API 開發、設定檔檢查與測試資料驗證時快速找出真正變動的欄位。",
+      sections: [
+        {
+          heading: "JSON Diff 是什麼？",
+          body: "JSON Diff 是用來比較兩份 JSON 文件的工具，會分別標示新增、刪除、修改與未變更的欄位，並顯示對應的 JSON Path。",
+        },
+        {
+          heading: "Object 與 Array 如何比較？",
+          body: "Object 的 key 順序不會造成差異；Array 則依 index 比較，因此相同元素的順序不同會被視為修改。",
+        },
+      ],
+      steps: ["在左側貼上原始 JSON。", "在右側貼上修改後 JSON。", "選擇「比較 JSON」查看結構化差異。"],
+      privacy: "你的 JSON 只會在瀏覽器本機處理，不會傳送至伺服器，也不會加入網址或分析事件。",
+      faq: [
+        { q: "JSON Diff 會上傳我的資料嗎？", a: "不會，所有 JSON 比較都在瀏覽器本機完成。" },
+        { q: "JSON 欄位順序不同會被判定為差異嗎？", a: "不會，Object key 順序不影響比較結果。" },
+        { q: "Array 順序不同會被判定為差異嗎？", a: "會，第一版依照 Array index 比較內容。" },
+        { q: "可以比較大型 JSON 嗎？", a: "可以在瀏覽器能力範圍內處理；大型資料可能需要較多記憶體與處理時間。" },
+      ],
+      related: [
+        { path: "/data/json-formatter", label: "JSON 格式化" },
+        { path: "/developer/json-to-typescript", label: "JSON 轉 TypeScript" },
+        { path: "/developer/json-to-csharp", label: "JSON 轉 C#" },
+        { path: "/data/json-to-csv", label: "JSON 轉 CSV" },
+      ],
+    },
+    en: {
+      title: "JSON Diff Online – Compare JSON Differences | NexaForge",
+      description: "Compare two JSON documents and find added, removed, and changed values instantly. Your JSON is processed locally in your browser and never uploaded.",
+      h1: "JSON Diff Online",
+      intro: "Compare JSON structures for API work, configuration reviews, test data validation, and version checks without sending either document away from your browser.",
+      sections: [
+        {
+          heading: "What is JSON Diff?",
+          body: "JSON Diff compares two JSON documents structurally, marking added, removed, changed, and unchanged fields with their corresponding JSON Paths.",
+        },
+        {
+          heading: "How are objects and arrays compared?",
+          body: "Object key order does not create a difference. Arrays are compared by index, so a different order is treated as a change in this first version.",
+        },
+      ],
+      steps: ["Paste the original JSON on the left.", "Paste the modified JSON on the right.", "Select Compare JSON to inspect the structured result."],
+      privacy: "Your JSON is processed locally in your browser and is never uploaded, included in a URL, or sent to analytics.",
+      faq: [
+        { q: "Will JSON Diff upload my data?", a: "No. All JSON comparisons run locally in your browser." },
+        { q: "Does a different JSON key order count as a difference?", a: "No. Object key order does not affect the comparison." },
+        { q: "Does array order count as a difference?", a: "Yes. This version compares arrays by index." },
+        { q: "Can I compare large JSON documents?", a: "Yes, within your browser's available resources. Large documents may require more memory and processing time." },
+      ],
+      related: [
+        { path: "/data/json-formatter", label: "JSON Formatter" },
+        { path: "/developer/json-to-typescript", label: "JSON to TypeScript" },
+        { path: "/developer/json-to-csharp", label: "JSON to C#" },
+        { path: "/data/json-to-csv", label: "JSON to CSV" },
+      ],
+    },
+  },
+};
+
 export const SEO_SEARCH_PAGES: readonly SeoLandingDefinition[] = [
   ...ALIAS_PAGE_SEEDS.map(definePage),
   ...EXISTING_PAGE_SEEDS.map(definePage),
+  JSON_DIFF_LANDING,
 ];
 
 export const SEO_ALIAS_PAGES = SEO_SEARCH_PAGES.filter(({ isAlias }) => isAlias);

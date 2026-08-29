@@ -31,6 +31,9 @@ const CsvViewerPage = lazy(() =>
 const JsonFormatterPage = lazy(() =>
   import("./pages/data/JsonFormatterPage").then((module) => ({ default: module.JsonFormatterPage }))
 );
+const JsonDiffPage = lazy(() =>
+  import("./pages/data/JsonDiffPage").then((module) => ({ default: module.JsonDiffPage }))
+);
 const JsonToCsvPage = lazy(() =>
   import("./pages/data/JsonToCsvPage").then((module) => ({ default: module.JsonToCsvPage }))
 );
@@ -163,6 +166,11 @@ interface AppRoute {
   element: JSX.Element;
 }
 
+function LegacyJsonDiffRedirect(): JSX.Element {
+  const { pathname } = useLocation();
+  return <Navigate to={pathname.startsWith("/en/") ? "/en/data/json-diff" : "/data/json-diff"} replace />;
+}
+
 const SEO_ALIAS_ELEMENTS: Record<string, JSX.Element> = {
   "image-convert": <ImageConvertPage />,
   "image-compress": <ImageCompressPage />,
@@ -201,6 +209,7 @@ const APP_ROUTES: AppRoute[] = [
   { path: "/pdf/rotate", element: <PdfRotatePage /> },
   { path: "/pdf/to-image", element: <PdfToImagePage /> },
   { path: "/data/json-formatter", element: <JsonFormatterPage /> },
+  { path: "/data/json-diff", element: <JsonDiffPage /> },
   { path: "/data/csv-viewer", element: <CsvViewerPage /> },
   { path: "/data/csv-to-json", element: <CsvToJsonPage /> },
   { path: "/data/json-to-csv", element: <JsonToCsvPage /> },
@@ -221,7 +230,7 @@ const APP_ROUTES: AppRoute[] = [
   { path: "/developer/url-encoder", element: <DeveloperToolsPage kind="url-encoder" /> },
   { path: "/developer/unix-timestamp", element: <DeveloperToolsPage kind="unix-timestamp" /> },
   { path: "/developer/json-yaml", element: <DeveloperToolsPage kind="json-yaml" /> },
-  { path: "/developer/json-diff", element: <DeveloperToolsPage kind="json-diff" /> },
+  { path: "/developer/json-diff", element: <LegacyJsonDiffRedirect /> },
   { path: "/developer/regex-tester", element: <RegexTesterPage /> },
   { path: "/developer/sql-formatter", element: <SqlFormatterPage /> },
   { path: "/developer/cron-builder", element: <CronBuilderPage /> },
