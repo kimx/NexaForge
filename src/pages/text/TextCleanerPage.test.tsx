@@ -13,4 +13,14 @@ describe("TextCleanerPage", () => {
     expect(screen.getByRole("link", { name: /find & replace/i })).toHaveAttribute("href", "/en/text/find-replace");
     expect(screen.getByRole("link", { name: /compare text/i })).toHaveAttribute("href", "/en/text/diff");
   });
+
+  it("groups the Chinese cleanup settings by their effect", () => {
+    renderWithProviders(<TextCleanerPage />, { locale: "zh-TW" });
+
+    expect(screen.getByRole("heading", { level: 3, name: "行首尾空白" })).toBeVisible();
+    expect(screen.getByRole("heading", { level: 3, name: "空白與空行" })).toBeVisible();
+    expect(screen.getByRole("heading", { level: 3, name: "格式標準化" })).toBeVisible();
+    expect(screen.getByLabelText("移除每行前後空白")).toBeVisible();
+    expect(screen.getByRole("button", { name: "清理文字" })).toBeVisible();
+  });
 });

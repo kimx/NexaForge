@@ -2,6 +2,7 @@ import { useState } from "react";
 import { TextResultActions } from "../../components/text/TextResultActions";
 import { TextWorkflowLinks } from "../../components/text/TextWorkflowLinks";
 import { ToolPageTemplate } from "../../components/ToolPageTemplate";
+import { useLanguage } from "../../context/LanguageContext";
 import { FILE_TOOLS } from "../../data/tools";
 import { useSeo } from "../../hooks/useSeo";
 import { cleanText, type TextCleanerOptions } from "../../services/text/textWorkflowService";
@@ -28,6 +29,7 @@ const NEXT_TOOLS = [
 ];
 
 export function TextCleanerPage(): JSX.Element {
+  const { t } = useLanguage();
   const [input, setInput] = useState("");
   const [options, setOptions] = useState<TextCleanerOptions>(DEFAULT_OPTIONS);
   const [output, setOutput] = useState("");
@@ -74,16 +76,22 @@ export function TextCleanerPage(): JSX.Element {
           </label>
         ),
         options: (
-          <div className="tool-form text-cleaner__options">
+          <div className="tool-form text-cleaner__options text-tool-options">
             {([
-              ["trimLines", "Trim each line"], ["removeLeadingWhitespace", "Remove leading whitespace"],
-              ["removeTrailingWhitespace", "Remove trailing whitespace"], ["collapseSpaces", "Collapse extra spaces"],
-              ["removeEmptyLines", "Remove empty lines"], ["collapseEmptyLines", "Collapse repeated empty lines"],
-              ["tabsToSpaces", "Convert tabs to spaces"], ["normalizeLineEndings", "Normalize line endings"], ["trimDocument", "Trim entire document"],
-            ] as Array<[keyof TextCleanerOptions, string]>).map(([key, label]) => (
-              <label key={key} className="checkbox-option"><input type="checkbox" checked={Boolean(options[key])} onChange={(event) => updateOption(key, event.target.checked)} /> {label}</label>
+              ["edgeWhitespace", [["trimLines", "trimLines"], ["removeLeadingWhitespace", "removeLeadingWhitespace"], ["removeTrailingWhitespace", "removeTrailingWhitespace"]]],
+              ["spacing", [["collapseSpaces", "collapseSpaces"], ["removeEmptyLines", "removeEmptyLines"], ["collapseEmptyLines", "collapseEmptyLines"]]],
+              ["normalization", [["tabsToSpaces", "tabsToSpaces"], ["normalizeLineEndings", "normalizeLineEndings"], ["trimDocument", "trimDocument"]]],
+            ] as Array<[string, Array<[keyof TextCleanerOptions, string]>]>).map(([group, items]) => (
+              <section key={group} className="text-tool-options__group" aria-labelledby={`text-cleaner-${group}`}>
+                <h3 id={`text-cleaner-${group}`}>{t(`tool.text-cleaner.setting.${group}`)}</h3>
+                <div className="text-tool-options__choices">
+                  {items.map(([key, label]) => (
+                    <label key={key} className="checkbox-option"><input type="checkbox" checked={Boolean(options[key])} onChange={(event) => updateOption(key, event.target.checked)} /> {t(`tool.text-cleaner.option.${label}`)}</label>
+                  ))}
+                </div>
+              </section>
             ))}
-            <button type="button" className="btn primary" onClick={clean}>Clean text</button>
+            <button type="button" className="btn primary text-tool-options__primary-action" onClick={clean}>{t("tool.text-cleaner.button.clean")}</button>
           </div>
         ),
         result: (

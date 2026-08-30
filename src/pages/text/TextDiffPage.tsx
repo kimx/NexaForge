@@ -2,6 +2,7 @@ import { useState } from "react";
 import { TextResultActions } from "../../components/text/TextResultActions";
 import { TextWorkflowLinks } from "../../components/text/TextWorkflowLinks";
 import { ToolPageTemplate } from "../../components/ToolPageTemplate";
+import { useLanguage } from "../../context/LanguageContext";
 import { FILE_TOOLS } from "../../data/tools";
 import { useSeo } from "../../hooks/useSeo";
 import { compareText, type TextDiffResult } from "../../services/text/textWorkflowService";
@@ -18,6 +19,7 @@ function unifiedOutput(result: TextDiffResult): string {
 }
 
 export function TextDiffPage(): JSX.Element {
+  const { t } = useLanguage();
   const [original, setOriginal] = useState("");
   const [changed, setChanged] = useState("");
   const [ignoreWhitespace, setIgnoreWhitespace] = useState(false);
@@ -60,14 +62,22 @@ export function TextDiffPage(): JSX.Element {
           </div>
         ),
         options: (
-          <div className="tool-form">
-            <label className="checkbox-option"><input type="checkbox" checked={ignoreWhitespace} onChange={(event) => setIgnoreWhitespace(event.target.checked)} /> Ignore whitespace</label>
-            <label className="checkbox-option"><input type="checkbox" checked={ignoreCase} onChange={(event) => setIgnoreCase(event.target.checked)} /> Ignore case</label>
-            <fieldset className="text-diff__modes"><legend>Display mode</legend>
-              <label><input type="radio" name="diff-mode" checked={mode === "side-by-side"} onChange={() => setMode("side-by-side")} /> Side-by-side</label>
-              <label><input type="radio" name="diff-mode" checked={mode === "unified"} onChange={() => setMode("unified")} /> Unified</label>
-            </fieldset>
-            <div className="tool-actions"><button type="button" className="btn primary" onClick={compare}>Compare</button><button type="button" className="btn secondary" onClick={clear}>Clear</button></div>
+          <div className="tool-form text-diff__options text-tool-options">
+            <section className="text-tool-options__group" aria-labelledby="text-diff-comparison-rules">
+              <h3 id="text-diff-comparison-rules">{t("tool.text-diff.setting.comparisonRules")}</h3>
+              <div className="text-tool-options__choices">
+                <label className="checkbox-option"><input type="checkbox" checked={ignoreWhitespace} onChange={(event) => setIgnoreWhitespace(event.target.checked)} /> {t("tool.text-diff.option.ignoreWhitespace")}</label>
+                <label className="checkbox-option"><input type="checkbox" checked={ignoreCase} onChange={(event) => setIgnoreCase(event.target.checked)} /> {t("tool.text-diff.option.ignoreCase")}</label>
+              </div>
+            </section>
+            <section className="text-tool-options__group" aria-labelledby="text-diff-display-mode">
+              <h3 id="text-diff-display-mode">{t("tool.text-diff.setting.displayMode")}</h3>
+              <fieldset className="text-diff__modes"><legend>{t("tool.text-diff.setting.outputFormat")}</legend>
+                <label><input type="radio" name="diff-mode" checked={mode === "side-by-side"} onChange={() => setMode("side-by-side")} /> {t("tool.text-diff.mode.sideBySide")}</label>
+                <label><input type="radio" name="diff-mode" checked={mode === "unified"} onChange={() => setMode("unified")} /> {t("tool.text-diff.mode.unified")}</label>
+              </fieldset>
+            </section>
+            <div className="tool-actions text-tool-options__actions"><button type="button" className="btn primary" onClick={compare}>{t("tool.text-diff.button.startCompare")}</button><button type="button" className="btn secondary" onClick={clear}>{t("tool.text-diff.button.clear")}</button></div>
           </div>
         ),
         result: result ? (

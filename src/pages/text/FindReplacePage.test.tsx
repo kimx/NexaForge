@@ -16,4 +16,14 @@ describe("FindReplacePage", () => {
     fireEvent.click(screen.getByLabelText(/use regular expression/i));
     expect(screen.getByRole("link", { name: /test regex/i })).toHaveAttribute("href", "/en/developer/regex-tester");
   });
+
+  it("reveals Chinese regex settings only when regular expressions are enabled", () => {
+    renderWithProviders(<FindReplacePage />, { locale: "zh-TW" });
+
+    expect(screen.getByRole("heading", { level: 3, name: "搜尋條件" })).toBeVisible();
+    expect(screen.queryByRole("heading", { level: 3, name: "正規表達式" })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByLabelText("使用正規表達式"));
+    expect(screen.getByRole("heading", { level: 3, name: "正規表達式" })).toBeVisible();
+    expect(screen.getByRole("button", { name: "全部取代" })).toBeVisible();
+  });
 });

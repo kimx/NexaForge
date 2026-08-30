@@ -2,6 +2,7 @@ import { useState } from "react";
 import { TextResultActions } from "../../components/text/TextResultActions";
 import { TextWorkflowLinks } from "../../components/text/TextWorkflowLinks";
 import { ToolPageTemplate } from "../../components/ToolPageTemplate";
+import { useLanguage } from "../../context/LanguageContext";
 import { FILE_TOOLS } from "../../data/tools";
 import { useSeo } from "../../hooks/useSeo";
 import { findAndReplace } from "../../services/text/textWorkflowService";
@@ -15,6 +16,7 @@ const NEXT_TOOLS = [
 ];
 
 export function FindReplacePage(): JSX.Element {
+  const { t } = useLanguage();
   const [input, setInput] = useState("");
   const [find, setFind] = useState("");
   const [replace, setReplace] = useState("");
@@ -72,13 +74,17 @@ export function FindReplacePage(): JSX.Element {
           </div>
         ),
         options: (
-          <div className="tool-form find-replace__options">
-            <label className="checkbox-option"><input type="checkbox" checked={caseSensitive} onChange={(event) => setCaseSensitive(event.target.checked)} /> Case sensitive</label>
-            <label className="checkbox-option"><input type="checkbox" checked={wholeWord} onChange={(event) => setWholeWord(event.target.checked)} /> Whole word</label>
-            <label className="checkbox-option"><input type="checkbox" checked={useRegex} onChange={(event) => setUseRegex(event.target.checked)} /> Use regular expression</label>
-            {useRegex ? <fieldset className="regex-tester__flags"><legend>Regex flags</legend><div className="regex-tester__flag-grid">{"gimsuy".split("").map((flag) => <label key={flag} className="regex-tester__flag"><input type="checkbox" checked={flags.includes(flag)} onChange={() => toggleFlag(flag)} /> {flag}</label>)}</div></fieldset> : null}
-            <button type="button" className="btn primary" onClick={runReplace}>Replace all</button>
-            {useRegex ? <TextWorkflowLinks heading="Regex help" tools={[{ label: "Test Regex", path: "/developer/regex-tester" }]} /> : null}
+          <div className="tool-form find-replace__options text-tool-options">
+            <section className="text-tool-options__group" aria-labelledby="find-replace-search-options">
+              <h3 id="find-replace-search-options">{t("tool.find-replace.setting.searchRules")}</h3>
+              <div className="text-tool-options__choices">
+                <label className="checkbox-option"><input type="checkbox" checked={caseSensitive} onChange={(event) => setCaseSensitive(event.target.checked)} /> {t("tool.find-replace.option.caseSensitive")}</label>
+                <label className="checkbox-option"><input type="checkbox" checked={wholeWord} onChange={(event) => setWholeWord(event.target.checked)} /> {t("tool.find-replace.option.wholeWord")}</label>
+                <label className="checkbox-option"><input type="checkbox" checked={useRegex} onChange={(event) => setUseRegex(event.target.checked)} /> {t("tool.find-replace.option.useRegex")}</label>
+              </div>
+            </section>
+            {useRegex ? <section className="text-tool-options__group" aria-labelledby="find-replace-regex-options"><h3 id="find-replace-regex-options">{t("tool.find-replace.setting.regex")}</h3><fieldset className="regex-tester__flags"><legend>{t("tool.find-replace.setting.regexFlags")}</legend><div className="regex-tester__flag-grid">{"gimsuy".split("").map((flag) => <label key={flag} className="regex-tester__flag"><input type="checkbox" checked={flags.includes(flag)} onChange={() => toggleFlag(flag)} /> {flag}</label>)}</div></fieldset><TextWorkflowLinks heading={t("tool.find-replace.setting.regexHelp")} tools={[{ label: t("tool.find-replace.button.testRegex"), path: "/developer/regex-tester" }]} /></section> : null}
+            <button type="button" className="btn primary text-tool-options__primary-action" onClick={runReplace}>{t("tool.find-replace.button.replaceAll")}</button>
           </div>
         ),
         result: (
