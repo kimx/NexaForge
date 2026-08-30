@@ -38,6 +38,8 @@ describe("SEO search page catalog", () => {
       "/text/uuid",
       "/developer/unix-timestamp",
       "/qr-code",
+      "/text/text-cleaner",
+      "/text/find-replace",
       "/text/diff",
       "/text/markdown",
       "/pdf/reorder-pages",

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ToolPageTemplate } from "../../components/ToolPageTemplate";
+import { TextWorkflowLinks } from "../../components/text/TextWorkflowLinks";
 import { useLanguage } from "../../context/LanguageContext";
 import { FILE_TOOLS } from "../../data/tools";
 import { useSeo } from "../../hooks/useSeo";
@@ -303,6 +304,7 @@ export function RegexTesterPage(): JSX.Element {
         ),
         howItWorks,
         faq,
+        nextActions: <TextWorkflowLinks tools={[{ label: "Find & Replace", path: "/text/find-replace" }]} />,
         relatedTools: getRelatedTools("regex-tester"),
       }}
     />

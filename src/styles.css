@@ -7463,3 +7463,39 @@ button.tool-sidebar__category-toggle .tool-sidebar__icon .tool-sidebar__svg {
     width: 5rem;
   }
 }
+
+.text-workflow-links__list,
+.text-diff-inputs,
+.text-diff-row {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.text-workflow-links__list {
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+}
+
+.text-diff-inputs {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.text-diff-table {
+  overflow-x: auto;
+}
+
+.text-diff-row {
+  grid-template-columns: 1.25rem 3rem minmax(10rem, 1fr) 3rem minmax(10rem, 1fr);
+  padding: var(--space-2);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.text-diff-row--added { border-left: 3px solid #218858; }
+.text-diff-row--removed { border-left: 3px solid #bb3d3d; }
+.text-diff-unified { white-space: pre-wrap; overflow-wrap: anywhere; }
+
+@media (max-width: 680px) {
+  .text-diff-inputs { grid-template-columns: minmax(0, 1fr); }
+  .text-diff-row { grid-template-columns: 1.25rem 2rem minmax(8rem, 1fr); }
+  .text-diff-row > :nth-child(4),
+  .text-diff-row > :nth-child(5) { display: none; }
+}

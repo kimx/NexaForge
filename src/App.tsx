@@ -157,6 +157,12 @@ const MarkdownPreviewPage = lazy(() =>
 const TextDiffPage = lazy(() =>
   import("./pages/text/TextDiffPage").then((module) => ({ default: module.TextDiffPage }))
 );
+const TextCleanerPage = lazy(() =>
+  import("./pages/text/TextCleanerPage").then((module) => ({ default: module.TextCleanerPage }))
+);
+const FindReplacePage = lazy(() =>
+  import("./pages/text/FindReplacePage").then((module) => ({ default: module.FindReplacePage }))
+);
 const TextToolsPage = lazy(() =>
   import("./pages/text/TextToolsPage").then((module) => ({ default: module.TextToolsPage }))
 );
@@ -227,6 +233,8 @@ const APP_ROUTES: AppRoute[] = [
   { path: "/text/case-converter", element: <TextToolsPage kind="case-converter" /> },
   { path: "/text/remove-duplicate-lines", element: <TextToolsPage kind="remove-duplicate-lines" /> },
   { path: "/text/sort-lines", element: <TextToolsPage kind="sort-lines" /> },
+  { path: "/text/text-cleaner", element: <TextCleanerPage /> },
+  { path: "/text/find-replace", element: <FindReplacePage /> },
   { path: "/text/diff", element: <TextDiffPage /> },
   { path: "/text/html-encoder", element: <HtmlEncoderPage /> },
   { path: "/text/markdown", element: <MarkdownPreviewPage /> },

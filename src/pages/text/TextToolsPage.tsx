@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { ToolPageTemplate } from "../../components/ToolPageTemplate";
+import { TextWorkflowLinks } from "../../components/text/TextWorkflowLinks";
 import { useLanguage } from "../../context/LanguageContext";
 import { FILE_TOOLS } from "../../data/tools";
 import { useSeo } from "../../hooks/useSeo";
@@ -40,6 +41,11 @@ export function TextToolsPage({ kind }: { kind: TextToolKind }): JSX.Element {
   const [stats, setStats] = useState<ReturnType<typeof countTextStats> | null>(null);
 
   const relatedTools = getRelatedTools(kind);
+  const nextTools = kind === "remove-duplicate-lines"
+    ? [{ label: "Sort Lines", path: "/text/sort-lines" }, { label: "Compare Text", path: "/text/diff" }]
+    : kind === "sort-lines"
+      ? [{ label: "Remove Duplicate Lines", path: "/text/remove-duplicate-lines" }, { label: "Compare Text", path: "/text/diff" }]
+      : [];
   const howItWorks = useMemo(
     () => [0, 1, 2].map((index) => t(`tool.${kind}.how.${index}`)),
     [kind, t]
@@ -185,6 +191,7 @@ export function TextToolsPage({ kind }: { kind: TextToolKind }): JSX.Element {
             </div>
           </>
         ),
+        nextActions: <TextWorkflowLinks tools={nextTools} />,
         howItWorks,
         faq,
         relatedTools,
