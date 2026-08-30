@@ -191,7 +191,7 @@ export function TextToolsPage({ kind }: { kind: TextToolKind }): JSX.Element {
             </div>
           </>
         ),
-        nextActions: <TextWorkflowLinks tools={nextTools} />,
+        nextActions: nextTools.length > 0 ? <TextWorkflowLinks tools={nextTools} /> : undefined,
         howItWorks,
         faq,
         relatedTools,

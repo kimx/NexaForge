@@ -322,7 +322,9 @@ export function QrPage({ initialContentType = "url", toolId = "qr-code" }: QrPag
       ...current,
       logoSource,
       logoDataUrl: logoSource === "none" ? undefined : current.logoDataUrl,
-      errorCorrectionLevel: logoSource === "none" ? current.errorCorrectionLevel : "H",
+      errorCorrectionLevel: logoSource === "line" || (logoSource === "custom" && Boolean(current.logoDataUrl))
+        ? "H"
+        : current.errorCorrectionLevel,
     }));
   };
 
@@ -418,13 +420,6 @@ export function QrPage({ initialContentType = "url", toolId = "qr-code" }: QrPag
       restoreLogoState();
     }
     setContentType(type);
-  };
-
-  const handleContentTypeChange = (type: QrContentType): void => {
-    setContentType(type);
-    if (type === "line") {
-      applyLineLogo();
-    }
   };
 
   const handleCopyImage = async (): Promise<void> => {
