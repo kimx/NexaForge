@@ -38,8 +38,13 @@ describe("SEO search page catalog", () => {
       "/text/uuid",
       "/developer/unix-timestamp",
       "/qr-code",
+      "/text/text-cleaner",
+      "/text/find-replace",
       "/text/diff",
       "/text/markdown",
+      "/pdf/reorder-pages",
+      "/pdf/delete-pages",
+      "/pdf/extract-pages",
       "/data/json-diff",
     ]);
     expect(new Set(SEO_SEARCH_PAGES.map(({ path }) => path)).size).toBe(

@@ -251,8 +251,11 @@ export function PdfMergePage(): JSX.Element {
             <Link className="btn secondary" to={localizePath("/pdf/rotate", locale)} onClick={() => trackEvent("result_action_used", { tool: "pdf-merge", action: "rotate" })}>
               {t("toolPage.nextRotate")}
             </Link>
-            <Link className="btn secondary" to={localizePath("/pdf/split", locale)} onClick={() => trackEvent("result_action_used", { tool: "pdf-merge", action: "split" })}>
-              {t("toolPage.nextSplit")}
+            <Link className="btn secondary" to={localizePath("/pdf/reorder-pages", locale)} onClick={() => trackEvent("result_action_used", { tool: "pdf-merge", action: "reorder" })}>
+              {locale === "en" ? "Reorder Pages" : "重新排序頁面"}
+            </Link>
+            <Link className="btn secondary" to={localizePath("/pdf/delete-pages", locale)} onClick={() => trackEvent("result_action_used", { tool: "pdf-merge", action: "delete" })}>
+              {locale === "en" ? "Delete Pages" : "刪除頁面"}
             </Link>
           </>
         ),

@@ -124,6 +124,9 @@ const PdfSplitPage = lazy(() =>
 const PdfToImagePage = lazy(() =>
   import("./pages/pdf/PdfToImagePage").then((module) => ({ default: module.PdfToImagePage }))
 );
+const PdfPageEditorPage = lazy(() =>
+  import("./pages/pdf/PageEditorPage").then((module) => ({ default: module.PdfPageEditorPage }))
+);
 const QrPage = lazy(() =>
   import("./pages/qr/QrPage").then((module) => ({ default: module.QrPage }))
 );
@@ -153,6 +156,12 @@ const MarkdownPreviewPage = lazy(() =>
 );
 const TextDiffPage = lazy(() =>
   import("./pages/text/TextDiffPage").then((module) => ({ default: module.TextDiffPage }))
+);
+const TextCleanerPage = lazy(() =>
+  import("./pages/text/TextCleanerPage").then((module) => ({ default: module.TextCleanerPage }))
+);
+const FindReplacePage = lazy(() =>
+  import("./pages/text/FindReplacePage").then((module) => ({ default: module.FindReplacePage }))
 );
 const TextToolsPage = lazy(() =>
   import("./pages/text/TextToolsPage").then((module) => ({ default: module.TextToolsPage }))
@@ -208,6 +217,9 @@ const APP_ROUTES: AppRoute[] = [
   { path: "/pdf/split", element: <PdfSplitPage /> },
   { path: "/pdf/rotate", element: <PdfRotatePage /> },
   { path: "/pdf/to-image", element: <PdfToImagePage /> },
+  { path: "/pdf/reorder-pages", element: <PdfPageEditorPage mode="reorder" /> },
+  { path: "/pdf/delete-pages", element: <PdfPageEditorPage mode="delete" /> },
+  { path: "/pdf/extract-pages", element: <PdfPageEditorPage mode="extract" /> },
   { path: "/data/json-formatter", element: <JsonFormatterPage /> },
   { path: "/data/json-diff", element: <JsonDiffPage /> },
   { path: "/data/csv-viewer", element: <CsvViewerPage /> },
@@ -221,6 +233,8 @@ const APP_ROUTES: AppRoute[] = [
   { path: "/text/case-converter", element: <TextToolsPage kind="case-converter" /> },
   { path: "/text/remove-duplicate-lines", element: <TextToolsPage kind="remove-duplicate-lines" /> },
   { path: "/text/sort-lines", element: <TextToolsPage kind="sort-lines" /> },
+  { path: "/text/text-cleaner", element: <TextCleanerPage /> },
+  { path: "/text/find-replace", element: <FindReplacePage /> },
   { path: "/text/diff", element: <TextDiffPage /> },
   { path: "/text/html-encoder", element: <HtmlEncoderPage /> },
   { path: "/text/markdown", element: <MarkdownPreviewPage /> },
