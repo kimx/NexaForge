@@ -10,6 +10,7 @@ import { JsonWorkspaceNav } from "./JsonWorkspaceNav";
 import { localizePath } from "../routing/localePaths";
 import { getSeoLandingContent } from "../seo/landingPages";
 import { SeoLandingContent } from "./SeoLandingContent";
+import { RelatedTools } from "./RelatedTools";
 
 interface ToolPageTemplateProps {
   tool: ToolDefinition;
@@ -50,6 +51,10 @@ export function ToolPageTemplate({
   const seoContent = getSeoLandingContent(pathname, locale);
   const displayTitle = seoContent?.h1 ?? toolTitle;
   const displayDescription = seoContent?.description ?? toolDescription;
+  const relatedTools = children.relatedTools.slice(0, 4);
+  const derivedNextActions = !children.nextActions && ["Image", "PDF", "Data"].includes(tool.category)
+    ? relatedTools
+    : [];
 
   const localizedBreadcrumb = breadcrumb.map((item, index) => {
     if (index === 0) {
@@ -151,10 +156,17 @@ export function ToolPageTemplate({
               <h2 id={resultHeadingId}>{t("toolPage.result")}</h2>
               {workflow ? <ProcessingStatus {...workflow} /> : null}
               {showResultContent ? children.result : null}
-              {workflow?.state === "success" && children.nextActions ? (
+              {workflow?.state === "success" && (children.nextActions || derivedNextActions.length > 0) ? (
                 <div className="next-actions">
                   <h3>{t("toolPage.nextActions")}</h3>
-                  <div className="next-actions__row">{children.nextActions}</div>
+                  {children.nextActions ? <div className="next-actions__row">{children.nextActions}</div> : null}
+                  {derivedNextActions.length > 0 ? (
+                    <RelatedTools
+                      tools={derivedNextActions}
+                      className="next-actions__links"
+                      ariaLabel={t("toolPage.nextActions")}
+                    />
+                  ) : null}
                   {workflow.onReprocess ? (
                     <button type="button" className="btn secondary" onClick={workflow.onReprocess}>
                       {t("toolPage.reprocess")}
@@ -200,16 +212,13 @@ export function ToolPageTemplate({
           </section>
         ) : null}
 
-        {(!seoContent || tool.category === "QR & Barcode") ? (
+        {(!seoContent || tool.category === "QR & Barcode") && !children.nextActions ? (
           <section className="tool-card">
-            <h2>{t("toolPage.related")}</h2>
-            <ul className="related-tools">
-              {children.relatedTools.map((relatedTool) => (
-                <li key={relatedTool.id}>
-                  <Link to={localizePath(relatedTool.path, locale)}>{localToolMeta(relatedTool.id, "title")}</Link>
-                </li>
-              ))}
-            </ul>
+            <RelatedTools
+              tools={children.relatedTools}
+              heading={t("toolPage.related")}
+              ariaLabel={t("toolPage.related")}
+            />
           </section>
         ) : null}
       </div>
