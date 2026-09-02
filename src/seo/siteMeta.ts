@@ -88,7 +88,7 @@ export function buildPageSeo(path: string, locale: Locale): PageSeo {
   } else if (basePath === "/") {
     pageName = siteName;
     title = translate(locale, "seo.homeTitle");
-    baseDescription = translate(locale, "home.subtitle");
+    baseDescription = `${translate(locale, "home.subtitle")} ${translate(locale, "home.positioning")}`;
   } else if (basePath === "/json") {
     pageName = translate(locale, "jsonHub.title");
     title = `${pageName} | ${siteName}`;

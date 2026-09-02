@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { FileDropzone } from "../../components/FileDropzone";
 import { DownloadButton } from "../../components/DownloadButton";
 import { ToolPageTemplate } from "../../components/ToolPageTemplate";
@@ -10,9 +11,10 @@ import type { FileProcessResult, ProcessingState, ToolMeta } from "../../types/t
 import { trackEvent } from "../../utils/analytics";
 import { formatFileSize } from "../../utils/fileSize";
 import { getRelatedTools } from "../../utils/toolHelpers";
+import { localizePath } from "../../routing/localePaths";
 
 export function ImageToPdfPage(): JSX.Element {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const [files, setFiles] = useState<File[]>([]);
   const [processing, setProcessing] = useState<ProcessingState>("idle");
   const [result, setResult] = useState<FileProcessResult | null>(null);
@@ -136,7 +138,14 @@ export function ImageToPdfPage(): JSX.Element {
           </button>
         ),
         result: result ? <p>{t("tool.image-to-pdf.output", { count: files.length, size: formatFileSize(result.size) })}</p> : <></>,
-        nextActions: <DownloadButton result={result} onDownloaded={() => trackEvent("download", { tool: "image-to-pdf" })} />,
+        nextActions: (
+          <>
+            <DownloadButton result={result} onDownloaded={() => trackEvent("download", { tool: "image-to-pdf" })} />
+            <Link className="btn secondary" to={localizePath("/pdf/merge", locale)}>{locale === "en" ? "Merge PDF files" : "合併 PDF"}</Link>
+            <Link className="btn secondary" to={localizePath("/image/compress", locale)}>{locale === "en" ? "Compress this image" : "壓縮圖片"}</Link>
+            <Link className="btn secondary" to={localizePath("/image/resize", locale)}>{locale === "en" ? "Resize this image" : "調整圖片尺寸"}</Link>
+          </>
+        ),
         howItWorks,
         faq,
         relatedTools: getRelatedTools("image-to-pdf"),

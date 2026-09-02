@@ -516,6 +516,43 @@ export const FILE_TOOLS: ToolDefinition[] = [
   },
 ];
 
+export const TOOL_RELATIONSHIPS: Record<string, string[]> = {
+  "image-to-pdf": ["pdf-merge", "pdf-reorder-pages", "pdf-to-image", "image-compress"],
+  "image-resize": ["image-crop", "image-compress", "image-convert", "image-remove-exif"],
+  "image-crop": ["image-resize", "image-compress", "image-convert", "image-remove-exif"],
+  "image-compress": ["image-resize", "image-convert", "image-crop", "image-remove-exif"],
+  "image-convert": ["image-resize", "image-compress", "image-crop", "image-remove-exif"],
+  "heic-converter": ["image-convert", "image-resize", "image-crop", "image-compress"],
+  "image-exif-viewer": ["image-remove-exif", "image-resize", "image-compress", "image-convert"],
+  "image-remove-exif": ["image-exif-viewer", "image-compress", "image-convert", "image-resize"],
+  "pdf-to-image": ["image-compress", "image-resize", "image-convert", "image-to-pdf"],
+  "pdf-merge": ["pdf-reorder-pages", "pdf-delete-pages", "pdf-split", "pdf-to-image"],
+  "pdf-split": ["pdf-merge", "pdf-reorder-pages", "pdf-delete-pages", "pdf-to-image"],
+  "pdf-rotate": ["pdf-reorder-pages", "pdf-delete-pages", "pdf-merge", "pdf-to-image"],
+  "pdf-reorder-pages": ["pdf-delete-pages", "pdf-extract-pages", "pdf-merge", "pdf-rotate"],
+  "pdf-delete-pages": ["pdf-reorder-pages", "pdf-extract-pages", "pdf-split", "pdf-merge"],
+  "pdf-extract-pages": ["pdf-reorder-pages", "pdf-rotate", "pdf-to-image", "pdf-split"],
+  "json-formatter": ["json-diff", "json-yaml", "json-to-typescript", "json-to-csharp"],
+  "json-diff": ["json-formatter", "json-yaml", "json-to-typescript", "json-to-csharp"],
+  "json-yaml": ["json-formatter", "json-diff", "json-to-typescript", "json-to-csharp"],
+  "json-to-typescript": ["json-formatter", "json-diff", "json-to-csharp", "json-yaml"],
+  "json-to-csharp": ["json-formatter", "json-diff", "json-to-typescript", "json-yaml"],
+  "json-to-csv": ["json-formatter", "csv-viewer", "csv-to-json", "json-diff"],
+  "csv-to-json": ["csv-viewer", "json-formatter", "json-to-csv", "json-diff"],
+  "csv-viewer": ["csv-to-json", "json-to-csv", "json-formatter", "json-diff"],
+  "qr-code": ["wifi-qr", "vcard-qr", "qr-reader", "barcode-generator"],
+  "wifi-qr": ["qr-code", "vcard-qr", "qr-reader", "barcode-generator"],
+  "vcard-qr": ["qr-code", "wifi-qr", "qr-reader", "barcode-generator"],
+  "qr-reader": ["qr-code", "wifi-qr", "vcard-qr", "barcode-generator"],
+  "barcode-generator": ["qr-code", "qr-reader", "wifi-qr", "vcard-qr"],
+  "text-cleaner": ["find-replace", "remove-duplicate-lines", "sort-lines", "text-diff"],
+  "find-replace": ["text-diff", "text-cleaner", "word-counter", "regex-tester"],
+  "text-diff": ["text-cleaner", "find-replace", "remove-duplicate-lines", "sort-lines"],
+  "base64": ["json-formatter", "url-encoder", "hash", "uuid"],
+  "url-encoder": ["base64", "url-parser", "unix-timestamp", "json-formatter"],
+  "unix-timestamp": ["uuid", "url-encoder", "json-formatter", "hash"],
+};
+
 export const TOOLS_BY_CATEGORY = FILE_TOOLS.reduce(
   (acc, tool) => {
     const key = tool.category;
