@@ -1,0 +1,103 @@
+name: Generate Release Notes
+
+on:
+  workflow_dispatch:
+    inputs:
+      from_tag:
+        description: 起始 Tag，例如 1.1.6
+        required: true
+        type: string
+      to_tag:
+        description: 目標 Tag，例如 1.1.7
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  # GitHub Copilot CLI 官方文件要求此 2026 新增權限；actionlint v1.7.12 尚未收錄。
+  copilot-requests: write
+
+concurrency:
+  group: generate-release-notes-${{ inputs.to_tag }}
+  cancel-in-progress: false
+
+jobs:
+  generate-release-notes:
+    name: Generate Traditional Chinese Release Notes
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      FROM_TAG: ${{ inputs.from_tag }}
+      TO_TAG: ${{ inputs.to_tag }}
+      EVIDENCE_DIR: /tmp/release-notes-evidence
+      RELEASE_NOTES_FILE: /tmp/release-notes.md
+      MAX_DIFF_SIZE: "120000"
+
+    steps:
+      - name: Normalize Tag inputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          normalize_tag() {
+            local tag="$1"
+            if [[ "$tag" == v* ]]; then
+              printf '%s\n' "$tag"
+            else
+              printf 'v%s\n' "$tag"
+            fi
+          }
+          echo "FROM_TAG=$(normalize_tag "$FROM_TAG")" >> "$GITHUB_ENV"
+          echo "TO_TAG=$(normalize_tag "$TO_TAG")" >> "$GITHUB_ENV"
+
+      - name: Checkout repository with full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Collect release changes
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash .github/scripts/collect-release-changes.sh \
+            "$FROM_TAG" \
+            "$TO_TAG" \
+            "$EVIDENCE_DIR"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install GitHub Copilot CLI
+        run: npm install --global @github/copilot@1.0.82
+
+      - name: Generate release notes with GitHub Copilot
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          bash .github/scripts/generate-release-notes.sh \
+            "$EVIDENCE_DIR" \
+            "$RELEASE_NOTES_FILE"
+
+      - name: Update or create GitHub Release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          bash .github/scripts/update-release.sh \
+            "$TO_TAG" \
+            "$RELEASE_NOTES_FILE"
+
+      - name: Summarize result
+        shell: bash
+        run: |
+          {
+            echo "## Release Notes 已完成"
+            echo ""
+            echo "- From Tag：\`$FROM_TAG\`"
+            echo "- To Tag：\`$TO_TAG\`"
+            echo "- Release：${{ github.server_url }}/${{ github.repository }}/releases/tag/$TO_TAG"
+          } >> "$GITHUB_STEP_SUMMARY"
