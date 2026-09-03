@@ -14,14 +14,30 @@ describe("image crop geometry", () => {
   it("centers the default rectangle over 80 percent of the stage", () => {
     expect(createDefaultCropSettings()).toEqual({
       shape: { kind: "rectangle", bounds: { x: 0.1, y: 0.1, width: 0.8, height: 0.8 } },
-      imageTransform: { offsetX: 0, offsetY: 0, scale: 1 },
+      imageTransform: {
+        offsetX: 0,
+        offsetY: 0,
+        scale: 1,
+        rotationQuarterTurns: 0,
+        flipHorizontal: false,
+        flipVertical: false,
+      },
       format: "png",
       quality: 0.9,
     });
   });
 
   it("fits a landscape image into the normalized stage", () => {
-    expect(getImageStageBounds(1600, 800, { offsetX: 0, offsetY: 0, scale: 1 })).toEqual({
+    expect(
+      getImageStageBounds(1600, 800, {
+        offsetX: 0,
+        offsetY: 0,
+        scale: 1,
+        rotationQuarterTurns: 0,
+        flipHorizontal: false,
+        flipVertical: false,
+      })
+    ).toEqual({
       x: 0,
       y: 0.25,
       width: 1,
@@ -35,7 +51,14 @@ describe("image crop geometry", () => {
         { x: 0.6, y: 0.55 },
         1000,
         500,
-        { offsetX: 0.1, offsetY: 0.05, scale: 1 }
+        {
+          offsetX: 0.1,
+          offsetY: 0.05,
+          scale: 1,
+          rotationQuarterTurns: 0,
+          flipHorizontal: false,
+          flipVertical: false,
+        }
       )
     ).toEqual({ x: 500, y: 250 });
   });
@@ -43,7 +66,14 @@ describe("image crop geometry", () => {
   it("creates a source-resolution render plan from a hand-derived square crop", () => {
     const plan = createCropRenderPlan(1000, 500, {
       shape: { kind: "rectangle", bounds: { x: 0.25, y: 0.25, width: 0.5, height: 0.5 } },
-      imageTransform: { offsetX: 0, offsetY: 0, scale: 1 },
+      imageTransform: {
+        offsetX: 0,
+        offsetY: 0,
+        scale: 1,
+        rotationQuarterTurns: 0,
+        flipHorizontal: false,
+        flipVertical: false,
+      },
       format: "png",
       quality: 0.9,
     });
@@ -53,8 +83,46 @@ describe("image crop geometry", () => {
       outputHeight: 500,
       mimeType: "image/png",
       background: null,
-      imageDestination: { x: -250, y: 0, width: 1000, height: 500 },
+      imageBounds: { x: 0, y: 0.25, width: 1, height: 0.5 },
+      imageDrawSize: { width: 1, height: 0.5 },
     });
+  });
+
+  it("swaps fitted stage dimensions after a 90-degree rotation", () => {
+    expect(
+      getImageStageBounds(1920, 1080, {
+        offsetX: 0,
+        offsetY: 0,
+        scale: 1,
+        rotationQuarterTurns: 1,
+        flipHorizontal: false,
+        flipVertical: false,
+      })
+    ).toEqual({
+      x: 0.21875,
+      y: 0,
+      width: 0.5625,
+      height: 1,
+    });
+  });
+
+  it("keeps pixel dimensions in rotated orientation during export planning", () => {
+    const plan = createCropRenderPlan(1920, 1080, {
+      shape: { kind: "rectangle", bounds: { x: 0.21875, y: 0, width: 0.5625, height: 1 } },
+      imageTransform: {
+        offsetX: 0,
+        offsetY: 0,
+        scale: 1,
+        rotationQuarterTurns: 1,
+        flipHorizontal: false,
+        flipVertical: false,
+      },
+      format: "png",
+      quality: 0.9,
+    });
+
+    expect(plan.outputWidth).toBe(1080);
+    expect(plan.outputHeight).toBe(1920);
   });
 
   it("reports a rectangle below the five-percent minimum as invalid", () => {

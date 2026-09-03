@@ -26,9 +26,12 @@ const canvasContext = {
   lineTo: vi.fn(),
   moveTo: vi.fn(),
   rect: vi.fn(),
+  rotate: vi.fn(),
   restore: vi.fn(),
   save: vi.fn(),
+  scale: vi.fn(),
   stroke: vi.fn(),
+  translate: vi.fn(),
   bezierCurveTo: vi.fn(),
   fillStyle: "",
   strokeStyle: "",
@@ -142,6 +145,15 @@ describe("ImageCropPage", () => {
     const outputControls = screen.getByRole("group", { name: "Output controls" });
     expect(within(outputControls).getByRole("combobox", { name: "Format" })).toBeInTheDocument();
     expect(within(outputControls).getByRole("button", { name: "Crop image" })).toBeEnabled();
+  });
+
+  it("shows rotate and flip controls for source transforms", () => {
+    renderCropPageWithSelectedFile();
+
+    expect(screen.getByRole("button", { name: "Rotate left 90°" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Rotate right 90°" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Flip horizontal" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Flip vertical" })).toBeInTheDocument();
   });
 
   it("keeps an instructional result visible before cropping", () => {

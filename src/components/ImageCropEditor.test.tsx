@@ -21,6 +21,10 @@ const labels: ImageCropEditorLabels & {
   polygon: "Polygon",
   freehand: "Freehand",
   zoom: "Zoom",
+  rotateLeft: "Rotate left 90°",
+  rotateRight: "Rotate right 90°",
+  flipHorizontal: "Flip horizontal",
+  flipVertical: "Flip vertical",
   undo: "Undo",
   reset: "Reset",
   closeShape: "Close shape",
@@ -51,9 +55,12 @@ const canvasContext = {
   lineTo: vi.fn(),
   moveTo: vi.fn(),
   rect: vi.fn(),
+  rotate: vi.fn(),
   restore: vi.fn(),
   save: vi.fn(),
+  scale: vi.fn(),
   stroke: vi.fn(),
+  translate: vi.fn(),
   bezierCurveTo: vi.fn(),
   fillStyle: "",
   strokeStyle: "",
@@ -196,6 +203,39 @@ describe("ImageCropEditor", () => {
     expect(screen.getByText("150%")).toBeInTheDocument();
     expect(onChange).toHaveBeenLastCalledWith(
       expect.objectContaining({ imageTransform: expect.objectContaining({ scale: 1.5 }) })
+    );
+  });
+
+  it("applies rotate and flip controls to the image transform", () => {
+    render(<EditorHarness />);
+    loadSource();
+
+    fireEvent.click(screen.getByRole("button", { name: "Rotate left 90°" }));
+    expect(onChange).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        imageTransform: expect.objectContaining({ rotationQuarterTurns: 3 }),
+      })
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Rotate right 90°" }));
+    expect(onChange).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        imageTransform: expect.objectContaining({ rotationQuarterTurns: 0 }),
+      })
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Flip horizontal" }));
+    expect(onChange).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        imageTransform: expect.objectContaining({ flipHorizontal: true }),
+      })
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Flip vertical" }));
+    expect(onChange).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        imageTransform: expect.objectContaining({ flipVertical: true }),
+      })
     );
   });
 

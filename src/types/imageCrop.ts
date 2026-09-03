@@ -32,6 +32,9 @@ export interface ImageTransform {
   offsetX: number;
   offsetY: number;
   scale: number;
+  rotationQuarterTurns: 0 | 1 | 2 | 3;
+  flipHorizontal: boolean;
+  flipVertical: boolean;
 }
 
 export interface CropSettings {
@@ -54,7 +57,11 @@ export interface CropRenderPlan {
   background: "#ffffff" | null;
   shapeBounds: CropBounds;
   pixelsPerStageUnit: number;
-  imageDestination: CropBounds;
+  imageBounds: CropBounds;
+  imageDrawSize: {
+    width: number;
+    height: number;
+  };
 }
 
 export interface ImageCropResult extends FileProcessResult {
@@ -74,6 +81,10 @@ export interface ImageCropEditorLabels {
   zoom: string;
   undo: string;
   reset: string;
+  rotateLeft: string;
+  rotateRight: string;
+  flipHorizontal: string;
+  flipVertical: string;
   closeShape: string;
   addPoint: string;
   point: string;
