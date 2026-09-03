@@ -52,13 +52,24 @@ export async function cropImage(file: File, settings: CropSettings): Promise<Ima
       y: (point.y - plan.shapeBounds.y) * plan.pixelsPerStageUnit,
     }));
     context.clip();
+    context.save();
+    context.translate(
+      (plan.imageBounds.x + plan.imageBounds.width / 2 - plan.shapeBounds.x) * plan.pixelsPerStageUnit,
+      (plan.imageBounds.y + plan.imageBounds.height / 2 - plan.shapeBounds.y) * plan.pixelsPerStageUnit
+    );
+    context.rotate(((settings.imageTransform.rotationQuarterTurns ?? 0) * Math.PI) / 2);
+    context.scale(
+      settings.imageTransform.flipHorizontal ? -1 : 1,
+      settings.imageTransform.flipVertical ? -1 : 1
+    );
     context.drawImage(
       bitmap,
-      plan.imageDestination.x,
-      plan.imageDestination.y,
-      plan.imageDestination.width,
-      plan.imageDestination.height
+      (-plan.imageDrawSize.width * plan.pixelsPerStageUnit) / 2,
+      (-plan.imageDrawSize.height * plan.pixelsPerStageUnit) / 2,
+      plan.imageDrawSize.width * plan.pixelsPerStageUnit,
+      plan.imageDrawSize.height * plan.pixelsPerStageUnit
     );
+    context.restore();
     context.restore();
 
     const blob = await canvasToBlob(canvas, plan.mimeType, plan.quality);

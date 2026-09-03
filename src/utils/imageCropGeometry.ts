@@ -24,10 +24,42 @@ const MIME_BY_FORMAT = {
 export function createDefaultCropSettings(): CropSettings {
   return {
     shape: { kind: "rectangle", bounds: { ...DEFAULT_PRESET_BOUNDS } },
-    imageTransform: { offsetX: 0, offsetY: 0, scale: 1 },
+    imageTransform: {
+      offsetX: 0,
+      offsetY: 0,
+      scale: 1,
+      rotationQuarterTurns: 0,
+      flipHorizontal: false,
+      flipVertical: false,
+    },
     format: "png",
     quality: 0.9,
   };
+}
+
+function normalizeQuarterTurns(turns: number): 0 | 1 | 2 | 3 {
+  const normalized = ((Math.round(turns) % 4) + 4) % 4;
+  return normalized as 0 | 1 | 2 | 3;
+}
+
+export function getOrientedSourceSize(
+  sourceWidth: number,
+  sourceHeight: number,
+  transform: ImageTransform
+): { width: number; height: number } {
+  const quarterTurns = normalizeQuarterTurns(transform.rotationQuarterTurns ?? 0);
+  if (quarterTurns % 2 === 0) {
+    return { width: sourceWidth, height: sourceHeight };
+  }
+  return { width: sourceHeight, height: sourceWidth };
+}
+
+export function getImageDrawSize(imageBounds: CropBounds, transform: ImageTransform): { width: number; height: number } {
+  const quarterTurns = normalizeQuarterTurns(transform.rotationQuarterTurns ?? 0);
+  if (quarterTurns % 2 === 0) {
+    return { width: imageBounds.width, height: imageBounds.height };
+  }
+  return { width: imageBounds.height, height: imageBounds.width };
 }
 
 export function getCropBounds(shape: CropShape): CropBounds {
@@ -305,7 +337,8 @@ export function getImageStageBounds(
   if (sourceWidth <= 0 || sourceHeight <= 0) {
     throw new Error("Image dimensions must be positive.");
   }
-  const aspect = sourceWidth / sourceHeight;
+  const oriented = getOrientedSourceSize(sourceWidth, sourceHeight, transform);
+  const aspect = oriented.width / oriented.height;
   const fittedWidth = aspect >= 1 ? 1 : aspect;
   const fittedHeight = aspect >= 1 ? 1 / aspect : 1;
   const width = fittedWidth * transform.scale;
@@ -325,9 +358,26 @@ export function stagePointToSource(
   transform: ImageTransform
 ): CropPoint {
   const image = getImageStageBounds(sourceWidth, sourceHeight, transform);
+  const drawSize = getImageDrawSize(image, transform);
+  const rotation = normalizeQuarterTurns(transform.rotationQuarterTurns ?? 0) * (Math.PI / 2);
+  const cos = Math.cos(rotation);
+  const sin = Math.sin(rotation);
+  const centerX = image.x + image.width / 2;
+  const centerY = image.y + image.height / 2;
+  const dx = point.x - centerX;
+  const dy = point.y - centerY;
+  let localX = dx * cos + dy * sin;
+  let localY = -dx * sin + dy * cos;
+  if (transform.flipHorizontal) {
+    localX *= -1;
+  }
+  if (transform.flipVertical) {
+    localY *= -1;
+  }
+
   return {
-    x: stableNumber(((point.x - image.x) / image.width) * sourceWidth),
-    y: stableNumber(((point.y - image.y) / image.height) * sourceHeight),
+    x: stableNumber(((localX / drawSize.width) + 0.5) * sourceWidth),
+    y: stableNumber(((localY / drawSize.height) + 0.5) * sourceHeight),
   };
 }
 
@@ -343,7 +393,9 @@ export function createCropRenderPlan(
   }
 
   const shapeBounds = getCropBounds(settings.shape);
-  const pixelsPerStageUnit = sourceWidth / imageBounds.width;
+  const orientedSource = getOrientedSourceSize(sourceWidth, sourceHeight, settings.imageTransform);
+  const pixelsPerStageUnit = orientedSource.width / imageBounds.width;
+  const imageDrawSize = getImageDrawSize(imageBounds, settings.imageTransform);
   const mimeType = settings.shape.kind === "rectangle" ? MIME_BY_FORMAT[settings.format] : "image/png";
   return {
     outputWidth: Math.max(1, Math.round(shapeBounds.width * pixelsPerStageUnit)),
@@ -353,11 +405,7 @@ export function createCropRenderPlan(
     background: mimeType === "image/jpeg" ? "#ffffff" : null,
     shapeBounds,
     pixelsPerStageUnit,
-    imageDestination: {
-      x: (imageBounds.x - shapeBounds.x) * pixelsPerStageUnit,
-      y: (imageBounds.y - shapeBounds.y) * pixelsPerStageUnit,
-      width: imageBounds.width * pixelsPerStageUnit,
-      height: imageBounds.height * pixelsPerStageUnit,
-    },
+    imageBounds,
+    imageDrawSize,
   };
 }

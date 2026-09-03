@@ -10,6 +10,7 @@ import type {
 } from "../types/imageCrop";
 import {
   createDefaultCropSettings,
+  getImageDrawSize,
   getImageStageBounds,
   simplifyFreehandPoints,
   traceCropPath,
@@ -40,6 +41,14 @@ const HANDLE_DIRECTIONS: ResizeDirection[] = [
   "west",
   "northwest",
 ];
+
+function rotateQuarterTurnsLeft(current: number): 0 | 1 | 2 | 3 {
+  return ((current + 3) % 4) as 0 | 1 | 2 | 3;
+}
+
+function rotateQuarterTurnsRight(current: number): 0 | 1 | 2 | 3 {
+  return ((current + 1) % 4) as 0 | 1 | 2 | 3;
+}
 
 function getHandlePosition(bounds: CropBounds, direction: ResizeDirection): CSSProperties {
   const left = direction.includes("west")
@@ -183,13 +192,22 @@ export function ImageCropEditor({
       context.fillRect(0, 0, canvasSize, canvasSize);
     }
     const imageBounds = getImageStageBounds(sourceSize.width, sourceSize.height, value.imageTransform);
+    const imageDrawSize = getImageDrawSize(imageBounds, value.imageTransform);
+    context.save();
+    context.translate(
+      (imageBounds.x + imageBounds.width / 2) * canvasSize,
+      (imageBounds.y + imageBounds.height / 2) * canvasSize
+    );
+    context.rotate((value.imageTransform.rotationQuarterTurns * Math.PI) / 2);
+    context.scale(value.imageTransform.flipHorizontal ? -1 : 1, value.imageTransform.flipVertical ? -1 : 1);
     context.drawImage(
       imageRef.current,
-      imageBounds.x * canvasSize,
-      imageBounds.y * canvasSize,
-      imageBounds.width * canvasSize,
-      imageBounds.height * canvasSize
+      (-imageDrawSize.width * canvasSize) / 2,
+      (-imageDrawSize.height * canvasSize) / 2,
+      imageDrawSize.width * canvasSize,
+      imageDrawSize.height * canvasSize
     );
+    context.restore();
 
     context.save();
     context.fillStyle = "rgba(15, 23, 42, 0.58)";
@@ -600,6 +618,62 @@ export function ImageCropEditor({
         </label>
 
         <div className="image-crop-editor__actions">
+          <button
+            type="button"
+            className="btn secondary"
+            onClick={() =>
+              commitChange({
+                ...value,
+                imageTransform: {
+                  ...value.imageTransform,
+                  rotationQuarterTurns: rotateQuarterTurnsLeft(value.imageTransform.rotationQuarterTurns),
+                },
+              })}
+          >
+            {labels.rotateLeft}
+          </button>
+          <button
+            type="button"
+            className="btn secondary"
+            onClick={() =>
+              commitChange({
+                ...value,
+                imageTransform: {
+                  ...value.imageTransform,
+                  rotationQuarterTurns: rotateQuarterTurnsRight(value.imageTransform.rotationQuarterTurns),
+                },
+              })}
+          >
+            {labels.rotateRight}
+          </button>
+          <button
+            type="button"
+            className="btn secondary"
+            onClick={() =>
+              commitChange({
+                ...value,
+                imageTransform: {
+                  ...value.imageTransform,
+                  flipHorizontal: !value.imageTransform.flipHorizontal,
+                },
+              })}
+          >
+            {labels.flipHorizontal}
+          </button>
+          <button
+            type="button"
+            className="btn secondary"
+            onClick={() =>
+              commitChange({
+                ...value,
+                imageTransform: {
+                  ...value.imageTransform,
+                  flipVertical: !value.imageTransform.flipVertical,
+                },
+              })}
+          >
+            {labels.flipVertical}
+          </button>
           <button type="button" className="btn secondary" disabled={history.length === 0} onClick={undo}>
             {labels.undo}
           </button>
