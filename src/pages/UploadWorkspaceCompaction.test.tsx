@@ -57,7 +57,7 @@ const cases: UploadCase[] = [
   { name: "Image Resize", page: <ImageResizePage />, files: [image(), image()], multiple: true },
   { name: "Social Resizer", page: <SocialResizerPage />, files: [image()] },
   { name: "PDF Merge", page: <PdfMergePage />, files: [pdf("a.pdf"), pdf("b.pdf")], multiple: true },
-  { name: "PDF Rotate", page: <PdfRotatePage />, files: [pdf()] },
+  { name: "PDF Rotate", page: <PdfRotatePage />, files: [pdf()], multiple: true },
   { name: "PDF Split", page: <PdfSplitPage />, files: [pdf()] },
   { name: "QR Reader", page: <QrReaderPage />, files: [image()] },
   {

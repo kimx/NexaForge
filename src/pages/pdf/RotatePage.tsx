@@ -1,11 +1,14 @@
-import { useMemo, useState } from "react";
-import { ProcessingState, ToolMeta, FileProcessResult } from "../../types/tool";
+import { useMemo, useRef, useState } from "react";
+import { ProcessingState, ToolMeta } from "../../types/tool";
 import { FILE_TOOLS } from "../../data/tools";
 import { ToolPageTemplate } from "../../components/ToolPageTemplate";
 import { FileDropzone } from "../../components/FileDropzone";
 import { FileInfo } from "../../components/FileInfo";
 import { DownloadButton } from "../../components/DownloadButton";
+import { BatchFileResults } from "../../components/BatchFileResults";
+import { DownloadCollectionButton } from "../../components/DownloadCollectionButton";
 import { rotatePdf } from "../../services/pdf/pdfService";
+import { runBatch, type BatchItem } from "../../services/batch/batchService";
 import { getRelatedTools } from "../../utils/toolHelpers";
 import { trackEvent } from "../../utils/analytics";
 import { useSeo } from "../../hooks/useSeo";
@@ -18,9 +21,11 @@ export function PdfRotatePage(): JSX.Element {
   const [degrees, setDegrees] = useState<90 | 180 | 270>(90);
   const [pagesInput, setPagesInput] = useState("");
   const [processing, setProcessing] = useState<ProcessingState>("idle");
-  const [result, setResult] = useState<FileProcessResult | null>(null);
+  const [items, setItems] = useState<BatchItem[]>([]);
+  const [completed, setCompleted] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [rotateAll, setRotateAll] = useState(true);
+  const operationRef = useRef(0);
 
   const tool = FILE_TOOLS.find((item) => item.id === "pdf-rotate");
   const title = t("tool.pdf-rotate.title");
@@ -57,34 +62,59 @@ export function PdfRotatePage(): JSX.Element {
     [t]
   );
 
+  const clearOutputs = (): void => {
+    operationRef.current += 1;
+    setItems([]);
+    setCompleted(0);
+    setError(null);
+    setProcessing("idle");
+  };
+  const selectFiles = (next: File[]): void => {
+    clearOutputs();
+    setFiles(next);
+  };
+  const clearSelection = (): void => {
+    clearOutputs();
+    setFiles([]);
+  };
+  const successes = items.flatMap((item) => item.status === "success" ? [item.result] : []);
+  const singleResult = files.length === 1 ? successes[0] : undefined;
+
   const handleProcess = async () => {
-    if (!files[0]) {
+    if (!files.length) {
       setError(t("error.selectOneFile", { type: t("label.fileType.pdf") }));
       return;
     }
-    const source = files[0];
-    const sizeError = validateFileSize(source);
-    const mimeError = validateMime(source, "application/pdf");
-    if (sizeError || mimeError) {
-      setError(sizeError?.message ?? mimeError?.message ?? t("error.invalidFile"));
+    const invalid = files.find((file) => validateFileSize(file) || validateMime(file, "application/pdf"));
+    if (invalid) {
+      setError(t("error.invalidFile"));
       setProcessing("error");
       trackEvent("process_failed", { tool: "pdf-rotate" });
       return;
     }
 
+    const operation = operationRef.current + 1;
+    operationRef.current = operation;
+    setItems([]);
+    setCompleted(0);
     setError(null);
     setProcessing("processing");
     trackEvent("process_start", { tool: "pdf-rotate" });
-    try {
-      const output = await rotatePdf(source, degrees, rotateAll ? undefined : pagesInput);
-      setResult(output);
+    const batch = await runBatch(files, (file) => rotatePdf(file, degrees, rotateAll ? undefined : pagesInput), {
+      concurrency: 2,
+      onProgress: (done) => {
+        if (operationRef.current === operation) setCompleted(done);
+      },
+    });
+    if (operationRef.current !== operation) return;
+    setItems(batch.items);
+    if (batch.successful > 0) {
       setProcessing("success");
       trackEvent("process_success", { tool: "pdf-rotate" });
-    } catch (err) {
+    } else {
       setError(t("error.processingFailed"));
       setProcessing("error");
       trackEvent("process_failed", { tool: "pdf-rotate" });
-      console.error(err);
     }
   };
 
@@ -99,11 +129,11 @@ export function PdfRotatePage(): JSX.Element {
             <FileDropzone
               label={t("label.dropPdf")}
               accept="application/pdf"
-              multiple={false}
-              onFiles={setFiles}
+              multiple
+              onFiles={selectFiles}
               compact={files.length > 0}
             />
-            <FileInfo files={files} mode="single" compact={files.length > 0} />
+            <FileInfo files={files} mode="multi" onClear={clearSelection} compact={files.length > 0} />
           </>
         ),
         options: (
@@ -154,14 +184,21 @@ export function PdfRotatePage(): JSX.Element {
                 {error}
               </p>
             )}
-            {result && (
+            {singleResult && (
               <p>
-                {t("tool.pdf-rotate.label.outputSize", { size: (result.size / 1024).toFixed(2) })}
+                {t("tool.pdf-rotate.label.outputSize", { size: (singleResult.size / 1024).toFixed(2) })}
               </p>
             )}
-            {result ? (
+            {items.length > 0 && files.length > 1 ? (
+              <>
+                <p>{t("batch.progress", { completed, total: files.length })}</p>
+                <BatchFileResults items={items} />
+                <DownloadCollectionButton results={successes} fileName="rotated-pdfs.zip" disabled={processing === "processing"} />
+              </>
+            ) : null}
+            {singleResult ? (
               <DownloadButton
-                result={result}
+                result={singleResult}
                 disabled={processing === "processing"}
                 onDownloaded={() => trackEvent("download", { tool: "pdf-rotate" })}
               />
