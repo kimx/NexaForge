@@ -228,6 +228,9 @@ export interface PdfPageSize {
   box: PdfPageBox;
 }
 
+export type PdfPageSizeLike = Pick<PdfPageSize, "width" | "height"> &
+  Partial<Pick<PdfPageSize, "x" | "y">>;
+
 interface PdfBox {
   x: number;
   y: number;
@@ -348,7 +351,7 @@ function normalizeMargins(margin: number | PdfMargins): Required<PdfMargins> {
 }
 
 export function calculatePdfPosition(
-  pageSize: Pick<PdfPageSize, "x" | "y" | "width" | "height">,
+  pageSize: PdfPageSizeLike,
   contentSize: PdfContentSize,
   position: PdfPosition,
   margin: number | PdfMargins = 0
@@ -372,12 +375,14 @@ export function calculatePdfPosition(
   }
 
   const margins = normalizeMargins(margin);
-  const left = pageSize.x + margins.left;
-  const right = pageSize.x + pageSize.width - margins.right;
-  const bottom = pageSize.y + margins.bottom;
-  const top = pageSize.y + pageSize.height - margins.top;
-  const horizontalCenter = pageSize.x + pageSize.width / 2 - contentSize.width / 2;
-  const verticalCenter = pageSize.y + pageSize.height / 2 - contentSize.height / 2;
+  const pageX = pageSize.x ?? 0;
+  const pageY = pageSize.y ?? 0;
+  const left = pageX + margins.left;
+  const right = pageX + pageSize.width - margins.right;
+  const bottom = pageY + margins.bottom;
+  const top = pageY + pageSize.height - margins.top;
+  const horizontalCenter = pageX + pageSize.width / 2 - contentSize.width / 2;
+  const verticalCenter = pageY + pageSize.height / 2 - contentSize.height / 2;
 
   switch (position) {
     case "top-left":
@@ -404,7 +409,7 @@ export function calculatePdfPosition(
 }
 
 export function calculatePosition(
-  pageSize: Pick<PdfPageSize, "x" | "y" | "width" | "height">,
+  pageSize: PdfPageSizeLike,
   position: PdfPosition,
   contentSize: PdfContentSize,
   margin: number | PdfMargins = 0
