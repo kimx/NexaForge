@@ -1,6 +1,6 @@
 import { degrees, PDFDocument } from "pdf-lib";
 import type { FileProcessResult } from "../../types/tool";
-import { readFileAsArrayBuffer } from "../file/fileService";
+import { createPdfResult, loadPdfDocument } from "./pdfToolkit";
 
 export interface PdfPageItem {
   id: string;
@@ -26,7 +26,7 @@ export async function exportPdfPages(
     throw new Error("A PDF must contain at least one page.");
   }
 
-  const source = await PDFDocument.load(await readFileAsArrayBuffer(file));
+  const source = await loadPdfDocument(file);
   const target = await PDFDocument.create();
   const copiedPages = await target.copyPages(
     source,
@@ -42,11 +42,5 @@ export async function exportPdfPages(
   });
 
   const bytes = await target.save();
-  const blob = new Blob([new Uint8Array(bytes)], { type: "application/pdf" });
-  return {
-    blob,
-    fileName,
-    mimeType: "application/pdf",
-    size: blob.size,
-  };
+  return createPdfResult(bytes, fileName);
 }

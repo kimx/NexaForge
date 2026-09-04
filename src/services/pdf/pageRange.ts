@@ -5,11 +5,15 @@ export function parsePageRanges(input: string): number[] {
   }
 
   const pages = new Set<number>();
-  const parts = value.split(",").map((item) => item.trim()).filter(Boolean);
+  const parts = value.split(",").map((item) => item.trim());
 
   for (const part of parts) {
+    if (!part || !/^\d+(?:\s*-\s*\d+)?$/.test(part)) {
+      throw new Error(`Invalid page range: ${part || value}`);
+    }
+
     if (part.includes("-")) {
-      const [startRaw, endRaw] = part.split("-");
+      const [startRaw, endRaw] = part.split("-").map((item) => item.trim());
       if (!startRaw || !endRaw) {
         throw new Error(`Invalid range: ${part}`);
       }
