@@ -40,6 +40,7 @@ const ROUTE_HEADINGS: Record<string, string> = {
   "/developer/sql-formatter": "SQL Formatter",
   "/developer/cron-builder": "Cron Expression Builder",
   "/developer/url-parser": "URL Parser",
+  "/developer/url-encode-decode": "URL Encoder / Decoder",
   "/developer/curl-to-code": "cURL to Code",
   "/developer/secret-generator": "Password & Key Generator",
   "/text/hash": "Hash Generator",

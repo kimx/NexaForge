@@ -9,6 +9,7 @@ describe("buildPageSeo", () => {
       "/data/json-validator",
       "/data/json-diff",
       "/developer/base64-decode",
+      "/developer/url-encode-decode",
     ]));
     expect(INDEXABLE_ROUTES).toContain("/en/developer/url-decode");
 
@@ -36,6 +37,19 @@ describe("buildPageSeo", () => {
           }),
         ]),
       }),
+    ]));
+  });
+
+  it("uses the requested URL encoder title and canonical metadata", () => {
+    const seo = buildPageSeo("/en/developer/url-encode-decode", "en");
+
+    expect(seo.title).toBe("URL Encoder / Decoder Online | NexaForge");
+    expect(seo.description).toContain("encodeURIComponent");
+    expect(seo.canonical).toBe(`${SITE_ORIGIN}/en/developer/url-encode-decode`);
+    expect(seo.openGraph.url).toBe(seo.canonical);
+    expect(seo.jsonLd).toEqual(expect.arrayContaining([
+      expect.objectContaining({ "@type": "BreadcrumbList" }),
+      expect.objectContaining({ "@type": "FAQPage" }),
     ]));
   });
 

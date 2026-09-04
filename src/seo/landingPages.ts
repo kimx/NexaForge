@@ -28,6 +28,7 @@ export interface SeoLandingDefinition {
 }
 
 interface CopySeed {
+  title?: string;
   h1: string;
   description: string;
   featureHeading: string;
@@ -78,6 +79,7 @@ const RELATED_LABELS: Record<string, Record<Locale, string>> = {
   "/developer/base64": { "zh-TW": "Base64 工具", en: "Base64 Tool" },
   "/developer/url-encode": { "zh-TW": "URL 編碼", en: "URL Encode" },
   "/developer/url-decode": { "zh-TW": "URL 解碼", en: "URL Decode" },
+  "/developer/url-parser": { "zh-TW": "URL Parser", en: "URL Parser" },
   "/developer/url-encoder": { "zh-TW": "URL 編碼與解碼", en: "URL Encoder / Decoder" },
   "/developer/unix-timestamp": { "zh-TW": "Unix 時間戳轉換", en: "Unix Timestamp Converter" },
   "/text/uuid": { "zh-TW": "UUID 產生器", en: "UUID Generator" },
@@ -91,9 +93,9 @@ const RELATED_LABELS: Record<string, Record<Locale, string>> = {
 function buildContent(seed: CopySeed, locale: Locale, relatedPaths: string[]): LandingContent {
   const isEnglish = locale === "en";
   return {
-    title: isEnglish
+    title: seed.title ?? (isEnglish
       ? `${seed.h1} — Private Browser Tool | NexaForge`
-      : `${seed.h1}｜免安裝、瀏覽器本機處理 | NexaForge`,
+      : `${seed.h1}｜免安裝、瀏覽器本機處理 | NexaForge`),
     description: seed.description,
     h1: seed.h1,
     intro: isEnglish
@@ -435,6 +437,34 @@ const ALIAS_PAGE_SEEDS: PageSeed[] = [
       useBody: "Decoding changes character representation but does not prove a URL is safe. Check domains, parameters, and redirect destinations before opening an unfamiliar link.",
       steps: ["Paste the percent-encoded value.", "Keep decode mode selected and run it.", "Inspect and copy the recovered text."],
       secondFaq: { q: "Can URL decoding tell me whether a link is safe?", a: "No. It only restores characters; you must still inspect the domain, parameters, and destination." },
+    },
+  },
+  {
+    path: "/developer/url-encode-decode",
+    toolId: "url-encoder",
+    isAlias: true,
+    related: ["/developer/url-parser", "/developer/url-encode", "/developer/url-decode", "/developer/base64"],
+    zh: {
+      title: "URL Encoder / Decoder Online｜NexaForge",
+      h1: "URL 編碼與解碼",
+      description: "線上進行 URL 與 URI component 百分比編碼、解碼，支援中文、Emoji 與查詢字串，所有內容只在瀏覽器本機處理。",
+      featureHeading: "支援 Component 與完整網址模式",
+      featureBody: "Component 模式使用 encodeURIComponent 與 decodeURIComponent；完整網址模式使用 encodeURI 與 decodeURI，能保留網址結構符號並正確處理 Unicode。",
+      useHeading: "URL 編碼與解碼的常見用途",
+      useBody: "準備查詢參數、檢查重導向網址或閱讀應用程式記錄時，可在不傳送資料的情況下快速轉換百分比編碼內容。",
+      steps: ["貼上要處理的文字或網址。", "選擇 Component 或完整網址模式，再按編碼或解碼。", "檢查結果並複製；需要重新開始時按清空。"],
+      secondFaq: { q: "輸入內容會傳到伺服器嗎？", a: "不會。編碼與解碼使用瀏覽器內建 API 在本機完成，輸入文字不會送到伺服器或分析服務。" },
+    },
+    en: {
+      title: "URL Encoder / Decoder Online | NexaForge",
+      h1: "URL Encoder / Decoder",
+      description: "Encode and decode URLs and URI components online with encodeURIComponent, decodeURIComponent, encodeURI, and decodeURI. Unicode, Chinese, emoji, and query strings stay in your browser.",
+      featureHeading: "Component and full URL modes",
+      featureBody: "Component mode uses encodeURIComponent and decodeURIComponent for individual values. Full URL mode uses encodeURI and decodeURI while preserving the structure of a complete URL.",
+      useHeading: "When to encode or decode a URL",
+      useBody: "Convert query values, inspect redirect URLs, or read application logs without sending the source text to a server. Choose component mode for values and full URL mode for complete URLs.",
+      steps: ["Paste the text, query value, or URL to process.", "Choose Component or Full URL, then click Encode or Decode.", "Review and copy the result, or click Clear to start over."],
+      secondFaq: { q: "Is my input sent to a server or analytics service?", a: "No. The browser's built-in URL APIs perform every conversion locally, and the entered text is never sent to a server or analytics service." },
     },
   },
 ];

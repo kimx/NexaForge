@@ -1,6 +1,7 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import type { ReactElement } from "react";
+import { vi } from "vitest";
 import { DeveloperToolsPage, jsonDiff } from "./DeveloperToolsPage";
 import { LanguageProvider } from "../../context/LanguageContext";
 
@@ -112,5 +113,65 @@ describe("DeveloperToolsPage JSON samples", () => {
     });
 
     expect(screen.getByRole("button", { name: "Process" })).toBeDisabled();
+  });
+});
+
+describe("DeveloperToolsPage URL encoder", () => {
+  it("encodes Unicode with component mode", () => {
+    renderWithRouter(<DeveloperToolsPage kind="url-encoder" />, "/en/developer/url-encode-decode");
+    const input = screen.getByRole("textbox", { name: "Input" });
+    const value = "你好 😀 & query";
+
+    fireEvent.change(input, { target: { value } });
+    fireEvent.click(screen.getByRole("button", { name: "Encode" }));
+
+    expect(screen.getByText(encodeURIComponent(value))).toBeVisible();
+  });
+
+  it("uses encodeURI for full URL mode", () => {
+    renderWithRouter(<DeveloperToolsPage kind="url-encoder" />, "/en/developer/url-encode-decode");
+    const input = screen.getByRole("textbox", { name: "Input" });
+    const value = "https://example.com/search?q=你好 world&emoji=😀";
+
+    fireEvent.change(input, { target: { value } });
+    fireEvent.change(screen.getByRole("combobox", { name: "Encoding mode" }), {
+      target: { value: "full-url" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Encode" }));
+
+    expect(screen.getByText(encodeURI(value))).toBeVisible();
+  });
+
+  it("decodes valid component input and reports malformed percent sequences", () => {
+    renderWithRouter(<DeveloperToolsPage kind="url-encoder" />, "/en/developer/url-encode-decode");
+    const input = screen.getByRole("textbox", { name: "Input" });
+
+    fireEvent.change(input, { target: { value: "%E4%BD%A0%E5%A5%BD%20%F0%9F%98%80" } });
+    fireEvent.click(screen.getByRole("button", { name: "Decode" }));
+    expect(screen.getByText("你好 😀")).toBeVisible();
+
+    fireEvent.change(input, { target: { value: "%E0%A4%A" } });
+    fireEvent.click(screen.getByRole("button", { name: "Decode" }));
+
+    expect(screen.getByText("Invalid percent-encoded sequence.")).toBeVisible();
+    expect(input).toHaveAttribute("aria-invalid", "true");
+  });
+
+  it("copies output and clears the URL workspace", async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText } });
+    renderWithRouter(<DeveloperToolsPage kind="url-encoder" />, "/en/developer/url-encode-decode");
+    const input = screen.getByRole("textbox", { name: "Input" });
+
+    fireEvent.change(input, { target: { value: "hello world" } });
+    fireEvent.click(screen.getByRole("button", { name: "Encode" }));
+    fireEvent.click(screen.getByRole("button", { name: "Copy output" }));
+
+    expect(writeText).toHaveBeenCalledWith("hello%20world");
+    expect(await screen.findByText("Output copied.")).toBeVisible();
+
+    fireEvent.click(screen.getByRole("button", { name: "Clear" }));
+    expect(input).toHaveValue("");
+    expect(screen.queryByText("hello%20world")).not.toBeInTheDocument();
   });
 });
