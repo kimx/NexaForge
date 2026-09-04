@@ -200,6 +200,15 @@ export const FILE_TOOLS: ToolDefinition[] = [
     keywords: ["document", "pdf", "watermark", "logo", "text", "png", "jpeg"],
   },
   {
+    id: "pdf-metadata",
+    title: "PDF Metadata Viewer & Remover",
+    description: "View and remove PDF document metadata locally in your browser.",
+    path: "/pdf/metadata",
+    category: "PDF",
+    aliases: ["pdf metadata viewer", "remove pdf metadata", "pdf author remover"],
+    keywords: ["document", "pdf", "metadata", "author", "properties", "privacy"],
+  },
+  {
     id: "json-formatter",
     title: "JSON Formatter",
     description: "Format, minify, and validate JSON in seconds.",
