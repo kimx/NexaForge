@@ -70,6 +70,9 @@ const JsonToCSharpPage = lazy(() =>
 const JsonToTypeScriptPage = lazy(() =>
   import("./pages/developer/JsonToTypeScriptPage").then((module) => ({ default: module.JsonToTypeScriptPage }))
 );
+const JsonPathTesterPage = lazy(() =>
+  import("./pages/developer/JsonPathTesterPage").then((module) => ({ default: module.JsonPathTesterPage }))
+);
 const JwtDecoderPage = lazy(() =>
   import("./pages/developer/JwtDecoderPage").then((module) => ({ default: module.JwtDecoderPage }))
 );
@@ -244,6 +247,8 @@ const APP_ROUTES: AppRoute[] = [
   { path: "/developer/url-encoder", element: <DeveloperToolsPage kind="url-encoder" /> },
   { path: "/developer/unix-timestamp", element: <DeveloperToolsPage kind="unix-timestamp" /> },
   { path: "/developer/json-yaml", element: <DeveloperToolsPage kind="json-yaml" /> },
+  { path: "/developer/jsonpath-tester", element: <JsonPathTesterPage /> },
+  { path: "/developer/jsonpath", element: <JsonPathTesterPage /> },
   { path: "/developer/json-diff", element: <LegacyJsonDiffRedirect /> },
   { path: "/developer/regex-tester", element: <RegexTesterPage /> },
   { path: "/developer/sql-formatter", element: <SqlFormatterPage /> },

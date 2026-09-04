@@ -2662,6 +2662,114 @@ section,
   line-height: 1.55;
 }
 
+.code-editor-toolkit {
+  display: grid;
+  min-width: 0;
+  gap: 8px;
+}
+
+.code-editor-toolkit__header {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.code-editor-toolkit__label {
+  min-width: 0;
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+.code-editor-toolkit__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.code-editor-toolkit__actions .btn {
+  min-height: 40px;
+}
+
+.code-editor-toolkit__surface {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: auto minmax(0, 1fr);
+  overflow: hidden;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--bg-subtle) 68%, var(--surface) 32%);
+}
+
+.code-editor-toolkit__surface:focus-within {
+  border-color: var(--brand-primary);
+  box-shadow: var(--focus-ring);
+}
+
+.code-editor-toolkit__surface--error {
+  border-color: var(--semantic-danger);
+}
+
+.code-editor-toolkit__gutter {
+  min-width: 2.7rem;
+  max-height: 100%;
+  margin: 0;
+  padding: 12px 8px 12px 10px;
+  overflow: hidden;
+  border-right: 1px solid var(--line);
+  background: color-mix(in srgb, var(--bg-subtle) 82%, var(--surface) 18%);
+  color: var(--text-muted);
+  font: 0.82rem/1.55 ui-monospace, SFMono-Regular, Consolas, monospace;
+  text-align: right;
+  user-select: none;
+}
+
+.code-editor-toolkit__textarea {
+  width: 100%;
+  min-width: 0;
+  min-height: 300px;
+  margin: 0;
+  padding: 12px;
+  overflow: auto;
+  border: 0;
+  border-radius: 0;
+  outline: 0;
+  background: var(--surface);
+  color: var(--text-primary);
+  font: 0.82rem/1.55 ui-monospace, SFMono-Regular, Consolas, monospace;
+  tab-size: 2;
+  white-space: pre;
+}
+
+.code-editor-toolkit__textarea:focus {
+  border: 0;
+  box-shadow: none;
+}
+
+.code-editor-toolkit__error,
+.code-editor-toolkit__empty,
+.code-editor-toolkit__status {
+  margin: 0;
+  font-size: 0.8rem;
+}
+
+.code-editor-toolkit__empty,
+.code-editor-toolkit__status {
+  color: var(--text-muted);
+}
+
+.code-editor-toolkit__output-actions {
+  justify-content: flex-start;
+  margin-top: 2px;
+}
+
+.code-editor-toolkit__output-actions .btn {
+  min-width: 92px;
+}
+
 @media (max-width: 1180px) {
   .json-formatter-workspace__controls {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -2693,6 +2801,10 @@ section,
   }
 
   .json-formatter-editor textarea {
+    min-height: 280px;
+  }
+
+  .code-editor-toolkit__textarea {
     min-height: 280px;
   }
 
