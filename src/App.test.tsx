@@ -32,6 +32,7 @@ const ROUTE_HEADINGS: Record<string, string> = {
   "/data/csv-to-json": "CSV to JSON",
   "/data/json-to-csv": "JSON to CSV",
   "/data/json-xml": "JSON ↔ XML",
+  "/data/yaml-json": "YAML to JSON / JSON to YAML Converter",
   "/data/xml-formatter": "XML Formatter",
   "/developer/base64": "Base64",
   "/developer/json-to-csharp": "JSON → C# Class",
@@ -141,6 +142,7 @@ describe("App routes", () => {
       "/developer/json-to-csharp",
       "/developer/json-to-typescript",
       "/data/json-xml",
+      "/data/yaml-json",
       "/data/xml-formatter",
     ];
     paths.forEach((path) => {
@@ -437,6 +439,30 @@ describe("App routes", () => {
       const canonical = document.querySelector("link[rel='canonical']");
       expect(canonical).toHaveAttribute("href", "https://nexaforge.kimx.info/en/developer/base64");
     });
+  });
+
+  it("redirects the legacy JSON YAML route to the data converter", async () => {
+    render(
+      <MemoryRouter
+        initialEntries={["/en/developer/json-yaml"]}
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+      >
+        <LanguageProvider initialLocale="en">
+          <App />
+        </LanguageProvider>
+      </MemoryRouter>
+    );
+
+    expect(
+      await screen.findByRole("heading", {
+        level: 1,
+        name: "YAML to JSON / JSON to YAML Converter",
+      })
+    ).toBeVisible();
+    expect(document.querySelector("link[rel='canonical']")).toHaveAttribute(
+      "href",
+      "https://nexaforge.kimx.info/en/data/yaml-json"
+    );
   });
 
   it("renders a noindex not-found page for unknown client routes", async () => {

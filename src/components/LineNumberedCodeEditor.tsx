@@ -6,6 +6,7 @@ interface LineNumberedCodeEditorProps {
   readOnly?: boolean;
   ariaLabel: string;
   describedBy?: string;
+  invalid?: boolean;
 }
 
 export function LineNumberedCodeEditor({
@@ -14,6 +15,7 @@ export function LineNumberedCodeEditor({
   readOnly = false,
   ariaLabel,
   describedBy,
+  invalid = false,
 }: LineNumberedCodeEditorProps): JSX.Element {
   const gutterRef = useRef<HTMLDivElement>(null);
   const lineCount = Math.max(1, value.split(/\r?\n/).length);
@@ -31,6 +33,7 @@ export function LineNumberedCodeEditor({
         readOnly={readOnly}
         aria-label={ariaLabel}
         aria-describedby={describedBy}
+        aria-invalid={invalid}
         spellCheck={false}
         rows={16}
         onChange={onChange ? (event) => onChange(event.target.value) : undefined}

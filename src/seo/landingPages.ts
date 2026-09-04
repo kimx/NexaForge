@@ -662,10 +662,10 @@ const YAML_JSON_LANDING: SeoLandingDefinition = {
   preset: {},
   content: {
     "zh-TW": {
-      title: "YAML to JSON / JSON to YAML Converter Online | NexaForge",
+      title: "YAML 與 JSON 線上轉換器 | YAML to JSON / JSON to YAML | NexaForge",
       description: "免費線上 YAML 與 JSON 雙向轉換器，支援驗證、複製、下載與交換格式。所有資料都在瀏覽器本機處理，不會上傳。",
       h1: "YAML ↔ JSON 線上轉換器",
-      intro: "在 YAML 與 JSON 之間雙向轉換設定檔與資料，並取得清楚的語法錯誤位置。",
+      intro: "在 YAML 與 JSON 之間雙向轉換設定檔與資料，並取得清楚的語法錯誤位置與驗證結果。",
       sections: [
         { heading: "雙向轉換與語法驗證", body: "選擇輸入格式後轉換成另一種格式。YAML 與 JSON 解析錯誤會顯示訊息、行號，以及可取得的欄位位置。" },
         { heading: "Anchor 與複雜資料", body: "陣列、巢狀物件、null、布林值、數字、多行文字、註解、Unicode 與 YAML anchor 都能在瀏覽器本機處理。" },

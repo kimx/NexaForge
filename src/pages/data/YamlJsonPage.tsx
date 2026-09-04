@@ -95,13 +95,12 @@ export function YamlJsonPage(): JSX.Element {
   };
 
   const swap = (): void => {
+    const previousSource = source;
     setDirection(oppositeDirection(direction));
-    if (output) {
-      setSource(output);
-    }
-    setOutput("");
+    setSource(output || source);
+    setOutput(output ? previousSource : "");
     setError(null);
-    setState("idle");
+    setState(output ? "success" : "idle");
     setCopyStatus("idle");
   };
 
@@ -164,6 +163,7 @@ export function YamlJsonPage(): JSX.Element {
                 }}
                 ariaLabel={inputLabel}
                 describedBy={error ? errorId : undefined}
+                invalid={Boolean(error)}
               />
             </label>
             {error ? <span id={errorId} className="sr-only">{error}</span> : null}
@@ -175,7 +175,7 @@ export function YamlJsonPage(): JSX.Element {
                 {t("tool.json-yaml.swap")}
               </button>
               <button type="button" className="btn secondary" onClick={clear}>
-                {t("button.clear")}
+                {t("tool.json-yaml.clear")}
               </button>
             </div>
           </div>

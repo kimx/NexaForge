@@ -47,6 +47,7 @@ describe("SEO search page catalog", () => {
       "/pdf/delete-pages",
       "/pdf/extract-pages",
       "/data/json-diff",
+      "/data/yaml-json",
     ]);
     expect(new Set(SEO_SEARCH_PAGES.map(({ path }) => path)).size).toBe(
       SEO_SEARCH_PAGES.length
