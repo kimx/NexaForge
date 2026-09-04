@@ -425,6 +425,15 @@ export const FILE_TOOLS: ToolDefinition[] = [
     keywords: ["developer", "json", "yaml", "convert", "config"],
   },
   {
+    id: "jsonpath-tester",
+    title: "JSONPath Tester",
+    description: "Test JSONPath queries against JSON data locally.",
+    path: "/developer/jsonpath-tester",
+    category: "Developer",
+    aliases: ["jsonpath", "json path tester", "query json", "json selector"],
+    keywords: ["developer", "json", "jsonpath", "query", "selector", "filter"],
+  },
+  {
     id: "json-diff",
     title: "JSON Diff",
     description: "Compare two JSON documents and inspect their changes.",
@@ -535,6 +544,7 @@ export const TOOL_RELATIONSHIPS: Record<string, string[]> = {
   "json-formatter": ["json-diff", "json-yaml", "json-to-typescript", "json-to-csharp"],
   "json-diff": ["json-formatter", "json-yaml", "json-to-typescript", "json-to-csharp"],
   "json-yaml": ["json-formatter", "json-diff", "json-to-typescript", "json-to-csharp"],
+  "jsonpath-tester": ["json-formatter", "json-yaml", "json-diff", "json-to-typescript"],
   "json-to-typescript": ["json-formatter", "json-diff", "json-to-csharp", "json-yaml"],
   "json-to-csharp": ["json-formatter", "json-diff", "json-to-typescript", "json-yaml"],
   "json-to-csv": ["json-formatter", "csv-viewer", "csv-to-json", "json-diff"],
