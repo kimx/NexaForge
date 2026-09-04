@@ -13,6 +13,7 @@ describe("JsonHubPage", () => {
       "json-formatter",
       "json-diff",
       "json-yaml",
+      "jsonpath-tester",
       "json-to-csv",
       "csv-to-json",
     ]);

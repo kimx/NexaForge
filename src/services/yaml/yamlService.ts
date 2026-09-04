@@ -214,6 +214,12 @@ function parseBlock(lines: YamlLine[], start: number, indent: number): [unknown,
 export function yamlToJson(source: string): unknown {
   const lines = sourceLines(source);
   if (!lines.length) return null;
+  const isFlowValue = (lines[0].text.startsWith("[") && lines[0].text.endsWith("]"))
+    || (lines[0].text.startsWith("{") && lines[0].text.endsWith("}"));
+  if (lines.length === 1 && lines[0].text !== "-" && !lines[0].text.startsWith("- ")
+    && (isFlowValue || findSeparator(lines[0].text) < 1)) {
+    return parseScalar(lines[0].text, lines[0]);
+  }
   const [result, nextIndex] = parseBlock(lines, 0, lines[0].indent);
   if (nextIndex < lines.length) {
     throw yamlError("Unexpected YAML indentation.", lines[nextIndex]);

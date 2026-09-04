@@ -5,6 +5,7 @@ export const JSON_TOOL_IDS = [
   "json-formatter",
   "json-diff",
   "json-yaml",
+  "jsonpath-tester",
   "json-to-csv",
   "csv-to-json",
 ] as const;
