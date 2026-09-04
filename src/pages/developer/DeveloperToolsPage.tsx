@@ -185,7 +185,7 @@ export function DeveloperToolsPage({ kind }: DeveloperToolsPageProps): JSX.Eleme
   };
 
   const resetEditor = (): void => {
-    setInput(JSON_TOOL_SAMPLE);
+    setInput(mode === "json-to-yaml" ? JSON_TOOL_SAMPLE : YAML_TOOL_SAMPLE);
     setOutput("");
     setInputError(null);
     setSecondInputError(null);

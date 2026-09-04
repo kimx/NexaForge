@@ -113,4 +113,18 @@ describe("DeveloperToolsPage JSON samples", () => {
 
     expect(screen.getByRole("button", { name: "Process" })).toBeDisabled();
   });
+
+  it("resets JSON/YAML input to a sample matching the selected mode", () => {
+    renderWithRouter(<DeveloperToolsPage kind="json-yaml" />);
+
+    fireEvent.change(screen.getByRole("combobox", { name: "Mode" }), {
+      target: { value: "yaml-to-json" },
+    });
+    fireEvent.change(screen.getByRole("textbox", { name: "YAML input" }), {
+      target: { value: "" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Reset" }));
+
+    expect((screen.getByRole("textbox", { name: "YAML input" }) as HTMLTextAreaElement).value).toContain("name:");
+  });
 });
