@@ -9,6 +9,7 @@ import { useSeo } from "../../hooks/useSeo";
 import { useSeoLanding } from "../../hooks/useSeoLanding";
 
 type DeveloperToolKind = "url-encoder" | "unix-timestamp" | "json-yaml" | "json-diff";
+type UrlEncodingMode = "component" | "full-url";
 
 interface DeveloperToolsPageProps {
   kind: DeveloperToolKind;
@@ -204,11 +205,13 @@ export function DeveloperToolsPage({ kind }: DeveloperToolsPageProps): JSX.Eleme
       ? landing.definition.preset.mode
       : initialModeFor(kind);
   const [mode, setMode] = useState(() => presetMode);
+  const [urlEncodingMode, setUrlEncodingMode] = useState<UrlEncodingMode>("component");
   const [output, setOutput] = useState("");
   const [state, setState] = useState<ProcessingState>(() => initialInputFor(kind).trim() ? "ready" : "idle");
   const [error, setError] = useState<string | null>(null);
   const [inputError, setInputError] = useState<string | null>(null);
   const [secondInputError, setSecondInputError] = useState<string | null>(null);
+  const [copyStatus, setCopyStatus] = useState("");
   const inputErrorId = useId();
   const secondInputErrorId = useId();
   const title = localToolMeta(tool.id, "title");
@@ -223,10 +226,14 @@ export function DeveloperToolsPage({ kind }: DeveloperToolsPageProps): JSX.Eleme
 
   useEffect(() => {
     setMode(presetMode);
+    if (kind === "url-encoder") {
+      setUrlEncodingMode("component");
+    }
     setOutput("");
     setError(null);
     setInputError(null);
     setSecondInputError(null);
+    setCopyStatus("");
     setState(input.trim() && (kind !== "json-diff" || secondInput.trim()) ? "ready" : "idle");
   }, [kind, landing?.definition.path, presetMode]);
 
@@ -239,7 +246,7 @@ export function DeveloperToolsPage({ kind }: DeveloperToolsPageProps): JSX.Eleme
 
   const canProcess = Boolean(input.trim()) && (kind !== "json-diff" || Boolean(secondInput.trim()));
 
-  const handleProcess = (): void => {
+  const handleProcess = (requestedMode?: string): void => {
     const primaryIsEmpty = !input.trim();
     const secondaryIsEmpty = kind === "json-diff" && !secondInput.trim();
     if (primaryIsEmpty || secondaryIsEmpty) {
@@ -287,7 +294,11 @@ export function DeveloperToolsPage({ kind }: DeveloperToolsPageProps): JSX.Eleme
     try {
       let nextOutput = "";
       if (kind === "url-encoder") {
-        nextOutput = mode === "encode" ? encodeURIComponent(input) : decodeURIComponent(input);
+        const action = requestedMode ?? mode;
+        const transform = urlEncodingMode === "full-url"
+          ? action === "encode" ? encodeURI : decodeURI
+          : action === "encode" ? encodeURIComponent : decodeURIComponent;
+        nextOutput = transform(input);
       } else if (kind === "unix-timestamp") {
         if (mode === "timestamp-to-date") {
           const numeric = Number(input.trim());
@@ -312,17 +323,39 @@ export function DeveloperToolsPage({ kind }: DeveloperToolsPageProps): JSX.Eleme
       setState("success");
       trackEvent("process_success", { tool: kind });
     } catch {
-      setInputError(t("developerTools.invalidInput"));
+      setInputError(
+        kind === "url-encoder" && (requestedMode ?? mode) === "decode"
+          ? t("developerTools.invalidPercentEncoding")
+          : t("developerTools.invalidInput")
+      );
       setError(null);
       setState("error");
       trackEvent("process_failed", { tool: kind });
     }
   };
 
+  const handleClear = (): void => {
+    setInput("");
+    setOutput("");
+    setError(null);
+    setInputError(null);
+    setCopyStatus("");
+    setState("idle");
+  };
+
   const copyOutput = async (): Promise<void> => {
     if (!output) return;
-    await navigator.clipboard?.writeText(output);
-    trackEvent("result_action_used", { tool: kind, action: "copy" });
+    if (!navigator.clipboard?.writeText) {
+      setCopyStatus(t("developerTools.copyFailed"));
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(output);
+      setCopyStatus(t("developerTools.copied"));
+      trackEvent("result_action_used", { tool: kind, action: "copy" });
+    } catch {
+      setCopyStatus(t("developerTools.copyFailed"));
+    }
   };
 
   const inputLabel = kind === "json-diff"
@@ -357,6 +390,7 @@ export function DeveloperToolsPage({ kind }: DeveloperToolsPageProps): JSX.Eleme
                 setInputError(null);
                 setError(null);
                 setOutput("");
+                setCopyStatus("");
                 setState(nextInput.trim() && (kind !== "json-diff" || secondInput.trim()) ? "ready" : "idle");
               }}
               rows={10}
@@ -388,23 +422,64 @@ export function DeveloperToolsPage({ kind }: DeveloperToolsPageProps): JSX.Eleme
         options: (
           <div className="tool-form">
             {kind !== "json-diff" ? (
-              <label htmlFor={`${kind}-mode`}>{t("developerTools.mode")}
-                <select
-                  id={`${kind}-mode`}
-                  value={mode}
-                  onChange={(event) => {
-                    setMode(event.target.value);
-                    setInputError(null);
-                    setError(null);
-                    setOutput("");
-                    setState(input.trim() ? "ready" : "idle");
-                  }}
-                >
-                  {options.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
-                </select>
-              </label>
+              <>
+                <label htmlFor={`${kind}-mode`}>{t("developerTools.mode")}
+                  <select
+                    id={`${kind}-mode`}
+                    value={mode}
+                    onChange={(event) => {
+                      setMode(event.target.value);
+                      setInputError(null);
+                      setError(null);
+                      setOutput("");
+                      setCopyStatus("");
+                      setState(input.trim() ? "ready" : "idle");
+                    }}
+                  >
+                    {options.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+                  </select>
+                </label>
+                {kind === "url-encoder" ? (
+                  <>
+                    <label htmlFor={`${kind}-encoding-mode`}>{t("developerTools.encodingMode")}
+                      <select
+                        id={`${kind}-encoding-mode`}
+                        value={urlEncodingMode}
+                        onChange={(event) => {
+                          setUrlEncodingMode(event.target.value as UrlEncodingMode);
+                          setInputError(null);
+                          setError(null);
+                          setOutput("");
+                          setCopyStatus("");
+                          setState(input.trim() ? "ready" : "idle");
+                        }}
+                      >
+                        <option value="component">{t("developerTools.component")}</option>
+                        <option value="full-url">{t("developerTools.fullUrl")}</option>
+                      </select>
+                    </label>
+                    <div className="tool-actions">
+                      <button type="button" className="btn primary" onClick={() => {
+                        setMode("encode");
+                        handleProcess("encode");
+                      }} disabled={!canProcess || state === "processing"}>
+                        {t("developerTools.encode")}
+                      </button>
+                      <button type="button" className="btn secondary" onClick={() => {
+                        setMode("decode");
+                        handleProcess("decode");
+                      }} disabled={!canProcess || state === "processing"}>
+                        {t("developerTools.decode")}
+                      </button>
+                      <button type="button" className="btn secondary" onClick={handleClear}>
+                        {t("developerTools.clear")}
+                      </button>
+                    </div>
+                  </>
+                ) : null}
+              </>
             ) : <p>{t("developerTools.diffMode")}</p>}
-            <button type="button" className="btn primary" onClick={handleProcess} disabled={!canProcess || state === "processing"}>
+            <button type="button" className="btn primary" onClick={() => handleProcess()} disabled={!canProcess || state === "processing"}>
               {t("button.process")}
             </button>
           </div>
@@ -412,6 +487,7 @@ export function DeveloperToolsPage({ kind }: DeveloperToolsPageProps): JSX.Eleme
         result: (
           <>
             {kind === "json-diff" ? <JsonDiffOutput output={output} /> : <pre className="developer-output">{output}</pre>}
+            {copyStatus ? <p role="status" aria-live="polite">{copyStatus}</p> : null}
             <div className="tool-actions">
               <button type="button" className="btn secondary" onClick={copyOutput} disabled={!output}>
                 {t("developerTools.copy")}

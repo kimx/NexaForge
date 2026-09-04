@@ -22,6 +22,7 @@ describe("SEO search page catalog", () => {
       ["/developer/base64-decode", "base64", { mode: "base64ToText" }],
       ["/developer/url-encode", "url-encoder", { mode: "encode" }],
       ["/developer/url-decode", "url-encoder", { mode: "decode" }],
+      ["/developer/url-encode-decode", "url-encoder", {}],
     ]);
   });
 
