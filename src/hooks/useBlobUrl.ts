@@ -5,7 +5,7 @@ export function useBlobUrl(blob: Blob | null | undefined): string {
   const [url, setUrl] = useState("");
 
   useEffect(() => {
-    if (!blob || typeof URL.createObjectURL !== "function") {
+    if (!blob || typeof URL === "undefined" || typeof URL.createObjectURL !== "function") {
       setUrl("");
       return;
     }

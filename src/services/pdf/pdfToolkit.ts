@@ -132,7 +132,10 @@ export function validatePdfFileType(
   const type = file.type.toLowerCase();
   const name = file.name?.toLowerCase() ?? "";
   const hasPdfExtension = name.endsWith(".pdf");
-  if (type && type !== PDF_MIME_TYPE && !hasPdfExtension) {
+  if (
+    (name && !hasPdfExtension && type !== PDF_MIME_TYPE) ||
+    (!name && type && type !== PDF_MIME_TYPE)
+  ) {
     return createError(
       "invalid-file-type",
       "Please select a PDF file."

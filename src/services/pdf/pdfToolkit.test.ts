@@ -37,6 +37,9 @@ describe("PDF toolkit", () => {
     expect(validatePdfFileType(new File([""], "empty.pdf", {
       type: "application/pdf",
     }))).toMatchObject({ code: "empty-file" });
+    expect(validatePdfFileType(new File(["%PDF"], "notes.txt"))).toMatchObject({
+      code: "invalid-file-type",
+    });
   });
 
   it("uses crop boxes and calculates positions from page dimensions", async () => {
