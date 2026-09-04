@@ -5401,6 +5401,116 @@ button:hover,
   }
 }
 
+.tool-page--pdf-watermark .tool-page__duo {
+  grid-template-columns: minmax(0, 1.08fr) minmax(320px, 0.92fr);
+  align-items: start;
+}
+
+.pdf-watermark-preview {
+  margin-top: 16px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--bg-subtle);
+}
+
+.pdf-watermark-preview object {
+  display: block;
+  width: 100%;
+  height: 520px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+}
+
+.pdf-watermark-preview p {
+  margin: 0;
+  padding: 24px;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.pdf-watermark-page-count {
+  margin: 12px 0 0;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.pdf-watermark-tabs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.pdf-watermark-tabs button {
+  min-height: 40px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--bg-subtle);
+  color: var(--text-muted);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.pdf-watermark-tabs button.is-active {
+  border-color: var(--brand-primary);
+  background: var(--surface);
+  color: var(--text-primary);
+}
+
+.pdf-watermark-tabs button:focus-visible {
+  box-shadow: var(--focus-ring);
+}
+
+.pdf-watermark-settings fieldset {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.pdf-watermark-settings legend {
+  margin-bottom: 4px;
+  font-weight: 600;
+}
+
+.pdf-watermark-settings input[type="color"] {
+  width: 100%;
+  min-height: 40px;
+  padding: 4px;
+}
+
+.pdf-watermark-control-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.pdf-watermark-control-label output {
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.pdf-watermark-image-control .file-list-wrap {
+  margin-top: 8px;
+}
+
+@media (max-width: 900px) {
+  .tool-page--pdf-watermark .tool-page__duo {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .pdf-watermark-preview object {
+    height: 360px;
+  }
+}
+
 .file-list li {
   grid-template-columns: minmax(0, 1fr) 100px 130px minmax(0, auto);
   align-items: center;

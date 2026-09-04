@@ -191,6 +191,15 @@ export const FILE_TOOLS: ToolDefinition[] = [
     keywords: ["document", "pdf", "page numbers", "number", "pages"],
   },
   {
+    id: "pdf-watermark",
+    title: "Add Watermark to PDF",
+    description: "Add a text or PNG and JPEG image watermark to a PDF in your browser.",
+    path: "/pdf/watermark",
+    category: "PDF",
+    aliases: ["watermark pdf", "add watermark to pdf", "add logo to pdf", "pdf 加浮水印"],
+    keywords: ["document", "pdf", "watermark", "logo", "text", "png", "jpeg"],
+  },
+  {
     id: "json-formatter",
     title: "JSON Formatter",
     description: "Format, minify, and validate JSON in seconds.",
