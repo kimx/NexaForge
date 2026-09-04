@@ -417,10 +417,10 @@ export const FILE_TOOLS: ToolDefinition[] = [
   },
   {
     id: "json-yaml",
-    title: "JSON <-> YAML",
+    title: "YAML ↔ JSON Converter",
     description: "Convert common JSON and YAML data locally.",
-    path: "/developer/json-yaml",
-    category: "Developer",
+    path: "/data/yaml-json",
+    category: "Data",
     aliases: ["json to yaml", "yaml to json", "yaml converter"],
     keywords: ["developer", "json", "yaml", "convert", "config"],
   },
