@@ -2,6 +2,7 @@ import { PDFDocument } from "pdf-lib";
 import pdfWorkerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 import type { FileProcessResult } from "../../types/tool";
 import { readFileAsArrayBuffer } from "../file/fileService";
+import { createPdfResult } from "./pdfToolkit";
 
 const PDF_MAX_PAGE_DIMENSION = 14_400;
 type PdfImageFormat = "jpeg" | "png" | "webp";
@@ -112,13 +113,7 @@ export async function createPdfFromImages(files: File[]): Promise<FileProcessRes
   }
 
   const bytes = await document.save();
-  const blob = new Blob([new Uint8Array(bytes)], { type: "application/pdf" });
-  return {
-    blob,
-    fileName: "images.pdf",
-    mimeType: "application/pdf",
-    size: blob.size,
-  };
+  return createPdfResult(bytes, "images.pdf");
 }
 
 function outputBaseName(fileName: string): string {

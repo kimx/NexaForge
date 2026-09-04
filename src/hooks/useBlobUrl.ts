@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { createObjectUrl, revokeObjectUrl } from "../utils/download";
 
 export function useBlobUrl(blob: Blob | null | undefined): string {
   const [url, setUrl] = useState("");
@@ -9,11 +10,11 @@ export function useBlobUrl(blob: Blob | null | undefined): string {
       return;
     }
 
-    const objectUrl = URL.createObjectURL(blob);
+    const objectUrl = createObjectUrl(blob);
     setUrl(objectUrl);
 
     return () => {
-      URL.revokeObjectURL(objectUrl);
+      revokeObjectUrl(objectUrl);
     };
   }, [blob]);
 
