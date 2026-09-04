@@ -182,6 +182,15 @@ export const FILE_TOOLS: ToolDefinition[] = [
     keywords: ["document", "pdf", "extract", "select", "pages"],
   },
   {
+    id: "pdf-add-page-numbers",
+    title: "Add Page Numbers to PDF",
+    description: "Add page numbers to a PDF in your browser and download the new file.",
+    path: "/pdf/add-page-numbers",
+    category: "PDF",
+    aliases: ["number pdf pages", "page numbers pdf", "pdf page numbering", "pdf 加頁碼"],
+    keywords: ["document", "pdf", "page numbers", "number", "pages"],
+  },
+  {
     id: "json-formatter",
     title: "JSON Formatter",
     description: "Format, minify, and validate JSON in seconds.",

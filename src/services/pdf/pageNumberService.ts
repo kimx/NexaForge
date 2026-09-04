@@ -1,4 +1,4 @@
-import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
+import { rgb, StandardFonts } from "pdf-lib";
 import type { RGB } from "pdf-lib";
 import type { FileProcessResult } from "../../types/tool";
 import {
@@ -167,6 +167,7 @@ export async function addPageNumbersToPdf(
       width: font.widthOfTextAtSize(text, normalized.fontSize),
       height: font.heightAtSize(normalized.fontSize),
     };
+    const descent = textSize.height - font.heightAtSize(normalized.fontSize, { descender: false });
     const pageSize = getPdfPageSize(page, "crop");
     const position = calculatePdfPosition(
       pageSize,
@@ -177,7 +178,7 @@ export async function addPageNumbersToPdf(
 
     page.drawText(text, {
       x: position.x,
-      y: position.y,
+      y: position.y + descent,
       size: normalized.fontSize,
       font,
       color,
