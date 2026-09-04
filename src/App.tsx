@@ -133,6 +133,9 @@ const PdfToImagePage = lazy(() =>
 const PdfPageEditorPage = lazy(() =>
   import("./pages/pdf/PageEditorPage").then((module) => ({ default: module.PdfPageEditorPage }))
 );
+const AddPageNumbersPage = lazy(() =>
+  import("./pages/pdf/AddPageNumbersPage").then((module) => ({ default: module.AddPageNumbersPage }))
+);
 const QrPage = lazy(() =>
   import("./pages/qr/QrPage").then((module) => ({ default: module.QrPage }))
 );
@@ -231,6 +234,7 @@ const APP_ROUTES: AppRoute[] = [
   { path: "/pdf/reorder-pages", element: <PdfPageEditorPage mode="reorder" /> },
   { path: "/pdf/delete-pages", element: <PdfPageEditorPage mode="delete" /> },
   { path: "/pdf/extract-pages", element: <PdfPageEditorPage mode="extract" /> },
+  { path: "/pdf/add-page-numbers", element: <AddPageNumbersPage /> },
   { path: "/data/json-formatter", element: <JsonFormatterPage /> },
   { path: "/data/json-diff", element: <JsonDiffPage /> },
   { path: "/data/csv-viewer", element: <CsvViewerPage /> },

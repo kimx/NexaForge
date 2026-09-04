@@ -46,6 +46,7 @@ describe("SEO search page catalog", () => {
       "/pdf/reorder-pages",
       "/pdf/delete-pages",
       "/pdf/extract-pages",
+      "/pdf/add-page-numbers",
       "/data/json-diff",
       "/data/yaml-json",
     ]);
