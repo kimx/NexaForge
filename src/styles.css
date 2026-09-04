@@ -6512,6 +6512,68 @@ textarea:focus-visible {
 }
 
 /* JSON editor density overrides must remain after the legacy component rules. */
+.line-numbered-editor {
+  display: grid;
+  grid-template-columns: 3.1rem minmax(0, 1fr);
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--bg-subtle);
+}
+
+.line-numbered-editor__gutter {
+  display: flex;
+  flex-direction: column;
+  height: 280px;
+  min-height: 0;
+  overflow: hidden;
+  padding: 0.85rem 0.55rem;
+  border-right: 1px solid var(--border-subtle);
+  color: var(--text-muted);
+  font: 0.85rem/1.55 ui-monospace, SFMono-Regular, Consolas, monospace;
+  text-align: right;
+  user-select: none;
+}
+
+.line-numbered-editor__gutter span {
+  height: 1.55em;
+}
+
+.line-numbered-editor__textarea {
+  width: 100%;
+  height: 280px;
+  min-width: 0;
+  min-height: 280px;
+  resize: vertical;
+  padding: 0.85rem;
+  border: 0;
+  border-radius: 0;
+  outline: none;
+  background: var(--surface);
+  color: var(--text-primary);
+  font: 0.85rem/1.55 ui-monospace, SFMono-Regular, Consolas, monospace;
+  tab-size: 2;
+}
+
+.line-numbered-editor__textarea:focus {
+  box-shadow: inset 0 0 0 2px var(--brand-primary);
+}
+
+.yaml-json-workspace__actions {
+  flex-wrap: wrap;
+}
+
+.yaml-json-output {
+  display: grid;
+  gap: 12px;
+}
+
+.yaml-json-output > p {
+  margin: 0;
+  color: var(--text-muted);
+}
+
 .json-tree__row {
   min-height: 2.55rem;
 }

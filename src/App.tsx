@@ -40,6 +40,9 @@ const JsonToCsvPage = lazy(() =>
 const JsonXmlPage = lazy(() =>
   import("./pages/data/JsonXmlPage").then((module) => ({ default: module.JsonXmlPage }))
 );
+const YamlJsonPage = lazy(() =>
+  import("./pages/data/YamlJsonPage").then((module) => ({ default: module.YamlJsonPage }))
+);
 const XmlFormatterPage = lazy(() =>
   import("./pages/data/XmlFormatterPage").then((module) => ({ default: module.XmlFormatterPage }))
 );
@@ -183,6 +186,11 @@ function LegacyJsonDiffRedirect(): JSX.Element {
   return <Navigate to={pathname.startsWith("/en/") ? "/en/data/json-diff" : "/data/json-diff"} replace />;
 }
 
+function LegacyYamlJsonRedirect(): JSX.Element {
+  const { pathname } = useLocation();
+  return <Navigate to={pathname.startsWith("/en/") ? "/en/data/yaml-json" : "/data/yaml-json"} replace />;
+}
+
 const SEO_ALIAS_ELEMENTS: Record<string, JSX.Element> = {
   "image-convert": <ImageConvertPage />,
   "image-compress": <ImageCompressPage />,
@@ -229,6 +237,7 @@ const APP_ROUTES: AppRoute[] = [
   { path: "/data/csv-to-json", element: <CsvToJsonPage /> },
   { path: "/data/json-to-csv", element: <JsonToCsvPage /> },
   { path: "/data/json-xml", element: <JsonXmlPage /> },
+  { path: "/data/yaml-json", element: <YamlJsonPage /> },
   { path: "/data/xml-formatter", element: <XmlFormatterPage /> },
   { path: "/text/hash", element: <HashPage /> },
   { path: "/text/uuid", element: <UuidPage /> },
@@ -246,7 +255,7 @@ const APP_ROUTES: AppRoute[] = [
   { path: "/developer/jwt-decoder", element: <JwtDecoderPage /> },
   { path: "/developer/url-encoder", element: <DeveloperToolsPage kind="url-encoder" /> },
   { path: "/developer/unix-timestamp", element: <UnixTimestampPage /> },
-  { path: "/developer/json-yaml", element: <DeveloperToolsPage kind="json-yaml" /> },
+  { path: "/developer/json-yaml", element: <LegacyYamlJsonRedirect /> },
   { path: "/developer/json-diff", element: <LegacyJsonDiffRedirect /> },
   { path: "/developer/regex-tester", element: <RegexTesterPage /> },
   { path: "/developer/sql-formatter", element: <SqlFormatterPage /> },

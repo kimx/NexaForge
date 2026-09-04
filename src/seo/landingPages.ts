@@ -71,6 +71,8 @@ const RELATED_LABELS: Record<string, Record<Locale, string>> = {
   "/data/json-validator": { "zh-TW": "JSON 驗證", en: "JSON Validator" },
   "/data/json-diff": { "zh-TW": "JSON Diff", en: "JSON Diff" },
   "/data/json-to-csv": { "zh-TW": "JSON 轉 CSV", en: "JSON to CSV" },
+  "/data/json-xml": { "zh-TW": "JSON ↔ XML", en: "JSON ↔ XML" },
+  "/data/yaml-json": { "zh-TW": "YAML ↔ JSON", en: "YAML ↔ JSON" },
   "/json": { "zh-TW": "JSON 工具中心", en: "JSON Tool Hub" },
   "/developer/json-to-typescript": { "zh-TW": "JSON 轉 TypeScript", en: "JSON to TypeScript" },
   "/developer/json-to-csharp": { "zh-TW": "JSON 轉 C#", en: "JSON to C#" },
@@ -653,6 +655,69 @@ const JSON_DIFF_LANDING: SeoLandingDefinition = {
   },
 };
 
+const YAML_JSON_LANDING: SeoLandingDefinition = {
+  path: "/data/yaml-json",
+  toolId: "json-yaml",
+  isAlias: false,
+  preset: {},
+  content: {
+    "zh-TW": {
+      title: "YAML 與 JSON 線上轉換器 | YAML to JSON / JSON to YAML | NexaForge",
+      description: "免費線上 YAML 與 JSON 雙向轉換器，支援驗證、複製、下載與交換格式。所有資料都在瀏覽器本機處理，不會上傳。",
+      h1: "YAML ↔ JSON 線上轉換器",
+      intro: "在 YAML 與 JSON 之間雙向轉換設定檔與資料，並取得清楚的語法錯誤位置與驗證結果。",
+      sections: [
+        { heading: "雙向轉換與語法驗證", body: "選擇輸入格式後轉換成另一種格式。YAML 與 JSON 解析錯誤會顯示訊息、行號，以及可取得的欄位位置。" },
+        { heading: "Anchor 與複雜資料", body: "陣列、巢狀物件、null、布林值、數字、多行文字、註解、Unicode 與 YAML anchor 都能在瀏覽器本機處理。" },
+      ],
+      steps: [
+        "選擇 JSON 轉 YAML 或 YAML 轉 JSON，貼上輸入內容。",
+        "執行轉換，並在錯誤時查看行號與欄位。",
+        "複製結果、下載檔案，或交換輸入與輸出後繼續轉換。",
+      ],
+      privacy: "輸入的 YAML 與 JSON 只在這台裝置的瀏覽器本機處理，不會傳送到 NexaForge 伺服器或分析工具。",
+      faq: [
+        { q: "YAML 與 JSON 會上傳嗎？", a: "不會。解析、轉換、複製與下載都在瀏覽器本機完成。" },
+        { q: "YAML anchor 會保留在 JSON 嗎？", a: "anchor 與 alias 會解析為一般物件或陣列，參照內容會在 JSON 結果中展開。" },
+        { q: "支援多行文字與註解嗎？", a: "支援。YAML 多行文字會轉為 JSON 字串，YAML 註解不會出現在 JSON 結果中。" },
+      ],
+      related: [
+        { path: "/data/json-formatter", label: "JSON 格式化" },
+        { path: "/data/json-diff", label: "JSON Diff" },
+        { path: "/data/json-xml", label: "JSON ↔ XML" },
+        { path: "/data/json-to-csv", label: "JSON 轉 CSV" },
+      ],
+    },
+    en: {
+      title: "YAML to JSON / JSON to YAML Converter Online | NexaForge",
+      description: "Convert YAML and JSON online with syntax validation, copy, download, swap, and clear controls. Everything runs locally in your browser.",
+      h1: "YAML to JSON / JSON to YAML Converter",
+      intro: "Convert configuration and data between YAML and JSON while keeping source content in this browser.",
+      sections: [
+        { heading: "Two-way conversion with validation", body: "Choose the input format and convert to the other format. Syntax errors include a clear message, line number, and column when available." },
+        { heading: "Anchors and structured data", body: "Process arrays, nested objects, null, booleans, numbers, multiline strings, comments, Unicode, and YAML anchors locally." },
+      ],
+      steps: [
+        "Choose JSON to YAML or YAML to JSON, then paste your input.",
+        "Run the conversion and review the line and column if the syntax is invalid.",
+        "Copy or download the result, or swap the output back into the input editor.",
+      ],
+      privacy: "Your YAML and JSON are processed only in this browser. The content is not sent to NexaForge servers or analytics.",
+      faq: [
+        { q: "Is my YAML or JSON uploaded?", a: "No. Parsing, conversion, copying, and downloading all happen locally in your browser." },
+        { q: "Are YAML anchors preserved in JSON?", a: "Anchors and aliases resolve to ordinary objects or arrays, so referenced content is expanded in the JSON result." },
+        { q: "Are multiline strings and comments supported?", a: "Yes. YAML multiline strings become JSON strings, while YAML comments are omitted from the JSON result." },
+      ],
+      related: [
+        { path: "/data/json-formatter", label: "JSON Formatter" },
+        { path: "/data/json-diff", label: "JSON Diff" },
+        { path: "/data/json-xml", label: "JSON ↔ XML" },
+        { path: "/data/json-to-csv", label: "JSON to CSV" },
+      ],
+    },
+  },
+};
+
 const PDF_PAGE_EDITOR_LANDINGS: readonly SeoLandingDefinition[] = [
   {
     path: "/pdf/reorder-pages",
@@ -753,6 +818,7 @@ export const SEO_SEARCH_PAGES: readonly SeoLandingDefinition[] = [
   ),
   ...PDF_PAGE_EDITOR_LANDINGS,
   JSON_DIFF_LANDING,
+  YAML_JSON_LANDING,
 ];
 
 export const SEO_ALIAS_PAGES = SEO_SEARCH_PAGES.filter(({ isAlias }) => isAlias);
