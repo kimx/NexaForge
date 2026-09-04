@@ -26,6 +26,7 @@ const ROUTE_HEADINGS: Record<string, string> = {
   "/pdf/split": "Free Online PDF Splitter",
   "/pdf/rotate": "Free Online PDF Rotator",
   "/pdf/to-image": "PDF to Image",
+  "/pdf/metadata": "View & Remove PDF Metadata Online",
   "/data/json-formatter": "Free Online JSON Formatter",
   "/data/json-diff": "JSON Diff Online",
   "/data/csv-viewer": "CSV Viewer",

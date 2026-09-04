@@ -923,12 +923,76 @@ const PDF_PAGE_EDITOR_LANDINGS: readonly SeoLandingDefinition[] = [
   },
 ];
 
+const PDF_METADATA_LANDING: SeoLandingDefinition = {
+  path: "/pdf/metadata",
+  toolId: "pdf-metadata",
+  isAlias: false,
+  preset: {},
+  content: {
+    "zh-TW": {
+      title: "檢視與移除 PDF 中繼資料｜NexaForge",
+      description: "線上檢視並移除 PDF 文件資訊中的標題、作者、主旨、關鍵字、建立工具與日期；全程在瀏覽器本機處理。",
+      h1: "檢視與移除 PDF 中繼資料",
+      intro: "查看 PDF 常見文件中繼資料，建立移除支援欄位的新副本。中繼資料可能包含作者名稱、建立工具與建立日期。",
+      sections: [
+        { heading: "查看常見文件資訊", body: "工具會顯示 PDF 文件資訊字典中的標題、作者、主旨、關鍵字、建立工具、製作程式、建立日期與修改日期，方便分享前先檢查。" },
+        { heading: "只移除支援的中繼資料", body: "移除功能會建立保留頁面內容的新 PDF，清除上述文件資訊欄位；此工具不宣稱能移除所有隱藏資料或其他 PDF 內容。" },
+      ],
+      steps: [
+        "上傳一份 PDF，查看文件中繼資料。",
+        "確認資訊後選擇移除 PDF 中繼資料。",
+        "下載清除後的新 PDF，原始檔案不會被修改。",
+      ],
+      privacy: "你的 PDF 只在這台裝置的瀏覽器本機讀取與處理，不會上傳到 NexaForge 伺服器，也不會由 NexaForge 儲存。",
+      faq: [
+        { q: "PDF 會上傳或儲存嗎？", a: "不會。檢視、移除與下載都在目前的瀏覽器本機完成。" },
+        { q: "工具支援哪些欄位？", a: "MVP 支援文件資訊字典中的標題、作者、主旨、關鍵字、建立工具、製作程式、建立日期與修改日期。" },
+        { q: "會移除所有 PDF 隱藏資料嗎？", a: "不會。工具只處理支援的文件資訊字典欄位，不宣稱移除嵌入檔案、註解或其他 hidden content。" },
+      ],
+      related: [
+        { path: "/image/exif-viewer", label: "檢視圖片 EXIF" },
+        { path: "/image/remove-exif", label: "移除圖片 EXIF" },
+        { path: "/pdf/watermark", label: "為 PDF 加入浮水印" },
+        { path: "/pdf/merge", label: "合併 PDF" },
+      ],
+    },
+    en: {
+      title: "View & Remove PDF Metadata Online | NexaForge",
+      description: "View and remove PDF document metadata online, including title, author, subject, keywords, creator, producer, and dates in your browser.",
+      h1: "View & Remove PDF Metadata Online",
+      intro: "Review common PDF document metadata and create a new copy without the supported fields. Metadata may include an author name, the creation tool, and a creation date.",
+      sections: [
+        { heading: "Review common document information", body: "The viewer reads Title, Author, Subject, Keywords, Creator, Producer, Creation Date, and Modification Date from the PDF document information dictionary." },
+        { heading: "Remove supported metadata only", body: "Removal creates a PDF with the page content preserved while clearing the supported document information fields. It does not claim to remove all hidden data or other PDF content." },
+      ],
+      steps: [
+        "Upload one PDF to view its document metadata.",
+        "Review the fields, then choose Remove PDF metadata.",
+        "Download the clean PDF; your original file is not changed.",
+      ],
+      privacy: "Your PDF is read and processed locally in this browser. It is not uploaded to or stored by NexaForge.",
+      faq: [
+        { q: "Is my PDF uploaded or stored?", a: "No. Viewing, removal, and downloading happen locally in your current browser." },
+        { q: "Which fields does the tool support?", a: "The MVP supports Title, Author, Subject, Keywords, Creator, Producer, Creation Date, and Modification Date in the document information dictionary." },
+        { q: "Does it remove all hidden PDF data?", a: "No. It handles supported document information dictionary fields only and does not claim to remove embedded files, annotations, or other hidden content." },
+      ],
+      related: [
+        { path: "/image/exif-viewer", label: "View Image EXIF" },
+        { path: "/image/remove-exif", label: "Remove Image EXIF" },
+        { path: "/pdf/watermark", label: "Add Watermark to PDF" },
+        { path: "/pdf/merge", label: "Merge PDF" },
+      ],
+    },
+  },
+};
+
 export const SEO_SEARCH_PAGES: readonly SeoLandingDefinition[] = [
   ...ALIAS_PAGE_SEEDS.map(definePage),
   ...EXISTING_PAGE_SEEDS.map(definePage).map((entry) =>
     entry.path === UNIX_TIMESTAMP_LANDING.path ? UNIX_TIMESTAMP_LANDING : entry
   ),
   ...PDF_PAGE_EDITOR_LANDINGS,
+  PDF_METADATA_LANDING,
   JSON_DIFF_LANDING,
   YAML_JSON_LANDING,
 ];

@@ -48,6 +48,7 @@ describe("SEO search page catalog", () => {
       "/pdf/extract-pages",
       "/pdf/watermark",
       "/pdf/add-page-numbers",
+      "/pdf/metadata",
       "/data/json-diff",
       "/data/yaml-json",
     ]);

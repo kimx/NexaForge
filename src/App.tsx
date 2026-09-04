@@ -139,6 +139,9 @@ const AddPageNumbersPage = lazy(() =>
 const PdfWatermarkPage = lazy(() =>
   import("./pages/pdf/WatermarkPage").then((module) => ({ default: module.WatermarkPage }))
 );
+const PdfMetadataPage = lazy(() =>
+  import("./pages/pdf/MetadataPage").then((module) => ({ default: module.MetadataPage }))
+);
 const QrPage = lazy(() =>
   import("./pages/qr/QrPage").then((module) => ({ default: module.QrPage }))
 );
@@ -239,6 +242,7 @@ const APP_ROUTES: AppRoute[] = [
   { path: "/pdf/extract-pages", element: <PdfPageEditorPage mode="extract" /> },
   { path: "/pdf/add-page-numbers", element: <AddPageNumbersPage /> },
   { path: "/pdf/watermark", element: <PdfWatermarkPage /> },
+  { path: "/pdf/metadata", element: <PdfMetadataPage /> },
   { path: "/data/json-formatter", element: <JsonFormatterPage /> },
   { path: "/data/json-diff", element: <JsonDiffPage /> },
   { path: "/data/csv-viewer", element: <CsvViewerPage /> },
