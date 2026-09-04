@@ -104,9 +104,8 @@ export function ToolPageTemplate({
     };
   }, [workflow?.state]);
 
-  const showResultContent =
-    !workflow || workflow.state === "success" || (showIdleResult && workflow.state === "idle");
-  const showResultSection = layout === "split" || !workflow || workflow.state !== "idle";
+  const showResultContent = !workflow || workflow.state === "success" || showIdleResult;
+  const showResultSection = layout === "split" || !workflow || workflow.state !== "idle" || showIdleResult;
 
   return (
     <div className={`tool-page tool-page--${tool.id} tool-page--layout-${layout}`}>

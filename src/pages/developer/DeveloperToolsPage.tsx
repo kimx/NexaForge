@@ -3,6 +3,7 @@ import type { ProcessingState, ToolMeta } from "../../types/tool";
 import { FILE_TOOLS } from "../../data/tools";
 import { ToolPageTemplate } from "../../components/ToolPageTemplate";
 import { CodeEditorToolkit, type CodeEditorError } from "../../components/CodeEditorToolkit";
+import { TextTransformationToolkit } from "../../components/text/TextTransformationToolkit";
 import { useLanguage, useLocalizedToolMeta } from "../../context/LanguageContext";
 import { getRelatedTools } from "../../utils/toolHelpers";
 import { trackEvent } from "../../utils/analytics";
@@ -268,7 +269,11 @@ export function DeveloperToolsPage({ kind }: DeveloperToolsPageProps): JSX.Eleme
       setState("success");
       trackEvent("process_success", { tool: kind });
     } catch (conversionFailure) {
-      setInputError(editorError(conversionFailure, t("developerTools.invalidInput")));
+      setInputError(
+        kind === "url-encoder"
+          ? { message: t("developerTools.invalidInput") }
+          : editorError(conversionFailure, t("developerTools.invalidInput"))
+      );
       setError(null);
       setState("error");
       trackEvent("process_failed", { tool: kind });
@@ -281,6 +286,16 @@ export function DeveloperToolsPage({ kind }: DeveloperToolsPageProps): JSX.Eleme
     trackEvent("result_action_used", { tool: kind, action: "copy" });
   };
 
+  const resetTextEditor = (): void => {
+    setInput("");
+    setOutput("");
+    setInputError(null);
+    setSecondInputError(null);
+    setError(null);
+    setMode(presetMode);
+    setState("idle");
+  };
+
   const inputLabel = kind === "json-diff"
     ? t("developerTools.leftInput")
     : kind === "json-yaml"
@@ -291,6 +306,65 @@ export function DeveloperToolsPage({ kind }: DeveloperToolsPageProps): JSX.Eleme
     { q: t("developerTools.faq.0.question"), a: t("developerTools.faq.0.answer") },
     { q: t("developerTools.faq.1.question"), a: t("developerTools.faq.1.answer") },
   ];
+
+  if (kind === "url-encoder") {
+    return (
+      <TextTransformationToolkit
+        input={input}
+        output={output}
+        mode={mode}
+        modes={options.map(([value, label]) => ({ value, label }))}
+        inputLabel={inputLabel}
+        outputLabel={t("developerTools.output")}
+        modeLabel={t("developerTools.mode")}
+        processLabel={t("button.process")}
+        processingLabel={t("button.processing")}
+        copyLabel={t("developerTools.copy")}
+        clearLabel={t("developerTools.clear")}
+        resetLabel={t("developerTools.reset")}
+        emptyOutputText={t("developerTools.outputEmpty")}
+        error={inputError?.message ?? error}
+        processing={state === "processing"}
+        processDisabled={!canProcess}
+        onInputChange={(nextInput) => {
+          setInput(nextInput);
+          setInputError(null);
+          setError(null);
+          setOutput("");
+          setState(nextInput.trim() ? "ready" : "idle");
+        }}
+        onModeChange={(nextMode) => {
+          setMode(nextMode);
+          setInputError(null);
+          setError(null);
+          setOutput("");
+          setState(input.trim() ? "ready" : "idle");
+        }}
+        onTransform={handleProcess}
+        onClear={clearEditor}
+        onReset={resetTextEditor}
+        onCopied={() => trackEvent("result_action_used", { tool: kind, action: "copy" })}
+      >
+        {({ workspace, options: toolkitOptions, result }) => (
+          <ToolPageTemplate
+            tool={tool}
+            meta={toolMeta}
+            breadcrumb={["Home", title]}
+            workflow={{ state, error: null, onReprocess: handleProcess }}
+            showIdleResult
+            children={{
+              workspace,
+              options: toolkitOptions,
+              result,
+              howItWorks,
+              faq,
+              relatedTools: getRelatedTools(kind),
+            }}
+          />
+        )}
+      </TextTransformationToolkit>
+    );
+  }
 
   return (
     <ToolPageTemplate
