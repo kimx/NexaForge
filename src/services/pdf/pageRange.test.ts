@@ -12,6 +12,8 @@ describe("parsePageRanges", () => {
     expect(() => parsePageRanges("abc")).toThrow();
     expect(() => parsePageRanges("0")).toThrow();
     expect(() => parsePageRanges("3-1")).toThrow();
+    expect(() => parsePageRanges("1,,3")).toThrow();
+    expect(() => parsePageRanges("1-2-3")).toThrow();
   });
 
   it("validates against total pages", () => {

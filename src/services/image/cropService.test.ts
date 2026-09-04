@@ -13,8 +13,11 @@ const context = {
   lineTo: vi.fn(),
   moveTo: vi.fn(),
   rect: vi.fn(),
+  rotate: vi.fn(),
   restore: vi.fn(),
+  scale: vi.fn(),
   save: vi.fn(),
+  translate: vi.fn(),
   bezierCurveTo: vi.fn(),
   fillStyle: "",
 };
@@ -35,7 +38,14 @@ const canvas = {
 const validFile = new File(["source"], "photo.png", { type: "image/png" });
 const validSettings: CropSettings = {
   shape: { kind: "rectangle", bounds: { x: 0.25, y: 0.25, width: 0.5, height: 0.5 } },
-  imageTransform: { offsetX: 0, offsetY: 0, scale: 1 },
+  imageTransform: {
+    offsetX: 0,
+    offsetY: 0,
+    scale: 1,
+    rotationQuarterTurns: 0,
+    flipHorizontal: false,
+    flipVertical: false,
+  },
   format: "png",
   quality: 0.9,
 };
@@ -63,7 +73,14 @@ describe("cropImage", () => {
   it("returns a transparent PNG contract for a circular crop and closes the bitmap", async () => {
     const result = await cropImage(new File(["source"], "avatar.webp", { type: "image/webp" }), {
       shape: { kind: "circle", bounds: { x: 0.25, y: 0.25, width: 0.5, height: 0.5 } },
-      imageTransform: { offsetX: 0, offsetY: 0, scale: 1 },
+      imageTransform: {
+        offsetX: 0,
+        offsetY: 0,
+        scale: 1,
+        rotationQuarterTurns: 0,
+        flipHorizontal: false,
+        flipVertical: false,
+      },
       format: "jpeg",
       quality: 0.4,
     });
@@ -86,6 +103,21 @@ describe("cropImage", () => {
     expect(result.fileName).toBe("photo-cropped.jpg");
     expect(result.mimeType).toBe("image/jpeg");
     expect(context.fillRect).toHaveBeenCalledWith(0, 0, 500, 500);
+  });
+
+  it("rotates and flips the draw pass before exporting", async () => {
+    await cropImage(validFile, {
+      ...validSettings,
+      imageTransform: {
+        ...validSettings.imageTransform,
+        rotationQuarterTurns: 1,
+        flipHorizontal: true,
+        flipVertical: true,
+      },
+    });
+
+    expect(context.rotate).toHaveBeenCalledWith(Math.PI / 2);
+    expect(context.scale).toHaveBeenCalledWith(-1, -1);
   });
 
   it("closes the bitmap when canvas serialization fails", async () => {
