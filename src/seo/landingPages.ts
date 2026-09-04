@@ -820,7 +820,7 @@ const PDF_PAGE_EDITOR_LANDINGS: readonly SeoLandingDefinition[] = [
         title: "為 PDF 加入頁碼｜免費且私密 | NexaForge",
         description: "免費在線上為 PDF 加入頁碼，選擇位置、格式、起始頁碼與自訂頁面範圍；全程在瀏覽器本機處理。",
         h1: "為 PDF 加入頁碼",
-        intro: "選擇頁碼位置、起始數字、格式、字體大小、顏色與邊距，產生並下載新的 PDF。",
+        intro: "選擇頁碼位置、起始數字、格式、字體大小、顏色與邊距，在瀏覽器內產生並下載新的 PDF。",
         sections: [
           { heading: "依每頁尺寸精準定位", body: "支援左上、上方置中、右上、左下、下方置中與右下。每一頁都依自己的頁面尺寸計算位置，也能處理橫向頁面。" },
           { heading: "彈性頁碼格式與範圍", body: "可為全部頁面加碼，或輸入 1-5、8、10-15 等自訂範圍。支援 {n}、Page {n}、{n} / {total} 與 Page {n} of {total}。" },
@@ -836,7 +836,7 @@ const PDF_PAGE_EDITOR_LANDINGS: readonly SeoLandingDefinition[] = [
           { path: "/pdf/merge", label: "合併 PDF" },
           { path: "/pdf/reorder-pages", label: "重新排序 PDF 頁面" },
           { path: "/pdf/delete-pages", label: "刪除 PDF 頁面" },
-          { path: "/pdf/watermark", label: "PDF 浮水印" },
+          { path: "/image/watermark", label: "圖片浮水印" },
         ],
       },
       en: {
@@ -859,7 +859,7 @@ const PDF_PAGE_EDITOR_LANDINGS: readonly SeoLandingDefinition[] = [
           { path: "/pdf/merge", label: "Merge PDF" },
           { path: "/pdf/reorder-pages", label: "Reorder PDF Pages" },
           { path: "/pdf/delete-pages", label: "Delete PDF Pages" },
-          { path: "/pdf/watermark", label: "PDF Watermark" },
+          { path: "/image/watermark", label: "Image Watermark" },
         ],
       },
     },
