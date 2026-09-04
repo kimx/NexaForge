@@ -39,6 +39,7 @@ const ROUTE_HEADINGS: Record<string, string> = {
   "/developer/regex-tester": "Regex Tester",
   "/developer/sql-formatter": "SQL Formatter",
   "/developer/cron-builder": "Cron Expression Builder",
+  "/developer/unix-timestamp": "Unix Timestamp Converter",
   "/developer/url-parser": "URL Parser",
   "/developer/url-encode-decode": "URL Encoder / Decoder",
   "/developer/curl-to-code": "cURL to Code",

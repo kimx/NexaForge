@@ -509,6 +509,81 @@ const EXISTING_PAGE_SEEDS: PageSeed[] = [
   },
 }));
 
+const UNIX_TIMESTAMP_LANDING: SeoLandingDefinition = {
+  path: "/developer/unix-timestamp",
+  toolId: "unix-timestamp",
+  isAlias: false,
+  preset: {},
+  content: {
+    "zh-TW": {
+      title: "Unix 時間戳轉換工具｜Epoch 時間轉換器 | NexaForge",
+      description: "免費 Unix timestamp converter，支援秒、毫秒、日期時間互相轉換，Local 與 UTC 顯示都在瀏覽器本機完成。",
+      h1: "Unix 時間戳轉換器",
+      intro: "在 Unix 秒數、毫秒與日期時間之間雙向轉換，並清楚查看 Local、UTC、ISO 8601 與相對時間。",
+      sections: [
+        {
+          heading: "秒與毫秒的時間戳轉換",
+          body: "自動模式會將 10 位數判斷為秒、13 位數判斷為毫秒。其他長度可手動指定單位，也能處理 1970 年以前的負數時間戳。",
+        },
+        {
+          heading: "日期轉時間戳",
+          body: "輸入日期、時間與 Local 或 UTC 時區，立即取得 Unix seconds 與 Unix milliseconds。Local 使用這台裝置的瀏覽器時區。",
+        },
+      ],
+      steps: [
+        "輸入 Unix 秒數或毫秒，或填寫日期、時間與時區。",
+        "確認單位或時區後執行轉換。",
+        "檢查 Local、UTC、ISO 8601、相對時間或時間戳結果。",
+      ],
+      privacy: "所有計算都在這台裝置的瀏覽器本機完成，不會將輸入內容傳送或儲存於 NexaForge 伺服器。",
+      faq: [
+        { q: "這個工具會使用伺服器時間嗎？", a: "不會。Current Timestamp 與相對時間都使用目前瀏覽器的時間。" },
+        { q: "如何判斷輸入是秒還是毫秒？", a: "自動模式會將 10 位數判斷為秒、13 位數判斷為毫秒；其他數值可手動選擇。" },
+        { q: "可以處理 1970 年以前的日期嗎？", a: "可以。瀏覽器 Date 支援 Unix epoch 以前的負數秒數與毫秒數。" },
+      ],
+      related: [
+        { path: "/text/uuid", label: "UUID 產生器" },
+        { path: "/developer/url-encode", label: "URL 編碼" },
+        { path: "/developer/url-decode", label: "URL 解碼" },
+        { path: "/data/json-formatter", label: "JSON 格式化" },
+      ],
+    },
+    en: {
+      title: "Unix Timestamp Converter – Epoch Time Converter | NexaForge",
+      description: "Free Unix timestamp converter for seconds, milliseconds, and date-time values with Local and UTC output processed in your browser.",
+      h1: "Unix Timestamp Converter",
+      intro: "Convert Unix seconds, milliseconds, and date-time values in both directions with clear Local, UTC, ISO 8601, and relative-time output.",
+      sections: [
+        {
+          heading: "Convert seconds and milliseconds",
+          body: "Auto-detect treats 10 digits as seconds and 13 digits as milliseconds. Choose a unit manually for other lengths, including negative timestamps before 1970.",
+        },
+        {
+          heading: "Convert a date to a timestamp",
+          body: "Enter a date, time, and either Local or UTC to get Unix seconds and Unix milliseconds. Local uses this device's browser timezone.",
+        },
+      ],
+      steps: [
+        "Enter Unix seconds or milliseconds, or provide a date, time, and timezone.",
+        "Confirm the unit or timezone, then run the conversion.",
+        "Review Local, UTC, ISO 8601, relative time, or timestamp output.",
+      ],
+      privacy: "Every calculation runs locally in this browser. Your input is not sent to or stored by NexaForge servers.",
+      faq: [
+        { q: "Does this tool use server time?", a: "No. Current Timestamp and relative time use the current clock in this browser." },
+        { q: "How does it distinguish seconds from milliseconds?", a: "Auto-detect treats 10 digits as seconds and 13 digits as milliseconds. Choose a unit manually for other values." },
+        { q: "Can it handle dates before 1970?", a: "Yes. The browser Date API supports negative seconds and milliseconds before the Unix epoch." },
+      ],
+      related: [
+        { path: "/text/uuid", label: "UUID Generator" },
+        { path: "/developer/url-encode", label: "URL Encoder" },
+        { path: "/developer/url-decode", label: "URL Decoder" },
+        { path: "/data/json-formatter", label: "JSON Formatter" },
+      ],
+    },
+  },
+};
+
 const JSON_DIFF_LANDING: SeoLandingDefinition = {
   path: "/data/json-diff",
   toolId: "json-diff",
@@ -673,7 +748,9 @@ const PDF_PAGE_EDITOR_LANDINGS: readonly SeoLandingDefinition[] = [
 
 export const SEO_SEARCH_PAGES: readonly SeoLandingDefinition[] = [
   ...ALIAS_PAGE_SEEDS.map(definePage),
-  ...EXISTING_PAGE_SEEDS.map(definePage),
+  ...EXISTING_PAGE_SEEDS.map(definePage).map((entry) =>
+    entry.path === UNIX_TIMESTAMP_LANDING.path ? UNIX_TIMESTAMP_LANDING : entry
+  ),
   ...PDF_PAGE_EDITOR_LANDINGS,
   JSON_DIFF_LANDING,
 ];
