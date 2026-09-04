@@ -55,6 +55,9 @@ const SqlFormatterPage = lazy(() =>
 const CronBuilderPage = lazy(() =>
   import("./pages/developer/CronBuilderPage").then((module) => ({ default: module.CronBuilderPage }))
 );
+const UnixTimestampPage = lazy(() =>
+  import("./pages/developer/UnixTimestampPage").then((module) => ({ default: module.UnixTimestampPage }))
+);
 const UrlParserPage = lazy(() =>
   import("./pages/developer/UrlParserPage").then((module) => ({ default: module.UrlParserPage }))
 );
@@ -242,7 +245,7 @@ const APP_ROUTES: AppRoute[] = [
   { path: "/developer/jwt-key", element: <JwtKeyGeneratorPage /> },
   { path: "/developer/jwt-decoder", element: <JwtDecoderPage /> },
   { path: "/developer/url-encoder", element: <DeveloperToolsPage kind="url-encoder" /> },
-  { path: "/developer/unix-timestamp", element: <DeveloperToolsPage kind="unix-timestamp" /> },
+  { path: "/developer/unix-timestamp", element: <UnixTimestampPage /> },
   { path: "/developer/json-yaml", element: <DeveloperToolsPage kind="json-yaml" /> },
   { path: "/developer/json-diff", element: <LegacyJsonDiffRedirect /> },
   { path: "/developer/regex-tester", element: <RegexTesterPage /> },
