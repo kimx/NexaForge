@@ -4,7 +4,16 @@ import { renderWithProviders } from "../../test/renderWithProviders";
 import * as barcodeReaderService from "../../services/qr/barcodeReaderService";
 import { BarcodeReaderPage } from "./BarcodeReaderPage";
 
-afterEach(() => vi.restoreAllMocks());
+const originalClipboard = Object.getOwnPropertyDescriptor(navigator, "clipboard");
+
+afterEach(() => {
+  vi.restoreAllMocks();
+  if (originalClipboard) {
+    Object.defineProperty(navigator, "clipboard", originalClipboard);
+  } else {
+    Reflect.deleteProperty(navigator, "clipboard");
+  }
+});
 
 describe("BarcodeReaderPage", () => {
   it("reads an uploaded image, lists decoded values, and copies a value", async () => {
