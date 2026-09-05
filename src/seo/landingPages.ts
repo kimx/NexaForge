@@ -70,6 +70,7 @@ const RELATED_LABELS: Record<string, Record<Locale, string>> = {
   "/pdf/add-page-numbers": { "zh-TW": "為 PDF 加入頁碼", en: "Add Page Numbers to PDF" },
   "/pdf/watermark": { "zh-TW": "為 PDF 加入浮水印", en: "Add Watermark to PDF" },
   "/data/json-formatter": { "zh-TW": "JSON 格式化", en: "JSON Formatter" },
+  "/data/jsonpath-tester": { "zh-TW": "JSONPath Tester", en: "JSONPath Tester" },
   "/data/json-validator": { "zh-TW": "JSON 驗證", en: "JSON Validator" },
   "/data/json-diff": { "zh-TW": "JSON Diff", en: "JSON Diff" },
   "/data/json-to-csv": { "zh-TW": "JSON 轉 CSV", en: "JSON to CSV" },
@@ -657,6 +658,81 @@ const JSON_DIFF_LANDING: SeoLandingDefinition = {
   },
 };
 
+const JSONPATH_TESTER_LANDING: SeoLandingDefinition = {
+  path: "/data/jsonpath-tester",
+  toolId: "jsonpath-tester",
+  isAlias: false,
+  preset: {},
+  content: {
+    "zh-TW": {
+      title: "JSONPath Tester 線上測試工具 | NexaForge",
+      description: "線上測試 JSONPath expression，快速取得格式化匹配結果。JSON 與查詢內容只在瀏覽器本機處理，不會上傳。",
+      h1: "JSONPath Tester 線上測試工具",
+      intro: "貼上 JSON 並輸入 JSONPath expression，快速檢查物件、陣列、萬用字元與 recursive path 的匹配結果。",
+      sections: [
+        {
+          heading: "支援常見 JSONPath 語法",
+          body: "可使用 $.users[*].name 這類 property、array index、wildcard 與 recursive path 查詢，結果會以格式化 JSON 顯示。",
+        },
+        {
+          heading: "大型 JSON 的瀏覽器本機處理",
+          body: "一般輸入會在短暫 debounce 後自動執行；較大的內容會停用自動執行，改由你按下 Run 控制處理時機。",
+        },
+      ],
+      steps: [
+        "貼上 JSON 並輸入 JSONPath expression，例如 $.users[*].name。",
+        "等待自動執行，或在大型輸入時選擇 Run。",
+        "檢查匹配結果，格式化輸入或複製結果。",
+      ],
+      privacy: "JSON 與 JSONPath expression 都只在這台裝置的瀏覽器本機處理，不會傳送至 NexaForge 伺服器或分析工具。",
+      faq: [
+        { q: "JSONPath Tester 會上傳我的 JSON 嗎？", a: "不會。JSON 解析、JSONPath 查詢、格式化與複製都在瀏覽器本機完成。" },
+        { q: "沒有匹配結果時會顯示什麼？", a: "工具會顯示 No values matched this JSONPath.，這是空結果，不是錯誤。" },
+        { q: "支援大型 JSON 嗎？", a: "支援手動 Run；輸入超過合理大小後會停用 debounce 自動執行，以避免編輯時持續阻塞瀏覽器。" },
+      ],
+      related: [
+        { path: "/data/json-formatter", label: "JSON 格式化" },
+        { path: "/data/json-diff", label: "JSON Diff" },
+        { path: "/data/yaml-json", label: "YAML ↔ JSON" },
+        { path: "/json", label: "JSON 工具中心" },
+      ],
+    },
+    en: {
+      title: "JSONPath Tester Online – Test JSONPath Expressions | NexaForge",
+      description: "Test JSONPath expressions against JSON online and view formatted matches. JSON is processed locally in your browser and never uploaded.",
+      h1: "JSONPath Tester Online",
+      intro: "Paste JSON and enter a JSONPath expression to inspect matches across objects, arrays, wildcards, and recursive paths.",
+      sections: [
+        {
+          heading: "Common JSONPath syntax",
+          body: "Use property, array index, wildcard, and recursive path queries such as $.users[*].name, with formatted JSON results.",
+        },
+        {
+          heading: "A safer workflow for large JSON",
+          body: "Normal input runs after a short debounce. Larger documents pause automatic execution so you can choose when to run the query.",
+        },
+      ],
+      steps: [
+        "Paste JSON and enter an expression such as $.users[*].name.",
+        "Wait for the debounced result, or select Run for large input.",
+        "Review the matches, format the input, or copy the result.",
+      ],
+      privacy: "Your JSON and JSONPath expression are processed only in this browser. They are not sent to NexaForge servers or analytics.",
+      faq: [
+        { q: "Will JSONPath Tester upload my JSON?", a: "No. JSON parsing, JSONPath evaluation, formatting, and copying all happen locally in your browser." },
+        { q: "What happens when there are no matches?", a: "The tool shows No values matched this JSONPath. as an empty state, not an error." },
+        { q: "Can I use large JSON documents?", a: "Yes. Automatic execution pauses after the input reaches the size threshold, and you can run the query manually." },
+      ],
+      related: [
+        { path: "/data/json-formatter", label: "JSON Formatter" },
+        { path: "/data/json-diff", label: "JSON Diff" },
+        { path: "/data/yaml-json", label: "YAML ↔ JSON" },
+        { path: "/json", label: "JSON Tool Hub" },
+      ],
+    },
+  },
+};
+
 const YAML_JSON_LANDING: SeoLandingDefinition = {
   path: "/data/yaml-json",
   toolId: "json-yaml",
@@ -994,6 +1070,7 @@ export const SEO_SEARCH_PAGES: readonly SeoLandingDefinition[] = [
   ...PDF_PAGE_EDITOR_LANDINGS,
   PDF_METADATA_LANDING,
   JSON_DIFF_LANDING,
+  JSONPATH_TESTER_LANDING,
   YAML_JSON_LANDING,
 ];
 

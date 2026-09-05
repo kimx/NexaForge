@@ -31,6 +31,9 @@ const CsvViewerPage = lazy(() =>
 const JsonFormatterPage = lazy(() =>
   import("./pages/data/JsonFormatterPage").then((module) => ({ default: module.JsonFormatterPage }))
 );
+const JsonPathTesterPage = lazy(() =>
+  import("./pages/data/JsonPathTesterPage").then((module) => ({ default: module.JsonPathTesterPage }))
+);
 const JsonDiffPage = lazy(() =>
   import("./pages/data/JsonDiffPage").then((module) => ({ default: module.JsonDiffPage }))
 );
@@ -244,6 +247,7 @@ const APP_ROUTES: AppRoute[] = [
   { path: "/pdf/watermark", element: <PdfWatermarkPage /> },
   { path: "/pdf/metadata", element: <PdfMetadataPage /> },
   { path: "/data/json-formatter", element: <JsonFormatterPage /> },
+  { path: "/data/jsonpath-tester", element: <JsonPathTesterPage /> },
   { path: "/data/json-diff", element: <JsonDiffPage /> },
   { path: "/data/csv-viewer", element: <CsvViewerPage /> },
   { path: "/data/csv-to-json", element: <CsvToJsonPage /> },

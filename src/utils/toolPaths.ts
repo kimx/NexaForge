@@ -3,6 +3,7 @@ import type { ToolDefinition } from "../types/tool";
 
 export const JSON_TOOL_IDS = [
   "json-formatter",
+  "jsonpath-tester",
   "json-diff",
   "json-yaml",
   "json-to-csv",
