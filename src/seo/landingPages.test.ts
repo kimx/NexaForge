@@ -49,6 +49,7 @@ describe("SEO search page catalog", () => {
       "/pdf/watermark",
       "/pdf/add-page-numbers",
       "/pdf/metadata",
+      "/qr-barcode/barcode-reader",
       "/data/json-diff",
       "/data/jsonpath-tester",
       "/data/yaml-json",

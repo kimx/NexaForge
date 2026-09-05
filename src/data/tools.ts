@@ -398,6 +398,15 @@ export const FILE_TOOLS: ToolDefinition[] = [
     keywords: ["barcode", "code 128", "ean-13", "png", "svg"],
   },
   {
+    id: "barcode-reader",
+    title: "Barcode Reader",
+    description: "Read barcodes from images locally in your browser.",
+    path: "/qr-barcode/barcode-reader",
+    category: "QR & Barcode",
+    aliases: ["barcode reader", "barcode scanner", "scan barcode"],
+    keywords: ["barcode", "reader", "scanner", "ean-13", "code 128", "code 39"],
+  },
+  {
     id: "wifi-qr",
     title: "Wi-Fi QR Generator",
     description: "Create Wi-Fi QR codes locally without uploading credentials.",

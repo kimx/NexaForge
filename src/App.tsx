@@ -154,6 +154,9 @@ const QrReaderPage = lazy(() =>
 const BarcodeGeneratorPage = lazy(() =>
   import("./pages/qr/BarcodeGeneratorPage").then((module) => ({ default: module.BarcodeGeneratorPage }))
 );
+const BarcodeReaderPage = lazy(() =>
+  import("./pages/qr/BarcodeReaderPage").then((module) => ({ default: module.BarcodeReaderPage }))
+);
 const WifiQrPage = lazy(() =>
   import("./pages/qr/WifiQrPage").then((module) => ({ default: module.WifiQrPage }))
 );
@@ -284,6 +287,7 @@ const APP_ROUTES: AppRoute[] = [
   { path: "/qr-code", element: <QrPage /> },
   { path: "/qr-code/reader", element: <QrReaderPage /> },
   { path: "/barcode/generator", element: <BarcodeGeneratorPage /> },
+  { path: "/qr-barcode/barcode-reader", element: <BarcodeReaderPage /> },
   { path: "/qr-code/wifi", element: <WifiQrPage /> },
   { path: "/qr-code/vcard", element: <VCardQrPage /> },
   ...SEO_ALIAS_ROUTES,
