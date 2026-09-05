@@ -2455,6 +2455,97 @@ section,
   color: var(--text-primary);
 }
 
+.jsonpath-tester-workspace {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+}
+
+.jsonpath-tester-privacy,
+.jsonpath-tester-hint {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+}
+
+.jsonpath-tester-privacy {
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--semantic-success) 8%, var(--bg-surface) 92%);
+}
+
+.jsonpath-tester-editors {
+  display: grid;
+  gap: 14px;
+}
+
+.jsonpath-tester-editors > div {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.jsonpath-tester-editors label {
+  color: var(--text-secondary);
+  font-weight: var(--font-weight-semibold);
+}
+
+.jsonpath-tester-editors textarea,
+.jsonpath-tester-editors input,
+.jsonpath-tester-result pre {
+  width: 100%;
+  min-width: 0;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+}
+
+.jsonpath-tester-editors textarea {
+  min-height: 300px;
+  resize: vertical;
+}
+
+.jsonpath-tester-editors textarea:focus,
+.jsonpath-tester-editors input:focus {
+  border-color: var(--brand-primary);
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.jsonpath-tester-editors textarea[aria-invalid="true"],
+.jsonpath-tester-editors input[aria-invalid="true"] {
+  border-color: var(--semantic-danger);
+}
+
+.jsonpath-tester-actions {
+  justify-content: flex-end;
+}
+
+.jsonpath-tester-actions .btn.primary {
+  margin-left: auto;
+}
+
+.jsonpath-tester-result {
+  display: grid;
+  gap: 12px;
+}
+
+.jsonpath-tester-result__actions {
+  justify-content: flex-end;
+  margin-top: 0;
+}
+
+.jsonpath-tester-result pre {
+  min-height: 280px;
+  margin: 0;
+  overflow: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--bg-subtle) 68%, var(--surface) 32%);
+}
+
 @media (max-width: 650px) {
   .json-diff-editors {
     grid-template-columns: minmax(0, 1fr);
@@ -2462,6 +2553,15 @@ section,
 
   .json-diff-actions .btn.primary {
     width: 100%;
+    margin-left: 0;
+  }
+
+  .jsonpath-tester-actions .btn {
+    width: 100%;
+  }
+
+  .jsonpath-tester-actions .btn.primary {
+    order: -1;
     margin-left: 0;
   }
 }

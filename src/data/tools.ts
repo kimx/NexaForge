@@ -218,6 +218,15 @@ export const FILE_TOOLS: ToolDefinition[] = [
     keywords: ["json", "format", "minify", "validator"],
   },
   {
+    id: "jsonpath-tester",
+    title: "JSONPath Tester",
+    description: "Test JSONPath expressions against JSON locally in your browser.",
+    path: "/data/jsonpath-tester",
+    category: "Data",
+    aliases: ["json path tester", "test jsonpath", "jsonpath online"],
+    keywords: ["json", "jsonpath", "query", "path", "tester"],
+  },
+  {
     id: "csv-viewer",
     title: "CSV Viewer",
     description: "Render large CSV safely with preview and metadata.",

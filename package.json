@@ -22,6 +22,7 @@
     "fflate": "^0.8.3",
     "heic-to": "^1.5.2",
     "js-yaml": "^4.3.1",
+    "jsonpath-plus": "10.4.0",
     "papaparse": "^5.4.1",
     "pdf-lib": "^1.17.1",
     "pdfjs-dist": "^6.2.108",

@@ -50,6 +50,7 @@ describe("SEO search page catalog", () => {
       "/pdf/add-page-numbers",
       "/pdf/metadata",
       "/data/json-diff",
+      "/data/jsonpath-tester",
       "/data/yaml-json",
     ]);
     expect(new Set(SEO_SEARCH_PAGES.map(({ path }) => path)).size).toBe(
