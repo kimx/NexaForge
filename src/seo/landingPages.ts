@@ -1062,6 +1062,61 @@ const PDF_METADATA_LANDING: SeoLandingDefinition = {
   },
 };
 
+const BARCODE_READER_LANDING: SeoLandingDefinition = {
+  path: "/qr-barcode/barcode-reader",
+  toolId: "barcode-reader",
+  isAlias: false,
+  preset: {},
+  content: {
+    "zh-TW": {
+      title: "線上 Barcode Reader 條碼讀取器｜瀏覽器本機處理 | NexaForge",
+      description: "從圖片讀取 EAN-13、EAN-8、UPC-A、Code 128 與 Code 39 條碼，支援多個結果，所有內容只在瀏覽器本機處理。",
+      h1: "線上 Barcode Reader 條碼讀取器",
+      intro: "上傳手機拍攝或電腦中的條碼圖片，快速查看格式與解碼內容，不需上傳檔案或註冊帳號即可開始。",
+      sections: [
+        { heading: "支援常見一維條碼", body: "優先支援 EAN-13、EAN-8、UPC-A、Code 128 與 Code 39。瀏覽器原生 BarcodeDetector 可用時，圖片中的多個條碼也會逐一列出。" },
+        { heading: "大圖先縮放再解碼", body: "工具會在瀏覽器內將過大的圖片縮放至合理尺寸，再使用原生 API 或 ZXing fallback 解碼，避免反覆處理 20MP 原始照片。" },
+      ],
+      steps: ["上傳包含條碼的圖片。", "按下讀取條碼，等待瀏覽器本機解碼。", "檢查格式與內容，複製結果或掃描另一張圖片。"],
+      privacy: "圖片與解碼內容只在這台裝置的瀏覽器本機處理，不會上傳到 NexaForge 伺服器，也不會送入分析服務。",
+      faq: [
+        { q: "支援哪些條碼格式？", a: "優先支援 EAN-13、EAN-8、UPC-A、Code 128 與 Code 39。瀏覽器原生解碼器可能額外支援其他格式。" },
+        { q: "手機拍攝的圖片可以使用嗎？", a: "可以。請讓條碼清楚、正面且有足夠對比，工具會先縮放過大的照片再解碼。" },
+        { q: "圖片或解碼內容會上傳嗎？", a: "不會。所有影像處理與解碼都在瀏覽器完成，解碼內容不會送到伺服器或分析服務。" },
+      ],
+      related: [
+        { path: "/barcode/generator", label: "Code128 / EAN-13 Barcode Generator" },
+        { path: "/qr-code/reader", label: "QR Code Reader" },
+        { path: "/qr-code", label: "QR Code Generator" },
+        { path: "/image/resize", label: "Resize Images" },
+      ],
+    },
+    en: {
+      title: "Online Barcode Reader for Images | Private Browser Tool | NexaForge",
+      description: "Read EAN-13, EAN-8, UPC-A, Code 128, and Code 39 barcodes from images with multi-result support and browser-only processing.",
+      h1: "Online Barcode Reader",
+      intro: "Upload a barcode image from your phone or computer to see its format and decoded value without uploading the file or registering.",
+      sections: [
+        { heading: "Read common 1D barcodes", body: "The reader prioritizes EAN-13, EAN-8, UPC-A, Code 128, and Code 39. When BarcodeDetector is available, multiple barcodes in one image are listed separately." },
+        { heading: "Resize large images before decoding", body: "Oversized images are resized in your browser before native detection or the ZXing fallback runs, avoiding repeated work on a full 20MP photo." },
+      ],
+      steps: ["Upload an image containing a barcode.", "Click Read barcode and let the browser decode it locally.", "Review the format and value, copy a result, or scan another image."],
+      privacy: "Your image and decoded value stay in this browser on this device. They are not uploaded to NexaForge or sent to analytics.",
+      faq: [
+        { q: "Which barcode formats are supported?", a: "EAN-13, EAN-8, UPC-A, Code 128, and Code 39 are prioritized. Native browser detection may support additional formats." },
+        { q: "Can I use a photo from my phone?", a: "Yes. Keep the barcode clear, front-facing, and high contrast. The reader resizes large photos before decoding." },
+        { q: "Are my image or decoded value uploaded?", a: "No. Image processing and decoding happen in this browser, and the decoded value is not sent to a server or analytics service." },
+      ],
+      related: [
+        { path: "/barcode/generator", label: "Code128 / EAN-13 Barcode Generator" },
+        { path: "/qr-code/reader", label: "QR Code Reader" },
+        { path: "/qr-code", label: "QR Code Generator" },
+        { path: "/image/resize", label: "Resize Images" },
+      ],
+    },
+  },
+};
+
 export const SEO_SEARCH_PAGES: readonly SeoLandingDefinition[] = [
   ...ALIAS_PAGE_SEEDS.map(definePage),
   ...EXISTING_PAGE_SEEDS.map(definePage).map((entry) =>
@@ -1069,6 +1124,7 @@ export const SEO_SEARCH_PAGES: readonly SeoLandingDefinition[] = [
   ),
   ...PDF_PAGE_EDITOR_LANDINGS,
   PDF_METADATA_LANDING,
+  BARCODE_READER_LANDING,
   JSON_DIFF_LANDING,
   JSONPATH_TESTER_LANDING,
   YAML_JSON_LANDING,

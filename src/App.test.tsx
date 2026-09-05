@@ -59,6 +59,7 @@ const ROUTE_HEADINGS: Record<string, string> = {
   "/qr-code": "Free Online QR Code Generator",
   "/qr-code/reader": "QR Code Reader",
   "/barcode/generator": "Code128 / EAN-13 Barcode Generator",
+  "/qr-barcode/barcode-reader": "Online Barcode Reader",
   "/qr-code/wifi": "Wi-Fi QR Generator",
   "/qr-code/vcard": "vCard QR Generator",
 };
@@ -129,6 +130,7 @@ describe("App routes", () => {
     const paths = [
       "/qr-code/reader",
       "/barcode/generator",
+      "/qr-barcode/barcode-reader",
       "/qr-code/wifi",
       "/qr-code/vcard",
     ];
