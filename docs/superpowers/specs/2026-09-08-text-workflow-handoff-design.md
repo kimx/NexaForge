@@ -44,3 +44,11 @@
 | 實際瀏覽器下載落地檔案 | 未確認：內嵌瀏覽器下載事件等待逾時；測試已驗證 Blob 內容及檔名 |
 
 本機畫面與命令輸出保留在 `artifacts/product-review-2026-09-08/issue81-*`，不納入程式提交。未宣稱已部署或 CI 已通過。
+
+## main 同步與交付
+
+沿用 develop，將 main 同步進來並解開 App、LanguageContext、DeveloperToolsPage 衝突。保留 main 的 PDF、YAML／JSON、Unix Timestamp、URL 編碼模式與條碼工具，同時保留 develop 既有的共用編輯器、SEO／相關工具與 JSONPath 網址。JSONPath 的工具目錄只保留一項，避免 sidebar 與 JSON hub 重複。
+
+最終 `npm run test -- --run --maxWorkers=2` 通過 137 個測試檔案、690 個案例，`npm run build` 及 `git diff --check` 通過。合併後首輪預設並行執行曾有 1 個 PDF 路由載入逾時；降低並行數後完整重跑通過，未變更測試時限。同步後的瀏覽器再次確認清理 → 去重 → 排序得到 `apple\npear`，重新整理後輸入、结果與原始內容均清空。
+
+已建立 [PR #89](https://github.com/kimx/NexaForge/pull/89)（develop → main，非草稿，可合併），並按使用者要求將 [Issue #81](https://github.com/kimx/NexaForge/issues/81) 關閉。PR 尚未合併；最後查詢未回傳 CI checks，不代表 CI 通過。
