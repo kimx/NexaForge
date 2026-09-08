@@ -1,11 +1,14 @@
-import { useState } from "react";
 import { TextResultActions } from "../../components/text/TextResultActions";
 import { TextWorkflowLinks } from "../../components/text/TextWorkflowLinks";
+import { TextWorkflowActions } from "../../components/text/TextWorkflowActions";
+import { TextWorkflowPanel } from "../../components/text/TextWorkflowPanel";
 import { ToolPageTemplate } from "../../components/ToolPageTemplate";
 import { useLanguage } from "../../context/LanguageContext";
+import { useTextWorkflow, useTextWorkflowDraft } from "../../context/TextWorkflowContext";
 import { FILE_TOOLS } from "../../data/tools";
 import { useSeo } from "../../hooks/useSeo";
 import { cleanText, type TextCleanerOptions } from "../../services/text/textWorkflowService";
+import { countTextStats } from "../../services/text/textService";
 import type { ProcessingState, ToolMeta } from "../../types/tool";
 import { getRelatedTools } from "../../utils/toolHelpers";
 
@@ -23,19 +26,18 @@ const DEFAULT_OPTIONS: TextCleanerOptions = {
 
 const NEXT_TOOLS = [
   { label: "Find & Replace", path: "/text/find-replace" },
-  { label: "Remove Duplicate Lines", path: "/text/remove-duplicate-lines" },
-  { label: "Sort Lines", path: "/text/sort-lines" },
   { label: "Compare Text", path: "/text/diff" },
 ];
 
 export function TextCleanerPage(): JSX.Element {
   const { t } = useLanguage();
-  const [input, setInput] = useState("");
-  const [options, setOptions] = useState<TextCleanerOptions>(DEFAULT_OPTIONS);
-  const [output, setOutput] = useState("");
-  const [beforeLines, setBeforeLines] = useState(0);
-  const [afterLines, setAfterLines] = useState(0);
-  const [processing, setProcessing] = useState<ProcessingState>("idle");
+  const [draft, setDraft] = useTextWorkflowDraft("text-cleaner");
+  const { clear } = useTextWorkflow();
+  const { input } = draft;
+  const output = draft.output ?? "";
+  const options = draft.options.cleaner ?? DEFAULT_OPTIONS;
+  const processing: ProcessingState = draft.output !== null ? "success" : "idle";
+  const setInput = (value: string): void => setDraft((current) => ({ ...current, input: value, output: null }));
   const tool = FILE_TOOLS.find((item) => item.id === "text-cleaner") ?? FILE_TOOLS[0];
   const meta: ToolMeta = {
     title: "Text Cleaner Online – Remove Spaces & Blank Lines | NexaForge",
@@ -46,21 +48,11 @@ export function TextCleanerPage(): JSX.Element {
   useSeo(meta);
 
   const updateOption = (key: keyof TextCleanerOptions, checked: boolean): void => {
-    setOptions((current) => ({ ...current, [key]: checked }));
+    setDraft((current) => ({ ...current, output: null, options: { ...current.options, cleaner: { ...options, [key]: checked } } }));
   };
   const clean = (): void => {
     const result = cleanText(input, options);
-    setOutput(result.text);
-    setBeforeLines(result.beforeLines);
-    setAfterLines(result.afterLines);
-    setProcessing("success");
-  };
-  const clear = (): void => {
-    setInput("");
-    setOutput("");
-    setBeforeLines(0);
-    setAfterLines(0);
-    setProcessing("idle");
+    setDraft((current) => ({ ...current, output: result.text }));
   };
 
   return (
@@ -71,9 +63,12 @@ export function TextCleanerPage(): JSX.Element {
       workflow={{ state: processing }}
       children={{
         workspace: (
-          <label htmlFor="text-cleaner-input">Input text
+          <>
+          <TextWorkflowPanel currentTool="text-cleaner" />
+          <label htmlFor="text-cleaner-input">{t("textWorkflow.input")}
             <textarea id="text-cleaner-input" value={input} onChange={(event) => setInput(event.target.value)} rows={10} spellCheck={false} />
           </label>
+          </>
         ),
         options: (
           <div className="tool-form text-cleaner__options text-tool-options">
@@ -91,19 +86,19 @@ export function TextCleanerPage(): JSX.Element {
                 </div>
               </section>
             ))}
-            <button type="button" className="btn primary text-tool-options__primary-action" onClick={clean}>{t("tool.text-cleaner.button.clean")}</button>
+            <button type="button" className="btn primary text-tool-options__primary-action" onClick={clean} disabled={!input}>{t("tool.text-cleaner.button.clean")}</button>
           </div>
         ),
         result: (
           <div className="tool-form">
-            <p role="status">Before: {beforeLines} lines. After: {afterLines} lines.</p>
-            <label htmlFor="text-cleaner-output">Cleaned text
+            <p role="status">{t("textWorkflow.counts", { before: countTextStats(input).lines, after: countTextStats(output).lines })}</p>
+            <label htmlFor="text-cleaner-output">{t("textWorkflow.output")}
               <textarea id="text-cleaner-output" value={output} readOnly rows={10} spellCheck={false} />
             </label>
-            <TextResultActions text={output} filename="cleaned-text.txt" onClear={clear} onUseAsInput={setInput} />
+            <TextResultActions text={output} filename="cleaned-text.txt" onClear={clear} onUseAsInput={setInput} labels={{ copy: t("textWorkflow.copy"), download: t("textWorkflow.download"), clear: t("textWorkflow.clear"), useAsInput: t("textWorkflow.useAsInput") }} />
           </div>
         ),
-        nextActions: <TextWorkflowLinks tools={NEXT_TOOLS} />,
+        nextActions: <><TextWorkflowActions source="text-cleaner" targets={["remove-duplicate-lines", "sort-lines"]} /><TextWorkflowLinks tools={NEXT_TOOLS} /></>,
         howItWorks: ["Paste text into the input.", "Choose the cleanup rules you need.", "Clean, copy, download, or continue to the next tool."],
         faq: [
           { q: "Is my text uploaded?", a: "No. Text cleaning runs only in this browser." },

@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import type { Locale } from "../context/LanguageContext";
 import type { LandingContent } from "../seo/landingPages";
-import { localizePath } from "../routing/localePaths";
 import { useMediaQuery } from "../hooks/useMediaQuery";
+import { RelatedTools } from "./RelatedTools";
 
 interface SeoLandingContentProps {
   content: LandingContent;
@@ -66,16 +65,12 @@ export function SeoLandingContent({
         </div>
         </section>
 
-        <nav className="seo-landing__related" aria-label={relatedHeading}>
-        <h2>{relatedHeading}</h2>
-        <ul className="related-tools">
-          {content.related.map(({ path, label }) => (
-            <li key={path}>
-              <Link to={localizePath(path, locale)}>{label}</Link>
-            </li>
-          ))}
-        </ul>
-        </nav>
+        <RelatedTools
+          links={content.related}
+          heading={relatedHeading}
+          ariaLabel={relatedHeading}
+          className="seo-landing__related"
+        />
       </div>
     </details>
   );

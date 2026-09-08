@@ -4,6 +4,7 @@ import { Footer } from "./components/Footer";
 import { Header } from "./components/Header";
 import { ToolSidebar } from "./components/ToolSidebar";
 import { useLanguage } from "./context/LanguageContext";
+import { TextWorkflowProvider } from "./context/TextWorkflowContext";
 import { FILE_TOOLS } from "./data/tools";
 import { useMediaQuery } from "./hooks/useMediaQuery";
 import { NotFoundPage } from "./pages/NotFoundPage";
@@ -78,6 +79,9 @@ const JsonToCSharpPage = lazy(() =>
 );
 const JsonToTypeScriptPage = lazy(() =>
   import("./pages/developer/JsonToTypeScriptPage").then((module) => ({ default: module.JsonToTypeScriptPage }))
+);
+const DeveloperJsonPathTesterPage = lazy(() =>
+  import("./pages/developer/JsonPathTesterPage").then((module) => ({ default: module.JsonPathTesterPage }))
 );
 const JwtDecoderPage = lazy(() =>
   import("./pages/developer/JwtDecoderPage").then((module) => ({ default: module.JwtDecoderPage }))
@@ -275,6 +279,8 @@ const APP_ROUTES: AppRoute[] = [
   { path: "/developer/url-encoder", element: <DeveloperToolsPage kind="url-encoder" /> },
   { path: "/developer/unix-timestamp", element: <UnixTimestampPage /> },
   { path: "/developer/json-yaml", element: <LegacyYamlJsonRedirect /> },
+  { path: "/developer/jsonpath-tester", element: <DeveloperJsonPathTesterPage /> },
+  { path: "/developer/jsonpath", element: <DeveloperJsonPathTesterPage /> },
   { path: "/developer/json-diff", element: <LegacyJsonDiffRedirect /> },
   { path: "/developer/regex-tester", element: <RegexTesterPage /> },
   { path: "/developer/sql-formatter", element: <SqlFormatterPage /> },
@@ -443,7 +449,7 @@ function ToolFrame({ children }: { children: JSX.Element }): JSX.Element {
 
 export default function App(): JSX.Element {
   return (
-    <>
+    <TextWorkflowProvider>
       <RouteLocaleSync />
       <Routes>
         {APP_ROUTES.flatMap(({ path, element }) => [
@@ -462,6 +468,6 @@ export default function App(): JSX.Element {
         <Route path="/en/text/base64" element={<Navigate to="/en/developer/base64" replace />} />
         <Route path="*" element={<ToolFrame><NotFoundPage /></ToolFrame>} />
       </Routes>
-    </>
+    </TextWorkflowProvider>
   );
 }

@@ -2,11 +2,14 @@ import { useEffect, useId, useMemo, useState } from "react";
 import type { ProcessingState, ToolMeta } from "../../types/tool";
 import { FILE_TOOLS } from "../../data/tools";
 import { ToolPageTemplate } from "../../components/ToolPageTemplate";
+import { CodeEditorToolkit, type CodeEditorError } from "../../components/CodeEditorToolkit";
+import { TextTransformationToolkit } from "../../components/text/TextTransformationToolkit";
 import { useLanguage, useLocalizedToolMeta } from "../../context/LanguageContext";
 import { getRelatedTools } from "../../utils/toolHelpers";
 import { trackEvent } from "../../utils/analytics";
 import { useSeo } from "../../hooks/useSeo";
 import { useSeoLanding } from "../../hooks/useSeoLanding";
+import { jsonToYaml, yamlToJson } from "../../services/yaml/yamlService";
 
 type DeveloperToolKind = "url-encoder" | "unix-timestamp" | "json-yaml" | "json-diff";
 type UrlEncodingMode = "component" | "full-url";
@@ -15,16 +18,17 @@ interface DeveloperToolsPageProps {
   kind: DeveloperToolKind;
 }
 
-interface YamlLine {
-  indent: number;
-  text: string;
-}
-
 const JSON_TOOL_SAMPLE = JSON.stringify({
   name: "NexaForge",
   active: true,
   tags: ["json", "sample"],
 }, null, 2);
+
+const YAML_TOOL_SAMPLE = `name: "NexaForge"
+active: true
+tags:
+  - "yaml"
+  - "sample"`;
 
 const JSON_DIFF_RIGHT_SAMPLE = JSON.stringify({
   name: "NexaForge",
@@ -40,99 +44,6 @@ function initialModeFor(kind: DeveloperToolKind): string {
   if (kind === "json-yaml") return "json-to-yaml";
   if (kind === "unix-timestamp") return "timestamp-to-date";
   return "encode";
-}
-
-function yamlScalar(value: unknown): string {
-  if (typeof value === "string") return JSON.stringify(value);
-  if (value === null) return "null";
-  return String(value);
-}
-
-function jsonToYaml(value: unknown, indent = 0): string {
-  const padding = " ".repeat(indent);
-  if (Array.isArray(value)) {
-    return value.length === 0
-      ? `${padding}[]`
-      : value.map((item) => {
-          if (item && typeof item === "object") {
-            return `${padding}-\n${jsonToYaml(item, indent + 2)}`;
-          }
-          return `${padding}- ${yamlScalar(item)}`;
-        }).join("\n");
-  }
-  if (value && typeof value === "object") {
-    return Object.entries(value as Record<string, unknown>).map(([key, child]) => {
-      if (child && typeof child === "object") {
-        return `${padding}${key}:\n${jsonToYaml(child, indent + 2)}`;
-      }
-      return `${padding}${key}: ${yamlScalar(child)}`;
-    }).join("\n");
-  }
-  return `${padding}${yamlScalar(value)}`;
-}
-
-function parseYamlScalar(value: string): unknown {
-  const trimmed = value.trim();
-  if (!trimmed) return null;
-  try {
-    return JSON.parse(trimmed);
-  } catch {
-    return trimmed;
-  }
-}
-
-function yamlToJson(source: string): unknown {
-  const lines: YamlLine[] = source
-    .split(/\r?\n/)
-    .filter((line) => line.trim() && !line.trim().startsWith("#"))
-    .map((line) => ({ indent: line.length - line.trimStart().length, text: line.trim() }));
-
-  const parseBlock = (start: number, indent: number): [unknown, number] => {
-    const isArray = lines[start]?.indent === indent && lines[start].text.startsWith("-");
-    const result: unknown[] | Record<string, unknown> = isArray ? [] : {};
-    let index = start;
-
-    while (index < lines.length && lines[index].indent === indent) {
-      const line = lines[index].text;
-      if (isArray) {
-        if (!line.startsWith("-")) break;
-        const content = line.slice(1).trim();
-        if (!content) {
-          if (lines[index + 1]?.indent > indent) {
-            const [child, nextIndex] = parseBlock(index + 1, lines[index + 1].indent);
-            (result as unknown[]).push(child);
-            index = nextIndex;
-          } else {
-            (result as unknown[]).push(null);
-            index += 1;
-          }
-        } else {
-          (result as unknown[]).push(parseYamlScalar(content));
-          index += 1;
-        }
-      } else {
-        const separator = line.indexOf(":");
-        if (separator < 1) throw new Error(`Invalid YAML line: ${line}`);
-        const key = line.slice(0, separator).trim();
-        const content = line.slice(separator + 1).trim();
-        if (content) {
-          (result as Record<string, unknown>)[key] = parseYamlScalar(content);
-          index += 1;
-        } else if (lines[index + 1]?.indent > indent) {
-          const [child, nextIndex] = parseBlock(index + 1, lines[index + 1].indent);
-          (result as Record<string, unknown>)[key] = child;
-          index = nextIndex;
-        } else {
-          (result as Record<string, unknown>)[key] = null;
-          index += 1;
-        }
-      }
-    }
-    return [result, index];
-  };
-
-  if (!lines.length) return null;
-  return parseBlock(0, lines[0].indent)[0];
 }
 
 export function jsonDiff(left: unknown, right: unknown): string {
@@ -193,6 +104,32 @@ function JsonDiffOutput({ output }: { output: string }): JSX.Element {
   );
 }
 
+function jsonEditorError(text: string, error: unknown, prefix: string): CodeEditorError {
+  const message = error instanceof Error ? error.message : String(error);
+  const positionMatch = /position (\d+)/i.exec(message);
+  if (!positionMatch) return { message: `${prefix}: ${message}` };
+
+  const position = Math.max(0, Math.min(Number(positionMatch[1]), text.length));
+  const before = text.slice(0, position);
+  return {
+    message: `${prefix}: ${message}`,
+    line: before.split("\n").length,
+    column: position - before.lastIndexOf("\n"),
+  };
+}
+
+function editorError(error: unknown, fallback: string): CodeEditorError {
+  if (error && typeof error === "object" && "line" in error && "column" in error) {
+    const located = error as { message?: unknown; line?: unknown; column?: unknown };
+    return {
+      message: located.message instanceof Error ? located.message.message : String(located.message ?? fallback),
+      line: typeof located.line === "number" ? located.line : null,
+      column: typeof located.column === "number" ? located.column : null,
+    };
+  }
+  return { message: error instanceof Error ? error.message : fallback };
+}
+
 export function DeveloperToolsPage({ kind }: DeveloperToolsPageProps): JSX.Element {
   const { t } = useLanguage();
   const landing = useSeoLanding();
@@ -209,8 +146,8 @@ export function DeveloperToolsPage({ kind }: DeveloperToolsPageProps): JSX.Eleme
   const [output, setOutput] = useState("");
   const [state, setState] = useState<ProcessingState>(() => initialInputFor(kind).trim() ? "ready" : "idle");
   const [error, setError] = useState<string | null>(null);
-  const [inputError, setInputError] = useState<string | null>(null);
-  const [secondInputError, setSecondInputError] = useState<string | null>(null);
+  const [inputError, setInputError] = useState<CodeEditorError | null>(null);
+  const [secondInputError, setSecondInputError] = useState<CodeEditorError | null>(null);
   const [copyStatus, setCopyStatus] = useState("");
   const inputErrorId = useId();
   const secondInputErrorId = useId();
@@ -246,12 +183,32 @@ export function DeveloperToolsPage({ kind }: DeveloperToolsPageProps): JSX.Eleme
 
   const canProcess = Boolean(input.trim()) && (kind !== "json-diff" || Boolean(secondInput.trim()));
 
+  const clearEditor = (): void => {
+    setInput("");
+    setOutput("");
+    setInputError(null);
+    setSecondInputError(null);
+    setError(null);
+    setCopyStatus("");
+    setState("idle");
+  };
+
+  const resetEditor = (): void => {
+    setInput(mode === "json-to-yaml" ? JSON_TOOL_SAMPLE : YAML_TOOL_SAMPLE);
+    setOutput("");
+    setInputError(null);
+    setSecondInputError(null);
+    setError(null);
+    setCopyStatus("");
+    setState("ready");
+  };
+
   const handleProcess = (requestedMode?: string): void => {
     const primaryIsEmpty = !input.trim();
     const secondaryIsEmpty = kind === "json-diff" && !secondInput.trim();
     if (primaryIsEmpty || secondaryIsEmpty) {
-      setInputError(primaryIsEmpty ? t("developerTools.empty") : null);
-      setSecondInputError(secondaryIsEmpty ? t("developerTools.empty") : null);
+      setInputError(primaryIsEmpty ? { message: t("developerTools.empty") } : null);
+      setSecondInputError(secondaryIsEmpty ? { message: t("developerTools.empty") } : null);
       setError(null);
       setState("error");
       return;
@@ -259,18 +216,20 @@ export function DeveloperToolsPage({ kind }: DeveloperToolsPageProps): JSX.Eleme
 
     let parsedPrimary: unknown;
     let parsedSecondary: unknown;
+    let nextInputError: CodeEditorError | null = null;
+    let nextSecondInputError: CodeEditorError | null = null;
     if ((kind === "json-yaml" && mode === "json-to-yaml") || kind === "json-diff") {
       try {
         parsedPrimary = JSON.parse(input);
-      } catch {
-        setInputError(t("developerTools.invalidInput"));
+      } catch (parseFailure) {
+        nextInputError = jsonEditorError(input, parseFailure, t("developerTools.invalidInput"));
       }
     }
     if (kind === "json-diff") {
       try {
         parsedSecondary = JSON.parse(secondInput);
-      } catch {
-        setSecondInputError(t("developerTools.invalidInput"));
+      } catch (parseFailure) {
+        nextSecondInputError = jsonEditorError(secondInput, parseFailure, t("developerTools.invalidInput"));
       }
     }
 
@@ -279,8 +238,8 @@ export function DeveloperToolsPage({ kind }: DeveloperToolsPageProps): JSX.Eleme
       parsedPrimary === undefined;
     const secondaryJsonInvalid = kind === "json-diff" && parsedSecondary === undefined;
     if (primaryJsonInvalid || secondaryJsonInvalid) {
-      setInputError(primaryJsonInvalid ? t("developerTools.invalidInput") : null);
-      setSecondInputError(secondaryJsonInvalid ? t("developerTools.invalidInput") : null);
+      setInputError(primaryJsonInvalid ? nextInputError ?? { message: t("developerTools.invalidInput") } : null);
+      setSecondInputError(secondaryJsonInvalid ? nextSecondInputError ?? { message: t("developerTools.invalidInput") } : null);
       setError(null);
       setState("error");
       trackEvent("process_failed", { tool: kind });
@@ -290,6 +249,7 @@ export function DeveloperToolsPage({ kind }: DeveloperToolsPageProps): JSX.Eleme
     setInputError(null);
     setSecondInputError(null);
     setError(null);
+    setCopyStatus("");
     setState("processing");
     try {
       let nextOutput = "";
@@ -322,25 +282,16 @@ export function DeveloperToolsPage({ kind }: DeveloperToolsPageProps): JSX.Eleme
       setOutput(nextOutput);
       setState("success");
       trackEvent("process_success", { tool: kind });
-    } catch {
+    } catch (conversionFailure) {
       setInputError(
-        kind === "url-encoder" && (requestedMode ?? mode) === "decode"
-          ? t("developerTools.invalidPercentEncoding")
-          : t("developerTools.invalidInput")
+        kind === "url-encoder"
+          ? { message: t((requestedMode ?? mode) === "decode" ? "developerTools.invalidPercentEncoding" : "developerTools.invalidInput") }
+          : editorError(conversionFailure, t("developerTools.invalidInput"))
       );
       setError(null);
       setState("error");
       trackEvent("process_failed", { tool: kind });
     }
-  };
-
-  const handleClear = (): void => {
-    setInput("");
-    setOutput("");
-    setError(null);
-    setInputError(null);
-    setCopyStatus("");
-    setState("idle");
   };
 
   const copyOutput = async (): Promise<void> => {
@@ -358,6 +309,18 @@ export function DeveloperToolsPage({ kind }: DeveloperToolsPageProps): JSX.Eleme
     }
   };
 
+  const resetTextEditor = (): void => {
+    setInput("");
+    setOutput("");
+    setInputError(null);
+    setSecondInputError(null);
+    setError(null);
+    setCopyStatus("");
+    setMode(presetMode);
+    setUrlEncodingMode("component");
+    setState("idle");
+  };
+
   const inputLabel = kind === "json-diff"
     ? t("developerTools.leftInput")
     : kind === "json-yaml"
@@ -369,78 +332,60 @@ export function DeveloperToolsPage({ kind }: DeveloperToolsPageProps): JSX.Eleme
     { q: t("developerTools.faq.1.question"), a: t("developerTools.faq.1.answer") },
   ];
 
-  return (
-    <ToolPageTemplate
-      tool={tool}
-      meta={toolMeta}
-      breadcrumb={["Home", title]}
-      workflow={{ state, error, onReprocess: handleProcess }}
-      children={{
-        workspace: (
-          <div className="tool-form">
-            <label htmlFor={`${kind}-input`}>{inputLabel}</label>
-            <textarea
-              id={`${kind}-input`}
-              value={input}
-              aria-invalid={Boolean(inputError)}
-              aria-describedby={inputError ? inputErrorId : undefined}
-              onChange={(event) => {
-                const nextInput = event.target.value;
-                setInput(nextInput);
-                setInputError(null);
-                setError(null);
-                setOutput("");
-                setCopyStatus("");
-                setState(nextInput.trim() && (kind !== "json-diff" || secondInput.trim()) ? "ready" : "idle");
-              }}
-              rows={10}
-            />
-            {inputError ? <p id={inputErrorId} role="alert" className="error">{inputError}</p> : null}
-            {kind === "json-diff" ? (
-              <>
-                <label htmlFor={`${kind}-second-input`}>{t("developerTools.rightInput")}</label>
-                <textarea
-                  id={`${kind}-second-input`}
-                  value={secondInput}
-                  aria-invalid={Boolean(secondInputError)}
-                  aria-describedby={secondInputError ? secondInputErrorId : undefined}
-                  onChange={(event) => {
-                    const nextInput = event.target.value;
-                    setSecondInput(nextInput);
-                    setSecondInputError(null);
-                    setError(null);
-                    setOutput("");
-                    setState(nextInput.trim() && input.trim() ? "ready" : "idle");
-                  }}
-                  rows={10}
-                />
-                {secondInputError ? <p id={secondInputErrorId} role="alert" className="error">{secondInputError}</p> : null}
-              </>
-            ) : null}
-          </div>
-        ),
-        options: (
-          <div className="tool-form">
-            {kind !== "json-diff" ? (
-              <>
-                <label htmlFor={`${kind}-mode`}>{t("developerTools.mode")}
-                  <select
-                    id={`${kind}-mode`}
-                    value={mode}
-                    onChange={(event) => {
-                      setMode(event.target.value);
-                      setInputError(null);
-                      setError(null);
-                      setOutput("");
-                      setCopyStatus("");
-                      setState(input.trim() ? "ready" : "idle");
-                    }}
-                  >
-                    {options.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
-                  </select>
-                </label>
-                {kind === "url-encoder" ? (
-                  <>
+  if (kind === "url-encoder") {
+    return (
+      <TextTransformationToolkit
+        input={input}
+        output={output}
+        mode={mode}
+        modes={options.map(([value, label]) => ({ value, label }))}
+        inputLabel={inputLabel}
+        outputLabel={t("developerTools.output")}
+        modeLabel={t("developerTools.mode")}
+        processLabel={t("button.process")}
+        processingLabel={t("button.processing")}
+        copyLabel={t("developerTools.copy")}
+        copyErrorLabel={t("developerTools.copyFailed")}
+        clearLabel={t("developerTools.clear")}
+        resetLabel={t("developerTools.reset")}
+        emptyOutputText={t("developerTools.outputEmpty")}
+        error={inputError?.message ?? error}
+        processing={state === "processing"}
+        processDisabled={!canProcess}
+        onInputChange={(nextInput) => {
+          setInput(nextInput);
+          setInputError(null);
+          setError(null);
+          setOutput("");
+          setCopyStatus("");
+          setState(nextInput.trim() ? "ready" : "idle");
+        }}
+        onModeChange={(nextMode) => {
+          setMode(nextMode);
+          setInputError(null);
+          setError(null);
+          setOutput("");
+          setCopyStatus("");
+          setState(input.trim() ? "ready" : "idle");
+        }}
+        onTransform={() => handleProcess()}
+        onClear={clearEditor}
+        onReset={resetTextEditor}
+        onCopied={() => {
+          setCopyStatus(t("developerTools.copied"));
+          trackEvent("result_action_used", { tool: kind, action: "copy" });
+        }}
+      >
+        {({ workspace, options: toolkitOptions, result }) => (
+          <ToolPageTemplate
+            tool={tool}
+            meta={toolMeta}
+            breadcrumb={["Home", title]}
+            workflow={{ state, error: null, onReprocess: () => handleProcess() }}
+            showIdleResult
+            children={{
+              workspace,
+              options: <div className="tool-form">{toolkitOptions}
                     <label htmlFor={`${kind}-encoding-mode`}>{t("developerTools.encodingMode")}
                       <select
                         id={`${kind}-encoding-mode`}
@@ -471,12 +416,112 @@ export function DeveloperToolsPage({ kind }: DeveloperToolsPageProps): JSX.Eleme
                       }} disabled={!canProcess || state === "processing"}>
                         {t("developerTools.decode")}
                       </button>
-                      <button type="button" className="btn secondary" onClick={handleClear}>
-                        {t("developerTools.clear")}
-                      </button>
                     </div>
-                  </>
-                ) : null}
+              </div>,
+              result: <>{result}{copyStatus ? <p role="status" aria-live="polite">{copyStatus}</p> : null}</>,
+              howItWorks,
+              faq,
+              relatedTools: getRelatedTools(kind),
+            }}
+          />
+        )}
+      </TextTransformationToolkit>
+    );
+  }
+
+  return (
+    <ToolPageTemplate
+      tool={tool}
+      meta={toolMeta}
+      breadcrumb={["Home", title]}
+      workflow={{ state, error, onReprocess: () => handleProcess() }}
+      children={{
+        workspace: (
+          <div className="tool-form">
+            {kind === "json-yaml" ? (
+              <CodeEditorToolkit
+                value={input}
+                onChange={(nextInput) => {
+                  setInput(nextInput);
+                  setInputError(null);
+                  setError(null);
+                  setOutput("");
+                  setCopyStatus("");
+                  setState(nextInput.trim() ? "ready" : "idle");
+                }}
+                label={inputLabel}
+                language={mode === "json-to-yaml" ? "json" : "yaml"}
+                placeholder={mode === "json-to-yaml" ? '{"name":"value"}' : "name: value"}
+                error={inputError}
+                onClear={clearEditor}
+                onReset={resetEditor}
+              />
+            ) : (
+              <>
+                <label htmlFor={`${kind}-input`}>{inputLabel}</label>
+                <textarea
+                  id={`${kind}-input`}
+                  value={input}
+                  aria-invalid={Boolean(inputError)}
+                  aria-describedby={inputError ? inputErrorId : undefined}
+                  onChange={(event) => {
+                    const nextInput = event.target.value;
+                    setInput(nextInput);
+                    setInputError(null);
+                    setError(null);
+                    setOutput("");
+                    setCopyStatus("");
+                    setState(nextInput.trim() && (kind !== "json-diff" || secondInput.trim()) ? "ready" : "idle");
+                  }}
+                  rows={10}
+                />
+                {inputError ? <p id={inputErrorId} role="alert" className="error">{inputError.message}</p> : null}
+              </>
+            )}
+            {kind === "json-diff" ? (
+              <>
+                <label htmlFor={`${kind}-second-input`}>{t("developerTools.rightInput")}</label>
+                <textarea
+                  id={`${kind}-second-input`}
+                  value={secondInput}
+                  aria-invalid={Boolean(secondInputError)}
+                  aria-describedby={secondInputError ? secondInputErrorId : undefined}
+                  onChange={(event) => {
+                    const nextInput = event.target.value;
+                    setSecondInput(nextInput);
+                    setSecondInputError(null);
+                    setError(null);
+                    setOutput("");
+                    setCopyStatus("");
+                    setState(nextInput.trim() && input.trim() ? "ready" : "idle");
+                  }}
+                  rows={10}
+                />
+                {secondInputError ? <p id={secondInputErrorId} role="alert" className="error">{secondInputError.message}</p> : null}
+              </>
+            ) : null}
+          </div>
+        ),
+        options: (
+          <div className="tool-form">
+            {kind !== "json-diff" ? (
+              <>
+                <label htmlFor={`${kind}-mode`}>{t("developerTools.mode")}
+                  <select
+                    id={`${kind}-mode`}
+                    value={mode}
+                    onChange={(event) => {
+                      setMode(event.target.value);
+                      setInputError(null);
+                      setError(null);
+                      setOutput("");
+                      setCopyStatus("");
+                      setState(input.trim() ? "ready" : "idle");
+                    }}
+                  >
+                    {options.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+                  </select>
+                </label>
               </>
             ) : <p>{t("developerTools.diffMode")}</p>}
             <button type="button" className="btn primary" onClick={() => handleProcess()} disabled={!canProcess || state === "processing"}>
@@ -486,13 +531,28 @@ export function DeveloperToolsPage({ kind }: DeveloperToolsPageProps): JSX.Eleme
         ),
         result: (
           <>
-            {kind === "json-diff" ? <JsonDiffOutput output={output} /> : <pre className="developer-output">{output}</pre>}
+            {kind === "json-yaml" ? (
+              <div className="developer-output">
+                <CodeEditorToolkit
+                  value={output}
+                  label={t("developerTools.output")}
+                  language={mode === "json-to-yaml" ? "yaml" : "json"}
+                  readOnly
+                  outputEmptyText={t("developerTools.outputEmpty")}
+                  fileName={mode === "json-to-yaml" ? "converted.yaml" : "converted.json"}
+                />
+              </div>
+            ) : (
+              <>
+                {kind === "json-diff" ? <JsonDiffOutput output={output} /> : <pre className="developer-output">{output}</pre>}
+                <div className="tool-actions">
+                  <button type="button" className="btn secondary" onClick={copyOutput} disabled={!output}>
+                    {t("developerTools.copy")}
+                  </button>
+                </div>
+              </>
+            )}
             {copyStatus ? <p role="status" aria-live="polite">{copyStatus}</p> : null}
-            <div className="tool-actions">
-              <button type="button" className="btn secondary" onClick={copyOutput} disabled={!output}>
-                {t("developerTools.copy")}
-              </button>
-            </div>
           </>
         ),
         howItWorks,

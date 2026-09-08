@@ -17,8 +17,25 @@ describe("HomePage task-first hierarchy", () => {
 
     const search = screen.getByRole("textbox", { name: "Search Tools" });
     expect(search.closest(".home-hero")).toBeInTheDocument();
+    expect(screen.getByText("Free browser-only online tools")).toBeVisible();
+    expect(screen.getByText(
+      "Process images, PDFs, JSON, and developer tasks directly in your browser. Files stay on your device, with no registration required."
+    )).toBeVisible();
     expect(screen.queryByTestId("json-workflows")).not.toBeInTheDocument();
     expect(screen.queryByRole("link", { name: /all json tools/i })).not.toBeInTheDocument();
+  });
+
+  it("links directly to the main tool groups from the homepage", () => {
+    renderWithProviders(<HomePage />);
+
+    expect(screen.getByRole("link", { name: "Image & PDF tools" })).toHaveAttribute(
+      "href",
+      "/en/image/resize"
+    );
+    expect(screen.getByRole("link", { name: "Developer tools" })).toHaveAttribute(
+      "href",
+      "/en/developer/regex-tester"
+    );
   });
 
   it("keeps one consolidated introduction in the hero without a redundant workspace heading", () => {

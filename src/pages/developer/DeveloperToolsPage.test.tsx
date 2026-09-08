@@ -45,6 +45,38 @@ describe("DeveloperToolsPage JSON samples", () => {
     expect(screen.getByRole("combobox", { name: "Mode" })).toHaveValue("decode");
   });
 
+  it("uses the shared text workflow for URL transformations and reset actions", () => {
+    renderWithRouter(<DeveloperToolsPage kind="url-encoder" />);
+    const input = screen.getByRole("textbox", { name: "Input" });
+
+    fireEvent.change(input, { target: { value: "Nexa Forge" } });
+    expect(screen.getByRole("button", { name: "Clear" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Reset" })).toBeEnabled();
+    fireEvent.click(screen.getByRole("button", { name: "Process" }));
+
+    expect(screen.getByText("Nexa%20Forge")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Clear" }));
+    expect(input).toHaveValue("");
+    expect(screen.getByText("No output generated yet.")).toBeInTheDocument();
+
+    fireEvent.change(screen.getByRole("combobox", { name: "Mode" }), { target: { value: "decode" } });
+    fireEvent.click(screen.getByRole("button", { name: "Reset" }));
+    expect(screen.getByRole("combobox", { name: "Mode" })).toHaveValue("encode");
+    expect(input).toHaveValue("");
+  });
+
+  it("shows a shared accessible error for invalid URL encoding", () => {
+    renderWithRouter(<DeveloperToolsPage kind="url-encoder" />);
+    const input = screen.getByRole("textbox", { name: "Input" });
+
+    fireEvent.change(input, { target: { value: "%" } });
+    fireEvent.change(screen.getByRole("combobox", { name: "Mode" }), { target: { value: "decode" } });
+    fireEvent.click(screen.getByRole("button", { name: "Process" }));
+
+    expect(input).toHaveAttribute("aria-invalid", "true");
+    expect(screen.getByRole("alert")).toHaveTextContent("Invalid percent-encoded sequence.");
+  });
+
   it("starts JSON to YAML with a processable JSON sample", () => {
     const { container } = renderWithRouter(<DeveloperToolsPage kind="json-yaml" />);
     const input = screen.getByRole("textbox", { name: "JSON input" }) as HTMLTextAreaElement;
@@ -113,6 +145,20 @@ describe("DeveloperToolsPage JSON samples", () => {
     });
 
     expect(screen.getByRole("button", { name: "Process" })).toBeDisabled();
+  });
+
+  it("resets JSON/YAML input to a sample matching the selected mode", () => {
+    renderWithRouter(<DeveloperToolsPage kind="json-yaml" />);
+
+    fireEvent.change(screen.getByRole("combobox", { name: "Mode" }), {
+      target: { value: "yaml-to-json" },
+    });
+    fireEvent.change(screen.getByRole("textbox", { name: "YAML input" }), {
+      target: { value: "" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Reset" }));
+
+    expect((screen.getByRole("textbox", { name: "YAML input" }) as HTMLTextAreaElement).value).toContain("name:");
   });
 });
 

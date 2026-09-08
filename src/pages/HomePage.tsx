@@ -244,11 +244,17 @@ export function HomePage(): JSX.Element {
           <section className={`home-hero${keywordActive ? " home-hero--searching" : ""}`}>
             <img className="home-hero__visual" src="/nexaforge-hero.png" alt="" aria-hidden="true" />
             <div className="home-hero__content">
+              {!keywordActive ? <span className="home-hero__eyebrow">{t("home.eyebrow")}</span> : null}
               <h1>
                 <span>Nexa</span>
                 <span className="home-hero__title-accent">Forge</span>
               </h1>
-              {!keywordActive ? <p>{t("home.subtitle")}</p> : null}
+              {!keywordActive ? (
+                <>
+                  <p>{t("home.subtitle")}</p>
+                  <p className="home-hero__positioning">{t("home.positioning")}</p>
+                </>
+              ) : null}
               <div className="home-hero__search">
                 <div className="workspace-search workspace-search--hero">
                   <label htmlFor="search-tools">
@@ -278,6 +284,17 @@ export function HomePage(): JSX.Element {
               ) : null}
             </div>
           </section>
+
+          {!keywordActive ? (
+            <nav className="home-discovery" aria-label={t("home.discoveryLabel")}>
+              <span className="home-discovery__label">{t("home.discoveryLabel")}</span>
+              <div className="home-discovery__links">
+                <Link to={localizePath("/image/resize", locale)}>{t("home.imagePdfTools")}</Link>
+                <Link to={localizePath("/data/json-formatter", locale)}>{t("home.dataTools")}</Link>
+                <Link to={localizePath("/developer/regex-tester", locale)}>{t("home.developerTools")}</Link>
+              </div>
+            </nav>
+          ) : null}
 
           <div className="finder-filters" aria-label={t("home.categoryFilterLabel")}>
             <span className="finder-filters__label">{t("home.filterBy")}</span>
