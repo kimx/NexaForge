@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { TextResultActions } from "../../components/text/TextResultActions";
 import { TextWorkflowLinks } from "../../components/text/TextWorkflowLinks";
 import { ToolPageTemplate } from "../../components/ToolPageTemplate";
@@ -10,8 +10,8 @@ import type { ProcessingState, ToolMeta } from "../../types/tool";
 import { getRelatedTools } from "../../utils/toolHelpers";
 
 const NEXT_TOOLS = [
-  { label: "Clean Text", path: "/text/text-cleaner" },
-  { label: "Sort Lines", path: "/text/sort-lines" },
+  { toolId: "text-cleaner" },
+  { toolId: "sort-lines" },
 ];
 
 function unifiedOutput(result: TextDiffResult): string {
@@ -27,12 +27,17 @@ export function TextDiffPage(): JSX.Element {
   const [mode, setMode] = useState<"side-by-side" | "unified">("side-by-side");
   const [result, setResult] = useState<TextDiffResult | null>(null);
   const [processing, setProcessing] = useState<ProcessingState>("idle");
+  const resultRef = useRef<HTMLElement | null>(null);
+  const setResultRef = (element: HTMLElement | null): void => {
+    resultRef.current = element;
+  };
   const tool = FILE_TOOLS.find((item) => item.id === "text-diff") ?? FILE_TOOLS[0];
+  const title = t("tool.text-diff.title");
   const meta: ToolMeta = {
-    title: "Compare Text Online – Text Diff Checker | NexaForge",
-    description: "Compare two texts with a private browser-only line diff, with no registration required.",
+    title: `${title} | ${t("header.title")}`,
+    description: t("tool.text-diff.description"),
     canonical: "/text/diff",
-    h1: "Compare Text Online",
+    h1: title,
   };
   useSeo(meta);
 
@@ -52,13 +57,13 @@ export function TextDiffPage(): JSX.Element {
     <ToolPageTemplate
       tool={tool}
       meta={meta}
-      breadcrumb={["Home", "Compare Text Online"]}
+      breadcrumb={["Home", title]}
       workflow={{ state: processing }}
       children={{
         workspace: (
           <div className="tool-form text-diff-inputs">
-            <label htmlFor="text-diff-original">Original<textarea id="text-diff-original" value={original} onChange={(event) => setOriginal(event.target.value)} rows={10} spellCheck={false} /></label>
-            <label htmlFor="text-diff-changed">Changed<textarea id="text-diff-changed" value={changed} onChange={(event) => setChanged(event.target.value)} rows={10} spellCheck={false} /></label>
+            <label htmlFor="text-diff-original">{t("tool.text-diff.label.left")}<textarea id="text-diff-original" value={original} onChange={(event) => setOriginal(event.target.value)} rows={10} spellCheck={false} /></label>
+            <label htmlFor="text-diff-changed">{t("tool.text-diff.label.right")}<textarea id="text-diff-changed" value={changed} onChange={(event) => setChanged(event.target.value)} rows={10} spellCheck={false} /></label>
           </div>
         ),
         options: (
@@ -82,13 +87,13 @@ export function TextDiffPage(): JSX.Element {
         ),
         result: result ? (
           <div className="text-diff-result">
-            {result.identical ? <p role="status">No differences found.</p> : <p role="status">{result.additions} additions, {result.removals} removals.</p>}
+            {result.identical ? <p role="status">{t("tool.text-diff.label.noDifferences")}</p> : <p role="status">{t("tool.text-diff.label.summary", { same: result.lines.filter((line) => line.type === "unchanged").length, add: result.additions, remove: result.removals })}</p>}
             {mode === "unified" ? (
-              <pre className="text-diff-unified" aria-label="Unified text differences">{output}</pre>
+              <pre ref={setResultRef} className="text-diff-unified" aria-label={t("tool.text-diff.label.unifiedAria")}>{output}</pre>
             ) : (
-              <div className="text-diff-table" role="table" aria-label="Side-by-side text differences">
+              <div ref={setResultRef} className="text-diff-table" role="table" aria-label={t("tool.text-diff.label.sideBySideAria")}>
                 {result.lines.map((line, index) => (
-                  <div className={`text-diff-row text-diff-row--${line.type}`} role="row" key={`${line.type}-${index}-${line.originalLine}-${line.changedLine}`} aria-label={`${line.type === "added" ? "Added" : line.type === "removed" ? "Removed" : "Unchanged"} line`}>
+                  <div className={`text-diff-row text-diff-row--${line.type}`} role="row" key={`${line.type}-${index}-${line.originalLine}-${line.changedLine}`} aria-label={t("tool.text-diff.label.line", { type: t(`tool.text-diff.label.${line.type}`) })}>
                     <span aria-hidden="true">{line.type === "added" ? "+" : line.type === "removed" ? "-" : "="}</span>
                     <span>{line.originalLine ?? ""}</span><code>{line.type === "removed" || line.type === "unchanged" ? line.text : ""}</code>
                     <span>{line.changedLine ?? ""}</span><code>{line.type === "added" || line.type === "unchanged" ? line.text : ""}</code>
@@ -96,14 +101,14 @@ export function TextDiffPage(): JSX.Element {
                 ))}
               </div>
             )}
-            <TextResultActions text={output} filename="text-diff.txt" onClear={clear} />
+            <TextResultActions text={output} filename="text-diff.txt" onClear={clear} resultRef={resultRef} labels={{ copy: t("tool.text-diff.button.copy"), clear: t("tool.text-diff.button.clear") }} />
           </div>
-        ) : <p>Enter two texts and select Compare.</p>,
+        ) : <p>{t("tool.text-diff.label.enterText")}</p>,
         nextActions: <TextWorkflowLinks tools={NEXT_TOOLS} />,
-        howItWorks: ["Paste the original and changed text.", "Select Compare when you are ready to calculate differences.", "Review additions, removals, and unchanged lines."],
+        howItWorks: [0, 1, 2].map((index) => t(`tool.text-diff.how.${index}`)),
         faq: [
-          { q: "Does the diff run while I type?", a: "No. It runs only when you select Compare." },
-          { q: "Is text uploaded?", a: "No. Both inputs are compared locally in this browser." },
+          { q: t("tool.text-diff.faq.0.question"), a: t("tool.text-diff.faq.0.answer") },
+          { q: t("tool.text-diff.faq.1.question"), a: t("tool.text-diff.faq.1.answer") },
         ],
         relatedTools: getRelatedTools("text-diff"),
       }}

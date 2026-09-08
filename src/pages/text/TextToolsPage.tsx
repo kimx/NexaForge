@@ -58,9 +58,9 @@ function TextToolWorkspace({ kind }: { kind: TextToolKind }): JSX.Element {
 
   const relatedTools = getRelatedTools(kind);
   const nextTools = kind === "remove-duplicate-lines"
-    ? [{ label: "Compare Text", path: "/text/diff" }]
+    ? [{ toolId: "text-diff" }]
     : kind === "sort-lines"
-      ? [{ label: "Compare Text", path: "/text/diff" }]
+      ? [{ toolId: "text-diff" }]
       : [];
   const howItWorks = useMemo(
     () => [0, 1, 2].map((index) => t(`tool.${kind}.how.${index}`)),

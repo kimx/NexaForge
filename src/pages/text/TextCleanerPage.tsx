@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import { TextResultActions } from "../../components/text/TextResultActions";
 import { TextWorkflowLinks } from "../../components/text/TextWorkflowLinks";
 import { TextWorkflowActions } from "../../components/text/TextWorkflowActions";
@@ -25,8 +26,8 @@ const DEFAULT_OPTIONS: TextCleanerOptions = {
 };
 
 const NEXT_TOOLS = [
-  { label: "Find & Replace", path: "/text/find-replace" },
-  { label: "Compare Text", path: "/text/diff" },
+  { toolId: "find-replace" },
+  { toolId: "text-diff" },
 ];
 
 export function TextCleanerPage(): JSX.Element {
@@ -35,15 +36,17 @@ export function TextCleanerPage(): JSX.Element {
   const { clear } = useTextWorkflow();
   const { input } = draft;
   const output = draft.output ?? "";
+  const outputRef = useRef<HTMLTextAreaElement>(null);
   const options = draft.options.cleaner ?? DEFAULT_OPTIONS;
   const processing: ProcessingState = draft.output !== null ? "success" : "idle";
   const setInput = (value: string): void => setDraft((current) => ({ ...current, input: value, output: null }));
   const tool = FILE_TOOLS.find((item) => item.id === "text-cleaner") ?? FILE_TOOLS[0];
+  const title = t("tool.text-cleaner.title");
   const meta: ToolMeta = {
-    title: "Text Cleaner Online – Remove Spaces & Blank Lines | NexaForge",
-    description: "Clean whitespace, tabs, and blank lines locally in your browser for free.",
+    title: `${title} | ${t("header.title")}`,
+    description: t("tool.text-cleaner.description"),
     canonical: "/text/text-cleaner",
-    h1: "Text Cleaner Online",
+    h1: title,
   };
   useSeo(meta);
 
@@ -59,7 +62,7 @@ export function TextCleanerPage(): JSX.Element {
     <ToolPageTemplate
       tool={tool}
       meta={meta}
-      breadcrumb={["Home", "Text Cleaner Online"]}
+      breadcrumb={["Home", title]}
       workflow={{ state: processing }}
       children={{
         workspace: (
@@ -93,16 +96,16 @@ export function TextCleanerPage(): JSX.Element {
           <div className="tool-form">
             <p role="status">{t("textWorkflow.counts", { before: countTextStats(input).lines, after: countTextStats(output).lines })}</p>
             <label htmlFor="text-cleaner-output">{t("textWorkflow.output")}
-              <textarea id="text-cleaner-output" value={output} readOnly rows={10} spellCheck={false} />
+              <textarea id="text-cleaner-output" ref={outputRef} value={output} readOnly rows={10} spellCheck={false} />
             </label>
-            <TextResultActions text={output} filename="cleaned-text.txt" onClear={clear} onUseAsInput={setInput} labels={{ copy: t("textWorkflow.copy"), download: t("textWorkflow.download"), clear: t("textWorkflow.clear"), useAsInput: t("textWorkflow.useAsInput") }} />
+            <TextResultActions text={output} filename="cleaned-text.txt" onClear={clear} onUseAsInput={setInput} resultRef={outputRef} labels={{ copy: t("textWorkflow.copy"), download: t("textWorkflow.download"), clear: t("textWorkflow.clear"), useAsInput: t("textWorkflow.useAsInput") }} />
           </div>
         ),
         nextActions: <><TextWorkflowActions source="text-cleaner" targets={["remove-duplicate-lines", "sort-lines"]} /><TextWorkflowLinks tools={NEXT_TOOLS} /></>,
-        howItWorks: ["Paste text into the input.", "Choose the cleanup rules you need.", "Clean, copy, download, or continue to the next tool."],
+        howItWorks: [0, 1, 2].map((index) => t(`tool.text-cleaner.how.${index}`)),
         faq: [
-          { q: "Is my text uploaded?", a: "No. Text cleaning runs only in this browser." },
-          { q: "Can I combine rules?", a: "Yes. Every enabled rule is applied in one deterministic pass." },
+          { q: t("tool.text-cleaner.faq.0.question"), a: t("tool.text-cleaner.faq.0.answer") },
+          { q: t("tool.text-cleaner.faq.1.question"), a: t("tool.text-cleaner.faq.1.answer") },
         ],
         relatedTools: getRelatedTools("text-cleaner"),
       }}
