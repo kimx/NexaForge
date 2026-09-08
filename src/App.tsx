@@ -32,6 +32,9 @@ const CsvViewerPage = lazy(() =>
 const JsonFormatterPage = lazy(() =>
   import("./pages/data/JsonFormatterPage").then((module) => ({ default: module.JsonFormatterPage }))
 );
+const JsonPathTesterPage = lazy(() =>
+  import("./pages/data/JsonPathTesterPage").then((module) => ({ default: module.JsonPathTesterPage }))
+);
 const JsonDiffPage = lazy(() =>
   import("./pages/data/JsonDiffPage").then((module) => ({ default: module.JsonDiffPage }))
 );
@@ -40,6 +43,9 @@ const JsonToCsvPage = lazy(() =>
 );
 const JsonXmlPage = lazy(() =>
   import("./pages/data/JsonXmlPage").then((module) => ({ default: module.JsonXmlPage }))
+);
+const YamlJsonPage = lazy(() =>
+  import("./pages/data/YamlJsonPage").then((module) => ({ default: module.YamlJsonPage }))
 );
 const XmlFormatterPage = lazy(() =>
   import("./pages/data/XmlFormatterPage").then((module) => ({ default: module.XmlFormatterPage }))
@@ -56,6 +62,9 @@ const SqlFormatterPage = lazy(() =>
 const CronBuilderPage = lazy(() =>
   import("./pages/developer/CronBuilderPage").then((module) => ({ default: module.CronBuilderPage }))
 );
+const UnixTimestampPage = lazy(() =>
+  import("./pages/developer/UnixTimestampPage").then((module) => ({ default: module.UnixTimestampPage }))
+);
 const UrlParserPage = lazy(() =>
   import("./pages/developer/UrlParserPage").then((module) => ({ default: module.UrlParserPage }))
 );
@@ -71,7 +80,7 @@ const JsonToCSharpPage = lazy(() =>
 const JsonToTypeScriptPage = lazy(() =>
   import("./pages/developer/JsonToTypeScriptPage").then((module) => ({ default: module.JsonToTypeScriptPage }))
 );
-const JsonPathTesterPage = lazy(() =>
+const DeveloperJsonPathTesterPage = lazy(() =>
   import("./pages/developer/JsonPathTesterPage").then((module) => ({ default: module.JsonPathTesterPage }))
 );
 const JwtDecoderPage = lazy(() =>
@@ -131,6 +140,15 @@ const PdfToImagePage = lazy(() =>
 const PdfPageEditorPage = lazy(() =>
   import("./pages/pdf/PageEditorPage").then((module) => ({ default: module.PdfPageEditorPage }))
 );
+const AddPageNumbersPage = lazy(() =>
+  import("./pages/pdf/AddPageNumbersPage").then((module) => ({ default: module.AddPageNumbersPage }))
+);
+const PdfWatermarkPage = lazy(() =>
+  import("./pages/pdf/WatermarkPage").then((module) => ({ default: module.WatermarkPage }))
+);
+const PdfMetadataPage = lazy(() =>
+  import("./pages/pdf/MetadataPage").then((module) => ({ default: module.MetadataPage }))
+);
 const QrPage = lazy(() =>
   import("./pages/qr/QrPage").then((module) => ({ default: module.QrPage }))
 );
@@ -139,6 +157,9 @@ const QrReaderPage = lazy(() =>
 );
 const BarcodeGeneratorPage = lazy(() =>
   import("./pages/qr/BarcodeGeneratorPage").then((module) => ({ default: module.BarcodeGeneratorPage }))
+);
+const BarcodeReaderPage = lazy(() =>
+  import("./pages/qr/BarcodeReaderPage").then((module) => ({ default: module.BarcodeReaderPage }))
 );
 const WifiQrPage = lazy(() =>
   import("./pages/qr/WifiQrPage").then((module) => ({ default: module.WifiQrPage }))
@@ -184,6 +205,11 @@ function LegacyJsonDiffRedirect(): JSX.Element {
   return <Navigate to={pathname.startsWith("/en/") ? "/en/data/json-diff" : "/data/json-diff"} replace />;
 }
 
+function LegacyYamlJsonRedirect(): JSX.Element {
+  const { pathname } = useLocation();
+  return <Navigate to={pathname.startsWith("/en/") ? "/en/data/yaml-json" : "/data/yaml-json"} replace />;
+}
+
 const SEO_ALIAS_ELEMENTS: Record<string, JSX.Element> = {
   "image-convert": <ImageConvertPage />,
   "image-compress": <ImageCompressPage />,
@@ -224,12 +250,17 @@ const APP_ROUTES: AppRoute[] = [
   { path: "/pdf/reorder-pages", element: <PdfPageEditorPage mode="reorder" /> },
   { path: "/pdf/delete-pages", element: <PdfPageEditorPage mode="delete" /> },
   { path: "/pdf/extract-pages", element: <PdfPageEditorPage mode="extract" /> },
+  { path: "/pdf/add-page-numbers", element: <AddPageNumbersPage /> },
+  { path: "/pdf/watermark", element: <PdfWatermarkPage /> },
+  { path: "/pdf/metadata", element: <PdfMetadataPage /> },
   { path: "/data/json-formatter", element: <JsonFormatterPage /> },
+  { path: "/data/jsonpath-tester", element: <JsonPathTesterPage /> },
   { path: "/data/json-diff", element: <JsonDiffPage /> },
   { path: "/data/csv-viewer", element: <CsvViewerPage /> },
   { path: "/data/csv-to-json", element: <CsvToJsonPage /> },
   { path: "/data/json-to-csv", element: <JsonToCsvPage /> },
   { path: "/data/json-xml", element: <JsonXmlPage /> },
+  { path: "/data/yaml-json", element: <YamlJsonPage /> },
   { path: "/data/xml-formatter", element: <XmlFormatterPage /> },
   { path: "/text/hash", element: <HashPage /> },
   { path: "/text/uuid", element: <UuidPage /> },
@@ -246,10 +277,10 @@ const APP_ROUTES: AppRoute[] = [
   { path: "/developer/jwt-key", element: <JwtKeyGeneratorPage /> },
   { path: "/developer/jwt-decoder", element: <JwtDecoderPage /> },
   { path: "/developer/url-encoder", element: <DeveloperToolsPage kind="url-encoder" /> },
-  { path: "/developer/unix-timestamp", element: <DeveloperToolsPage kind="unix-timestamp" /> },
-  { path: "/developer/json-yaml", element: <DeveloperToolsPage kind="json-yaml" /> },
-  { path: "/developer/jsonpath-tester", element: <JsonPathTesterPage /> },
-  { path: "/developer/jsonpath", element: <JsonPathTesterPage /> },
+  { path: "/developer/unix-timestamp", element: <UnixTimestampPage /> },
+  { path: "/developer/json-yaml", element: <LegacyYamlJsonRedirect /> },
+  { path: "/developer/jsonpath-tester", element: <DeveloperJsonPathTesterPage /> },
+  { path: "/developer/jsonpath", element: <DeveloperJsonPathTesterPage /> },
   { path: "/developer/json-diff", element: <LegacyJsonDiffRedirect /> },
   { path: "/developer/regex-tester", element: <RegexTesterPage /> },
   { path: "/developer/sql-formatter", element: <SqlFormatterPage /> },
@@ -262,6 +293,7 @@ const APP_ROUTES: AppRoute[] = [
   { path: "/qr-code", element: <QrPage /> },
   { path: "/qr-code/reader", element: <QrReaderPage /> },
   { path: "/barcode/generator", element: <BarcodeGeneratorPage /> },
+  { path: "/qr-barcode/barcode-reader", element: <BarcodeReaderPage /> },
   { path: "/qr-code/wifi", element: <WifiQrPage /> },
   { path: "/qr-code/vcard", element: <VCardQrPage /> },
   ...SEO_ALIAS_ROUTES,

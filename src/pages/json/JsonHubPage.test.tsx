@@ -11,9 +11,9 @@ describe("JsonHubPage", () => {
   it("registers every JSON workflow in the approved task order", () => {
     expect(JSON_TOOLS.map((tool) => tool.id)).toEqual([
       "json-formatter",
+      "jsonpath-tester",
       "json-diff",
       "json-yaml",
-      "jsonpath-tester",
       "json-to-csv",
       "csv-to-json",
     ]);

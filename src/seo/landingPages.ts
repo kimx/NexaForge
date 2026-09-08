@@ -28,6 +28,7 @@ export interface SeoLandingDefinition {
 }
 
 interface CopySeed {
+  title?: string;
   h1: string;
   description: string;
   featureHeading: string;
@@ -66,10 +67,15 @@ const RELATED_LABELS: Record<string, Record<Locale, string>> = {
   "/pdf/reorder-pages": { "zh-TW": "重新排序 PDF 頁面", en: "Reorder PDF Pages" },
   "/pdf/delete-pages": { "zh-TW": "刪除 PDF 頁面", en: "Delete PDF Pages" },
   "/pdf/extract-pages": { "zh-TW": "擷取 PDF 頁面", en: "Extract PDF Pages" },
+  "/pdf/add-page-numbers": { "zh-TW": "為 PDF 加入頁碼", en: "Add Page Numbers to PDF" },
+  "/pdf/watermark": { "zh-TW": "為 PDF 加入浮水印", en: "Add Watermark to PDF" },
   "/data/json-formatter": { "zh-TW": "JSON 格式化", en: "JSON Formatter" },
+  "/data/jsonpath-tester": { "zh-TW": "JSONPath Tester", en: "JSONPath Tester" },
   "/data/json-validator": { "zh-TW": "JSON 驗證", en: "JSON Validator" },
   "/data/json-diff": { "zh-TW": "JSON Diff", en: "JSON Diff" },
   "/data/json-to-csv": { "zh-TW": "JSON 轉 CSV", en: "JSON to CSV" },
+  "/data/json-xml": { "zh-TW": "JSON ↔ XML", en: "JSON ↔ XML" },
+  "/data/yaml-json": { "zh-TW": "YAML ↔ JSON", en: "YAML ↔ JSON" },
   "/json": { "zh-TW": "JSON 工具中心", en: "JSON Tool Hub" },
   "/developer/json-to-typescript": { "zh-TW": "JSON 轉 TypeScript", en: "JSON to TypeScript" },
   "/developer/json-to-csharp": { "zh-TW": "JSON 轉 C#", en: "JSON to C#" },
@@ -78,6 +84,7 @@ const RELATED_LABELS: Record<string, Record<Locale, string>> = {
   "/developer/base64": { "zh-TW": "Base64 工具", en: "Base64 Tool" },
   "/developer/url-encode": { "zh-TW": "URL 編碼", en: "URL Encode" },
   "/developer/url-decode": { "zh-TW": "URL 解碼", en: "URL Decode" },
+  "/developer/url-parser": { "zh-TW": "URL Parser", en: "URL Parser" },
   "/developer/url-encoder": { "zh-TW": "URL 編碼與解碼", en: "URL Encoder / Decoder" },
   "/developer/unix-timestamp": { "zh-TW": "Unix 時間戳轉換", en: "Unix Timestamp Converter" },
   "/text/uuid": { "zh-TW": "UUID 產生器", en: "UUID Generator" },
@@ -91,9 +98,9 @@ const RELATED_LABELS: Record<string, Record<Locale, string>> = {
 function buildContent(seed: CopySeed, locale: Locale, relatedPaths: string[]): LandingContent {
   const isEnglish = locale === "en";
   return {
-    title: isEnglish
+    title: seed.title ?? (isEnglish
       ? `${seed.h1} — Private Browser Tool | NexaForge`
-      : `${seed.h1}｜免安裝、瀏覽器本機處理 | NexaForge`,
+      : `${seed.h1}｜免安裝、瀏覽器本機處理 | NexaForge`),
     description: seed.description,
     h1: seed.h1,
     intro: isEnglish
@@ -437,6 +444,34 @@ const ALIAS_PAGE_SEEDS: PageSeed[] = [
       secondFaq: { q: "Can URL decoding tell me whether a link is safe?", a: "No. It only restores characters; you must still inspect the domain, parameters, and destination." },
     },
   },
+  {
+    path: "/developer/url-encode-decode",
+    toolId: "url-encoder",
+    isAlias: true,
+    related: ["/developer/url-parser", "/developer/url-encode", "/developer/url-decode", "/developer/base64"],
+    zh: {
+      title: "URL Encoder / Decoder Online｜NexaForge",
+      h1: "URL 編碼與解碼",
+      description: "線上進行 URL 與 URI component 百分比編碼、解碼，支援中文、Emoji 與查詢字串，所有內容只在瀏覽器本機處理。",
+      featureHeading: "支援 Component 與完整網址模式",
+      featureBody: "Component 模式使用 encodeURIComponent 與 decodeURIComponent；完整網址模式使用 encodeURI 與 decodeURI，能保留網址結構符號並正確處理 Unicode。",
+      useHeading: "URL 編碼與解碼的常見用途",
+      useBody: "準備查詢參數、檢查重導向網址或閱讀應用程式記錄時，可在不傳送資料的情況下快速轉換百分比編碼內容。",
+      steps: ["貼上要處理的文字或網址。", "選擇 Component 或完整網址模式，再按編碼或解碼。", "檢查結果並複製；需要重新開始時按清空。"],
+      secondFaq: { q: "輸入內容會傳到伺服器嗎？", a: "不會。編碼與解碼使用瀏覽器內建 API 在本機完成，輸入文字不會送到伺服器或分析服務。" },
+    },
+    en: {
+      title: "URL Encoder / Decoder Online | NexaForge",
+      h1: "URL Encoder / Decoder",
+      description: "Encode and decode URLs and URI components online with encodeURIComponent, decodeURIComponent, encodeURI, and decodeURI. Unicode, Chinese, emoji, and query strings stay in your browser.",
+      featureHeading: "Component and full URL modes",
+      featureBody: "Component mode uses encodeURIComponent and decodeURIComponent for individual values. Full URL mode uses encodeURI and decodeURI while preserving the structure of a complete URL.",
+      useHeading: "When to encode or decode a URL",
+      useBody: "Convert query values, inspect redirect URLs, or read application logs without sending the source text to a server. Choose component mode for values and full URL mode for complete URLs.",
+      steps: ["Paste the text, query value, or URL to process.", "Choose Component or Full URL, then click Encode or Decode.", "Review and copy the result, or click Clear to start over."],
+      secondFaq: { q: "Is my input sent to a server or analytics service?", a: "No. The browser's built-in URL APIs perform every conversion locally, and the entered text is never sent to a server or analytics service." },
+    },
+  },
 ];
 
 const EXISTING_PAGE_SEEDS: PageSeed[] = [
@@ -478,6 +513,81 @@ const EXISTING_PAGE_SEEDS: PageSeed[] = [
     secondFaq: { q: "Do I need to register before using this tool?", a: "No. Open the page and start immediately; processing and results remain in the current browser session." },
   },
 }));
+
+const UNIX_TIMESTAMP_LANDING: SeoLandingDefinition = {
+  path: "/developer/unix-timestamp",
+  toolId: "unix-timestamp",
+  isAlias: false,
+  preset: {},
+  content: {
+    "zh-TW": {
+      title: "Unix 時間戳轉換工具｜Epoch 時間轉換器 | NexaForge",
+      description: "免費 Unix timestamp converter，支援秒、毫秒、日期時間互相轉換，Local 與 UTC 顯示都在瀏覽器本機完成。",
+      h1: "Unix 時間戳轉換器",
+      intro: "在 Unix 秒數、毫秒與日期時間之間雙向轉換，並清楚查看 Local、UTC、ISO 8601 與相對時間。",
+      sections: [
+        {
+          heading: "秒與毫秒的時間戳轉換",
+          body: "自動模式會將 10 位數判斷為秒、13 位數判斷為毫秒。其他長度可手動指定單位，也能處理 1970 年以前的負數時間戳。",
+        },
+        {
+          heading: "日期轉時間戳",
+          body: "輸入日期、時間與 Local 或 UTC 時區，立即取得 Unix seconds 與 Unix milliseconds。Local 使用這台裝置的瀏覽器時區。",
+        },
+      ],
+      steps: [
+        "輸入 Unix 秒數或毫秒，或填寫日期、時間與時區。",
+        "確認單位或時區後執行轉換。",
+        "檢查 Local、UTC、ISO 8601、相對時間或時間戳結果。",
+      ],
+      privacy: "所有計算都在這台裝置的瀏覽器本機完成，不會將輸入內容傳送或儲存於 NexaForge 伺服器。",
+      faq: [
+        { q: "這個工具會使用伺服器時間嗎？", a: "不會。Current Timestamp 與相對時間都使用目前瀏覽器的時間。" },
+        { q: "如何判斷輸入是秒還是毫秒？", a: "自動模式會將 10 位數判斷為秒、13 位數判斷為毫秒；其他數值可手動選擇。" },
+        { q: "可以處理 1970 年以前的日期嗎？", a: "可以。瀏覽器 Date 支援 Unix epoch 以前的負數秒數與毫秒數。" },
+      ],
+      related: [
+        { path: "/text/uuid", label: "UUID 產生器" },
+        { path: "/developer/url-encode", label: "URL 編碼" },
+        { path: "/developer/url-decode", label: "URL 解碼" },
+        { path: "/data/json-formatter", label: "JSON 格式化" },
+      ],
+    },
+    en: {
+      title: "Unix Timestamp Converter – Epoch Time Converter | NexaForge",
+      description: "Free Unix timestamp converter for seconds, milliseconds, and date-time values with Local and UTC output processed in your browser.",
+      h1: "Unix Timestamp Converter",
+      intro: "Convert Unix seconds, milliseconds, and date-time values in both directions with clear Local, UTC, ISO 8601, and relative-time output.",
+      sections: [
+        {
+          heading: "Convert seconds and milliseconds",
+          body: "Auto-detect treats 10 digits as seconds and 13 digits as milliseconds. Choose a unit manually for other lengths, including negative timestamps before 1970.",
+        },
+        {
+          heading: "Convert a date to a timestamp",
+          body: "Enter a date, time, and either Local or UTC to get Unix seconds and Unix milliseconds. Local uses this device's browser timezone.",
+        },
+      ],
+      steps: [
+        "Enter Unix seconds or milliseconds, or provide a date, time, and timezone.",
+        "Confirm the unit or timezone, then run the conversion.",
+        "Review Local, UTC, ISO 8601, relative time, or timestamp output.",
+      ],
+      privacy: "Every calculation runs locally in this browser. Your input is not sent to or stored by NexaForge servers.",
+      faq: [
+        { q: "Does this tool use server time?", a: "No. Current Timestamp and relative time use the current clock in this browser." },
+        { q: "How does it distinguish seconds from milliseconds?", a: "Auto-detect treats 10 digits as seconds and 13 digits as milliseconds. Choose a unit manually for other values." },
+        { q: "Can it handle dates before 1970?", a: "Yes. The browser Date API supports negative seconds and milliseconds before the Unix epoch." },
+      ],
+      related: [
+        { path: "/text/uuid", label: "UUID Generator" },
+        { path: "/developer/url-encode", label: "URL Encoder" },
+        { path: "/developer/url-decode", label: "URL Decoder" },
+        { path: "/data/json-formatter", label: "JSON Formatter" },
+      ],
+    },
+  },
+};
 
 const JSON_DIFF_LANDING: SeoLandingDefinition = {
   path: "/data/json-diff",
@@ -542,6 +652,144 @@ const JSON_DIFF_LANDING: SeoLandingDefinition = {
         { path: "/data/json-formatter", label: "JSON Formatter" },
         { path: "/developer/json-to-typescript", label: "JSON to TypeScript" },
         { path: "/developer/json-to-csharp", label: "JSON to C#" },
+        { path: "/data/json-to-csv", label: "JSON to CSV" },
+      ],
+    },
+  },
+};
+
+const JSONPATH_TESTER_LANDING: SeoLandingDefinition = {
+  path: "/data/jsonpath-tester",
+  toolId: "jsonpath-tester",
+  isAlias: false,
+  preset: {},
+  content: {
+    "zh-TW": {
+      title: "JSONPath Tester 線上測試工具 | NexaForge",
+      description: "線上測試 JSONPath expression，快速取得格式化匹配結果。JSON 與查詢內容只在瀏覽器本機處理，不會上傳。",
+      h1: "JSONPath Tester 線上測試工具",
+      intro: "貼上 JSON 並輸入 JSONPath expression，快速檢查物件、陣列、萬用字元與 recursive path 的匹配結果。",
+      sections: [
+        {
+          heading: "支援常見 JSONPath 語法",
+          body: "可使用 $.users[*].name 這類 property、array index、wildcard 與 recursive path 查詢，結果會以格式化 JSON 顯示。",
+        },
+        {
+          heading: "大型 JSON 的瀏覽器本機處理",
+          body: "一般輸入會在短暫 debounce 後自動執行；較大的內容會停用自動執行，改由你按下 Run 控制處理時機。",
+        },
+      ],
+      steps: [
+        "貼上 JSON 並輸入 JSONPath expression，例如 $.users[*].name。",
+        "等待自動執行，或在大型輸入時選擇 Run。",
+        "檢查匹配結果，格式化輸入或複製結果。",
+      ],
+      privacy: "JSON 與 JSONPath expression 都只在這台裝置的瀏覽器本機處理，不會傳送至 NexaForge 伺服器或分析工具。",
+      faq: [
+        { q: "JSONPath Tester 會上傳我的 JSON 嗎？", a: "不會。JSON 解析、JSONPath 查詢、格式化與複製都在瀏覽器本機完成。" },
+        { q: "沒有匹配結果時會顯示什麼？", a: "工具會顯示 No values matched this JSONPath.，這是空結果，不是錯誤。" },
+        { q: "支援大型 JSON 嗎？", a: "支援手動 Run；輸入超過合理大小後會停用 debounce 自動執行，以避免編輯時持續阻塞瀏覽器。" },
+      ],
+      related: [
+        { path: "/data/json-formatter", label: "JSON 格式化" },
+        { path: "/data/json-diff", label: "JSON Diff" },
+        { path: "/data/yaml-json", label: "YAML ↔ JSON" },
+        { path: "/json", label: "JSON 工具中心" },
+      ],
+    },
+    en: {
+      title: "JSONPath Tester Online – Test JSONPath Expressions | NexaForge",
+      description: "Test JSONPath expressions against JSON online and view formatted matches. JSON is processed locally in your browser and never uploaded.",
+      h1: "JSONPath Tester Online",
+      intro: "Paste JSON and enter a JSONPath expression to inspect matches across objects, arrays, wildcards, and recursive paths.",
+      sections: [
+        {
+          heading: "Common JSONPath syntax",
+          body: "Use property, array index, wildcard, and recursive path queries such as $.users[*].name, with formatted JSON results.",
+        },
+        {
+          heading: "A safer workflow for large JSON",
+          body: "Normal input runs after a short debounce. Larger documents pause automatic execution so you can choose when to run the query.",
+        },
+      ],
+      steps: [
+        "Paste JSON and enter an expression such as $.users[*].name.",
+        "Wait for the debounced result, or select Run for large input.",
+        "Review the matches, format the input, or copy the result.",
+      ],
+      privacy: "Your JSON and JSONPath expression are processed only in this browser. They are not sent to NexaForge servers or analytics.",
+      faq: [
+        { q: "Will JSONPath Tester upload my JSON?", a: "No. JSON parsing, JSONPath evaluation, formatting, and copying all happen locally in your browser." },
+        { q: "What happens when there are no matches?", a: "The tool shows No values matched this JSONPath. as an empty state, not an error." },
+        { q: "Can I use large JSON documents?", a: "Yes. Automatic execution pauses after the input reaches the size threshold, and you can run the query manually." },
+      ],
+      related: [
+        { path: "/data/json-formatter", label: "JSON Formatter" },
+        { path: "/data/json-diff", label: "JSON Diff" },
+        { path: "/data/yaml-json", label: "YAML ↔ JSON" },
+        { path: "/json", label: "JSON Tool Hub" },
+      ],
+    },
+  },
+};
+
+const YAML_JSON_LANDING: SeoLandingDefinition = {
+  path: "/data/yaml-json",
+  toolId: "json-yaml",
+  isAlias: false,
+  preset: {},
+  content: {
+    "zh-TW": {
+      title: "YAML 與 JSON 線上轉換器 | YAML to JSON / JSON to YAML | NexaForge",
+      description: "免費線上 YAML 與 JSON 雙向轉換器，支援驗證、複製、下載與交換格式。所有資料都在瀏覽器本機處理，不會上傳。",
+      h1: "YAML ↔ JSON 線上轉換器",
+      intro: "在 YAML 與 JSON 之間雙向轉換設定檔與資料，並取得清楚的語法錯誤位置與驗證結果。",
+      sections: [
+        { heading: "雙向轉換與語法驗證", body: "選擇輸入格式後轉換成另一種格式。YAML 與 JSON 解析錯誤會顯示訊息、行號，以及可取得的欄位位置。" },
+        { heading: "Anchor 與複雜資料", body: "陣列、巢狀物件、null、布林值、數字、多行文字、註解、Unicode 與 YAML anchor 都能在瀏覽器本機處理。" },
+      ],
+      steps: [
+        "選擇 JSON 轉 YAML 或 YAML 轉 JSON，貼上輸入內容。",
+        "執行轉換，並在錯誤時查看行號與欄位。",
+        "複製結果、下載檔案，或交換輸入與輸出後繼續轉換。",
+      ],
+      privacy: "輸入的 YAML 與 JSON 只在這台裝置的瀏覽器本機處理，不會傳送到 NexaForge 伺服器或分析工具。",
+      faq: [
+        { q: "YAML 與 JSON 會上傳嗎？", a: "不會。解析、轉換、複製與下載都在瀏覽器本機完成。" },
+        { q: "YAML anchor 會保留在 JSON 嗎？", a: "anchor 與 alias 會解析為一般物件或陣列，參照內容會在 JSON 結果中展開。" },
+        { q: "支援多行文字與註解嗎？", a: "支援。YAML 多行文字會轉為 JSON 字串，YAML 註解不會出現在 JSON 結果中。" },
+      ],
+      related: [
+        { path: "/data/json-formatter", label: "JSON 格式化" },
+        { path: "/data/json-diff", label: "JSON Diff" },
+        { path: "/data/json-xml", label: "JSON ↔ XML" },
+        { path: "/data/json-to-csv", label: "JSON 轉 CSV" },
+      ],
+    },
+    en: {
+      title: "YAML to JSON / JSON to YAML Converter Online | NexaForge",
+      description: "Convert YAML and JSON online with syntax validation, copy, download, swap, and clear controls. Everything runs locally in your browser.",
+      h1: "YAML to JSON / JSON to YAML Converter",
+      intro: "Convert configuration and data between YAML and JSON while keeping source content in this browser.",
+      sections: [
+        { heading: "Two-way conversion with validation", body: "Choose the input format and convert to the other format. Syntax errors include a clear message, line number, and column when available." },
+        { heading: "Anchors and structured data", body: "Process arrays, nested objects, null, booleans, numbers, multiline strings, comments, Unicode, and YAML anchors locally." },
+      ],
+      steps: [
+        "Choose JSON to YAML or YAML to JSON, then paste your input.",
+        "Run the conversion and review the line and column if the syntax is invalid.",
+        "Copy or download the result, or swap the output back into the input editor.",
+      ],
+      privacy: "Your YAML and JSON are processed only in this browser. The content is not sent to NexaForge servers or analytics.",
+      faq: [
+        { q: "Is my YAML or JSON uploaded?", a: "No. Parsing, conversion, copying, and downloading all happen locally in your browser." },
+        { q: "Are YAML anchors preserved in JSON?", a: "Anchors and aliases resolve to ordinary objects or arrays, so referenced content is expanded in the JSON result." },
+        { q: "Are multiline strings and comments supported?", a: "Yes. YAML multiline strings become JSON strings, while YAML comments are omitted from the JSON result." },
+      ],
+      related: [
+        { path: "/data/json-formatter", label: "JSON Formatter" },
+        { path: "/data/json-diff", label: "JSON Diff" },
+        { path: "/data/json-xml", label: "JSON ↔ XML" },
         { path: "/data/json-to-csv", label: "JSON to CSV" },
       ],
     },
@@ -639,13 +887,247 @@ const PDF_PAGE_EDITOR_LANDINGS: readonly SeoLandingDefinition[] = [
       },
     },
   },
+  {
+    path: "/pdf/watermark",
+    toolId: "pdf-watermark",
+    isAlias: false,
+    preset: {},
+    content: {
+      "zh-TW": {
+        title: "為 PDF 加入浮水印｜免費且私密 | NexaForge",
+        description: "免費在線上為 PDF 加入文字、PNG 或 JPEG 浮水印，支援透明度、旋轉、位置與自訂頁面範圍；全程在瀏覽器本機處理。",
+        h1: "為 PDF 加入浮水印",
+        intro: "為 PDF 加入文字或圖片浮水印，調整透明度、旋轉角度與位置後，在瀏覽器內產生新的 PDF。",
+        sections: [
+          { heading: "文字或圖片浮水印", body: "可輸入文字並設定字體大小與顏色，也可上傳 PNG 或 JPEG 圖片。透明 PNG 能保留圖片本身的透明效果。" },
+          { heading: "每頁尺寸都能正確定位", body: "支援左上、上方置中、右上、中央、左下、下方置中與右下。每一頁都依自己的尺寸計算位置，也能只處理指定頁面。" },
+        ],
+        steps: ["上傳一份 PDF，確認頁數與預覽。", "選擇文字或圖片，調整樣式、位置與頁面範圍。", "產生並下載加上浮水印的新 PDF。"],
+        privacy: "你的 PDF 與浮水印圖片只在這台裝置的瀏覽器本機處理，不會上傳到 NexaForge 伺服器，也不會由 NexaForge 儲存。",
+        faq: [
+          { q: "PDF 會上傳或儲存嗎？", a: "不會。處理與下載都在瀏覽器本機完成，NexaForge 不會接收或儲存來源 PDF 或浮水印圖片。" },
+          { q: "圖片浮水印支援哪些格式？", a: "目前支援 PNG 與 JPEG，透明 PNG 也能保留透明效果。" },
+          { q: "可以只為部分頁面加浮水印嗎？", a: "可以。選擇自訂頁面，輸入例如 1-5、8、10-15。" },
+          { q: "不同尺寸或橫向頁面會跑位嗎？", a: "工具會依每頁自己的 CropBox 或 MediaBox 尺寸計算位置，支援不同尺寸與橫向頁面。" },
+        ],
+        related: [
+          { path: "/pdf/add-page-numbers", label: "為 PDF 加入頁碼" },
+          { path: "/pdf/merge", label: "合併 PDF" },
+          { path: "/pdf/rotate", label: "旋轉 PDF" },
+          { path: "/image/watermark", label: "圖片加浮水印" },
+        ],
+      },
+      en: {
+        title: "Add Watermark to PDF Online – Free & Private | NexaForge",
+        description: "Add a text, PNG, or JPEG watermark to PDF online for free. Set opacity, rotation, position, and page range with private browser-only processing.",
+        h1: "Add Watermark to PDF",
+        intro: "Add text or image watermarks to a PDF, adjust opacity, rotation, and placement, then create a new PDF in your browser.",
+        sections: [
+          { heading: "Text or image watermarks", body: "Enter text with a font size and color, or choose a PNG or JPEG image. Transparent PNG files keep their transparency." },
+          { heading: "Placement for every page size", body: "Choose top left, top center, top right, center, bottom left, bottom center, or bottom right. Each page uses its own dimensions, and you can target selected pages." },
+        ],
+        steps: ["Upload one PDF and confirm its page count and preview.", "Choose text or an image, then adjust its style, position, and page range.", "Create and download the new watermarked PDF."],
+        privacy: "Your PDF and watermark image are processed locally in your browser. They are not uploaded to or stored by NexaForge.",
+        faq: [
+          { q: "Is my PDF uploaded or stored?", a: "No. Processing and downloading happen in your browser, and NexaForge does not receive or store the source PDF or watermark image." },
+          { q: "Which image watermark formats are supported?", a: "PNG and JPEG are supported, including transparent PNG files." },
+          { q: "Can I watermark only some pages?", a: "Yes. Choose Custom pages and enter values such as 1-5, 8, 10-15." },
+          { q: "Will different-size or landscape pages be misplaced?", a: "The tool calculates placement from each page's CropBox or MediaBox dimensions, including mixed sizes and landscape pages." },
+        ],
+        related: [
+          { path: "/pdf/add-page-numbers", label: "Add Page Numbers to PDF" },
+          { path: "/pdf/merge", label: "Merge PDF" },
+          { path: "/pdf/rotate", label: "Rotate PDF" },
+          { path: "/image/watermark", label: "Image Watermark" },
+        ],
+      },
+    },
+  },
+  {
+    path: "/pdf/add-page-numbers",
+    toolId: "pdf-add-page-numbers",
+    isAlias: false,
+    preset: {},
+    content: {
+      "zh-TW": {
+        title: "為 PDF 加入頁碼｜免費且私密 | NexaForge",
+        description: "免費在線上為 PDF 加入頁碼，選擇位置、格式、起始頁碼與自訂頁面範圍；全程在瀏覽器本機處理。",
+        h1: "為 PDF 加入頁碼",
+        intro: "選擇頁碼位置、起始數字、格式、字體大小、顏色與邊距，在瀏覽器內產生並下載新的 PDF。",
+        sections: [
+          { heading: "依每頁尺寸精準定位", body: "支援左上、上方置中、右上、左下、下方置中與右下。每一頁都依自己的頁面尺寸計算位置，也能處理橫向頁面。" },
+          { heading: "彈性頁碼格式與範圍", body: "可為全部頁面加碼，或輸入 1-5、8、10-15 等自訂範圍。支援 {n}、Page {n}、{n} / {total} 與 Page {n} of {total}。" },
+        ],
+        steps: ["上傳一份 PDF，確認頁數與預覽。", "選擇位置、頁面範圍、格式、起始頁碼與文字樣式。", "產生並下載加上頁碼的新 PDF。"],
+        privacy: "你的 PDF 只在這台裝置的瀏覽器本機處理，不會上傳到 NexaForge 伺服器，也不會由 NexaForge 儲存。",
+        faq: [
+          { q: "PDF 會上傳或儲存嗎？", a: "不會。處理與下載都在瀏覽器本機完成，NexaForge 不會接收或儲存來源 PDF。" },
+          { q: "可以只為部分頁面加頁碼嗎？", a: "可以。選擇自訂範圍，輸入例如 1-5、8、10-15。" },
+          { q: "不同尺寸或橫向頁面會跑位嗎？", a: "工具會依每頁自己的 CropBox 或 MediaBox 尺寸計算位置，支援不同尺寸與橫向頁面。" },
+        ],
+        related: [
+          { path: "/pdf/merge", label: "合併 PDF" },
+          { path: "/pdf/reorder-pages", label: "重新排序 PDF 頁面" },
+          { path: "/pdf/delete-pages", label: "刪除 PDF 頁面" },
+          { path: "/image/watermark", label: "圖片浮水印" },
+        ],
+      },
+      en: {
+        title: "Add Page Numbers to PDF Online – Free & Private | NexaForge",
+        description: "Add page numbers to PDF online for free. Choose the position, range, format, starting number, font size, color, and margin with private browser-only processing.",
+        h1: "Add Page Numbers to PDF",
+        intro: "Choose the page number position, starting value, format, font size, color, and margin, then create and download a new PDF.",
+        sections: [
+          { heading: "Place numbers for every page size", body: "Choose top left, top center, top right, bottom left, bottom center, or bottom right. Each page uses its own dimensions, including landscape pages." },
+          { heading: "Flexible formats and page ranges", body: "Number every page or enter a custom range such as 1-5, 8, 10-15. Use {n}, Page {n}, {n} / {total}, or Page {n} of {total}." },
+        ],
+        steps: ["Upload one PDF and confirm its page count and preview.", "Choose the position, page range, format, starting number, and text styling.", "Create and download the new numbered PDF."],
+        privacy: "Your PDF is processed locally in your browser. The file is not uploaded to NexaForge servers or stored by NexaForge.",
+        faq: [
+          { q: "Is my PDF uploaded or stored?", a: "No. Processing and downloading happen in your browser, and NexaForge does not receive or store the source PDF." },
+          { q: "Can I number only some pages?", a: "Yes. Choose Custom range and enter values such as 1-5, 8, 10-15." },
+          { q: "Will different-size or landscape pages be misplaced?", a: "The tool calculates placement from each page's CropBox or MediaBox dimensions, including mixed sizes and landscape pages." },
+        ],
+        related: [
+          { path: "/pdf/merge", label: "Merge PDF" },
+          { path: "/pdf/reorder-pages", label: "Reorder PDF Pages" },
+          { path: "/pdf/delete-pages", label: "Delete PDF Pages" },
+          { path: "/image/watermark", label: "Image Watermark" },
+        ],
+      },
+    },
+  },
 ];
+
+const PDF_METADATA_LANDING: SeoLandingDefinition = {
+  path: "/pdf/metadata",
+  toolId: "pdf-metadata",
+  isAlias: false,
+  preset: {},
+  content: {
+    "zh-TW": {
+      title: "檢視與移除 PDF 中繼資料｜NexaForge",
+      description: "線上檢視並移除 PDF 文件資訊中的標題、作者、主旨、關鍵字、建立工具與日期；全程在瀏覽器本機處理。",
+      h1: "檢視與移除 PDF 中繼資料",
+      intro: "查看 PDF 常見文件中繼資料，建立移除支援欄位的新副本。中繼資料可能包含作者名稱、建立工具與建立日期。",
+      sections: [
+        { heading: "查看常見文件資訊", body: "工具會顯示 PDF 文件資訊字典中的標題、作者、主旨、關鍵字、建立工具、製作程式、建立日期與修改日期，方便分享前先檢查。" },
+        { heading: "只移除支援的中繼資料", body: "移除功能會建立保留頁面內容的新 PDF，清除上述文件資訊欄位；此工具不宣稱能移除所有隱藏資料或其他 PDF 內容。" },
+      ],
+      steps: [
+        "上傳一份 PDF，查看文件中繼資料。",
+        "確認資訊後選擇移除 PDF 中繼資料。",
+        "下載清除後的新 PDF，原始檔案不會被修改。",
+      ],
+      privacy: "你的 PDF 只在這台裝置的瀏覽器本機讀取與處理，不會上傳到 NexaForge 伺服器，也不會由 NexaForge 儲存。",
+      faq: [
+        { q: "PDF 會上傳或儲存嗎？", a: "不會。檢視、移除與下載都在目前的瀏覽器本機完成。" },
+        { q: "工具支援哪些欄位？", a: "MVP 支援文件資訊字典中的標題、作者、主旨、關鍵字、建立工具、製作程式、建立日期與修改日期。" },
+        { q: "會移除所有 PDF 隱藏資料嗎？", a: "不會。工具只處理支援的文件資訊字典欄位，不宣稱移除嵌入檔案、註解或其他 hidden content。" },
+      ],
+      related: [
+        { path: "/image/exif-viewer", label: "檢視圖片 EXIF" },
+        { path: "/image/remove-exif", label: "移除圖片 EXIF" },
+        { path: "/pdf/watermark", label: "為 PDF 加入浮水印" },
+        { path: "/pdf/merge", label: "合併 PDF" },
+      ],
+    },
+    en: {
+      title: "View & Remove PDF Metadata Online | NexaForge",
+      description: "View and remove PDF document metadata online, including title, author, subject, keywords, creator, producer, and dates in your browser.",
+      h1: "View & Remove PDF Metadata Online",
+      intro: "Review common PDF document metadata and create a new copy without the supported fields. Metadata may include an author name, the creation tool, and a creation date.",
+      sections: [
+        { heading: "Review common document information", body: "The viewer reads Title, Author, Subject, Keywords, Creator, Producer, Creation Date, and Modification Date from the PDF document information dictionary." },
+        { heading: "Remove supported metadata only", body: "Removal creates a PDF with the page content preserved while clearing the supported document information fields. It does not claim to remove all hidden data or other PDF content." },
+      ],
+      steps: [
+        "Upload one PDF to view its document metadata.",
+        "Review the fields, then choose Remove PDF metadata.",
+        "Download the clean PDF; your original file is not changed.",
+      ],
+      privacy: "Your PDF is read and processed locally in this browser. It is not uploaded to or stored by NexaForge.",
+      faq: [
+        { q: "Is my PDF uploaded or stored?", a: "No. Viewing, removal, and downloading happen locally in your current browser." },
+        { q: "Which fields does the tool support?", a: "The MVP supports Title, Author, Subject, Keywords, Creator, Producer, Creation Date, and Modification Date in the document information dictionary." },
+        { q: "Does it remove all hidden PDF data?", a: "No. It handles supported document information dictionary fields only and does not claim to remove embedded files, annotations, or other hidden content." },
+      ],
+      related: [
+        { path: "/image/exif-viewer", label: "View Image EXIF" },
+        { path: "/image/remove-exif", label: "Remove Image EXIF" },
+        { path: "/pdf/watermark", label: "Add Watermark to PDF" },
+        { path: "/pdf/merge", label: "Merge PDF" },
+      ],
+    },
+  },
+};
+
+const BARCODE_READER_LANDING: SeoLandingDefinition = {
+  path: "/qr-barcode/barcode-reader",
+  toolId: "barcode-reader",
+  isAlias: false,
+  preset: {},
+  content: {
+    "zh-TW": {
+      title: "線上 Barcode Reader 條碼讀取器｜瀏覽器本機處理 | NexaForge",
+      description: "從圖片讀取 EAN-13、EAN-8、UPC-A、Code 128 與 Code 39 條碼，支援多個結果，所有內容只在瀏覽器本機處理。",
+      h1: "線上 Barcode Reader 條碼讀取器",
+      intro: "上傳手機拍攝或電腦中的條碼圖片，快速查看格式與解碼內容，不需上傳檔案或註冊帳號即可開始。",
+      sections: [
+        { heading: "支援常見一維條碼", body: "優先支援 EAN-13、EAN-8、UPC-A、Code 128 與 Code 39。瀏覽器原生 BarcodeDetector 可用時，圖片中的多個條碼也會逐一列出。" },
+        { heading: "大圖先縮放再解碼", body: "工具會在瀏覽器內將過大的圖片縮放至合理尺寸，再使用原生 API 或 ZXing fallback 解碼，避免反覆處理 20MP 原始照片。" },
+      ],
+      steps: ["上傳包含條碼的圖片。", "按下讀取條碼，等待瀏覽器本機解碼。", "檢查格式與內容，複製結果或掃描另一張圖片。"],
+      privacy: "圖片與解碼內容只在這台裝置的瀏覽器本機處理，不會上傳到 NexaForge 伺服器，也不會送入分析服務。",
+      faq: [
+        { q: "支援哪些條碼格式？", a: "優先支援 EAN-13、EAN-8、UPC-A、Code 128 與 Code 39。瀏覽器原生解碼器可能額外支援其他格式。" },
+        { q: "手機拍攝的圖片可以使用嗎？", a: "可以。請讓條碼清楚、正面且有足夠對比，工具會先縮放過大的照片再解碼。" },
+        { q: "圖片或解碼內容會上傳嗎？", a: "不會。所有影像處理與解碼都在瀏覽器完成，解碼內容不會送到伺服器或分析服務。" },
+      ],
+      related: [
+        { path: "/barcode/generator", label: "Code128 / EAN-13 Barcode Generator" },
+        { path: "/qr-code/reader", label: "QR Code Reader" },
+        { path: "/qr-code", label: "QR Code Generator" },
+        { path: "/image/resize", label: "Resize Images" },
+      ],
+    },
+    en: {
+      title: "Online Barcode Reader for Images | Private Browser Tool | NexaForge",
+      description: "Read EAN-13, EAN-8, UPC-A, Code 128, and Code 39 barcodes from images with multi-result support and browser-only processing.",
+      h1: "Online Barcode Reader",
+      intro: "Upload a barcode image from your phone or computer to see its format and decoded value without uploading the file or registering.",
+      sections: [
+        { heading: "Read common 1D barcodes", body: "The reader prioritizes EAN-13, EAN-8, UPC-A, Code 128, and Code 39. When BarcodeDetector is available, multiple barcodes in one image are listed separately." },
+        { heading: "Resize large images before decoding", body: "Oversized images are resized in your browser before native detection or the ZXing fallback runs, avoiding repeated work on a full 20MP photo." },
+      ],
+      steps: ["Upload an image containing a barcode.", "Click Read barcode and let the browser decode it locally.", "Review the format and value, copy a result, or scan another image."],
+      privacy: "Your image and decoded value stay in this browser on this device. They are not uploaded to NexaForge or sent to analytics.",
+      faq: [
+        { q: "Which barcode formats are supported?", a: "EAN-13, EAN-8, UPC-A, Code 128, and Code 39 are prioritized. Native browser detection may support additional formats." },
+        { q: "Can I use a photo from my phone?", a: "Yes. Keep the barcode clear, front-facing, and high contrast. The reader resizes large photos before decoding." },
+        { q: "Are my image or decoded value uploaded?", a: "No. Image processing and decoding happen in this browser, and the decoded value is not sent to a server or analytics service." },
+      ],
+      related: [
+        { path: "/barcode/generator", label: "Code128 / EAN-13 Barcode Generator" },
+        { path: "/qr-code/reader", label: "QR Code Reader" },
+        { path: "/qr-code", label: "QR Code Generator" },
+        { path: "/image/resize", label: "Resize Images" },
+      ],
+    },
+  },
+};
 
 export const SEO_SEARCH_PAGES: readonly SeoLandingDefinition[] = [
   ...ALIAS_PAGE_SEEDS.map(definePage),
-  ...EXISTING_PAGE_SEEDS.map(definePage),
+  ...EXISTING_PAGE_SEEDS.map(definePage).map((entry) =>
+    entry.path === UNIX_TIMESTAMP_LANDING.path ? UNIX_TIMESTAMP_LANDING : entry
+  ),
   ...PDF_PAGE_EDITOR_LANDINGS,
+  PDF_METADATA_LANDING,
+  BARCODE_READER_LANDING,
   JSON_DIFF_LANDING,
+  JSONPATH_TESTER_LANDING,
+  YAML_JSON_LANDING,
 ];
 
 export const SEO_ALIAS_PAGES = SEO_SEARCH_PAGES.filter(({ isAlias }) => isAlias);

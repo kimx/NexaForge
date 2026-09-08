@@ -14,6 +14,9 @@ export const PDF_MAX_FILE_SIZE = FILE_LIMITS.pdf;
 
 export type PdfSource = Blob | ArrayBuffer | Uint8Array;
 export type PdfFile = Blob & { readonly name?: string };
+export interface PdfLoadOptions {
+  updateMetadata?: boolean;
+}
 
 export type PdfErrorCode =
   | "already-processing"
@@ -145,7 +148,8 @@ export function validatePdfFileType(
 }
 
 export async function loadPdfDocument(
-  source: PdfSource
+  source: PdfSource,
+  options: PdfLoadOptions = {}
 ): Promise<PDFDocument> {
   if (!(source instanceof Uint8Array) && !(source instanceof ArrayBuffer)) {
     const typeError = validatePdfFileType(source);
@@ -172,7 +176,9 @@ export async function loadPdfDocument(
 
   await yieldToBrowser();
   try {
-    const document = await PDFDocument.load(bytes);
+    const document = await PDFDocument.load(bytes, {
+      updateMetadata: options.updateMetadata ?? true,
+    });
     if (document.getPageCount() < 1) {
       throw createError("empty-pdf", "This PDF does not contain any pages.");
     }

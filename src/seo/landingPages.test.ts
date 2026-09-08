@@ -22,6 +22,7 @@ describe("SEO search page catalog", () => {
       ["/developer/base64-decode", "base64", { mode: "base64ToText" }],
       ["/developer/url-encode", "url-encoder", { mode: "encode" }],
       ["/developer/url-decode", "url-encoder", { mode: "decode" }],
+      ["/developer/url-encode-decode", "url-encoder", {}],
     ]);
   });
 
@@ -45,7 +46,13 @@ describe("SEO search page catalog", () => {
       "/pdf/reorder-pages",
       "/pdf/delete-pages",
       "/pdf/extract-pages",
+      "/pdf/watermark",
+      "/pdf/add-page-numbers",
+      "/pdf/metadata",
+      "/qr-barcode/barcode-reader",
       "/data/json-diff",
+      "/data/jsonpath-tester",
+      "/data/yaml-json",
     ]);
     expect(new Set(SEO_SEARCH_PAGES.map(({ path }) => path)).size).toBe(
       SEO_SEARCH_PAGES.length

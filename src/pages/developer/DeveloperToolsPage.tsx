@@ -12,6 +12,7 @@ import { useSeoLanding } from "../../hooks/useSeoLanding";
 import { jsonToYaml, yamlToJson } from "../../services/yaml/yamlService";
 
 type DeveloperToolKind = "url-encoder" | "unix-timestamp" | "json-yaml" | "json-diff";
+type UrlEncodingMode = "component" | "full-url";
 
 interface DeveloperToolsPageProps {
   kind: DeveloperToolKind;
@@ -141,11 +142,13 @@ export function DeveloperToolsPage({ kind }: DeveloperToolsPageProps): JSX.Eleme
       ? landing.definition.preset.mode
       : initialModeFor(kind);
   const [mode, setMode] = useState(() => presetMode);
+  const [urlEncodingMode, setUrlEncodingMode] = useState<UrlEncodingMode>("component");
   const [output, setOutput] = useState("");
   const [state, setState] = useState<ProcessingState>(() => initialInputFor(kind).trim() ? "ready" : "idle");
   const [error, setError] = useState<string | null>(null);
   const [inputError, setInputError] = useState<CodeEditorError | null>(null);
   const [secondInputError, setSecondInputError] = useState<CodeEditorError | null>(null);
+  const [copyStatus, setCopyStatus] = useState("");
   const inputErrorId = useId();
   const secondInputErrorId = useId();
   const title = localToolMeta(tool.id, "title");
@@ -160,10 +163,14 @@ export function DeveloperToolsPage({ kind }: DeveloperToolsPageProps): JSX.Eleme
 
   useEffect(() => {
     setMode(presetMode);
+    if (kind === "url-encoder") {
+      setUrlEncodingMode("component");
+    }
     setOutput("");
     setError(null);
     setInputError(null);
     setSecondInputError(null);
+    setCopyStatus("");
     setState(input.trim() && (kind !== "json-diff" || secondInput.trim()) ? "ready" : "idle");
   }, [kind, landing?.definition.path, presetMode]);
 
@@ -182,6 +189,7 @@ export function DeveloperToolsPage({ kind }: DeveloperToolsPageProps): JSX.Eleme
     setInputError(null);
     setSecondInputError(null);
     setError(null);
+    setCopyStatus("");
     setState("idle");
   };
 
@@ -191,10 +199,11 @@ export function DeveloperToolsPage({ kind }: DeveloperToolsPageProps): JSX.Eleme
     setInputError(null);
     setSecondInputError(null);
     setError(null);
+    setCopyStatus("");
     setState("ready");
   };
 
-  const handleProcess = (): void => {
+  const handleProcess = (requestedMode?: string): void => {
     const primaryIsEmpty = !input.trim();
     const secondaryIsEmpty = kind === "json-diff" && !secondInput.trim();
     if (primaryIsEmpty || secondaryIsEmpty) {
@@ -240,11 +249,16 @@ export function DeveloperToolsPage({ kind }: DeveloperToolsPageProps): JSX.Eleme
     setInputError(null);
     setSecondInputError(null);
     setError(null);
+    setCopyStatus("");
     setState("processing");
     try {
       let nextOutput = "";
       if (kind === "url-encoder") {
-        nextOutput = mode === "encode" ? encodeURIComponent(input) : decodeURIComponent(input);
+        const action = requestedMode ?? mode;
+        const transform = urlEncodingMode === "full-url"
+          ? action === "encode" ? encodeURI : decodeURI
+          : action === "encode" ? encodeURIComponent : decodeURIComponent;
+        nextOutput = transform(input);
       } else if (kind === "unix-timestamp") {
         if (mode === "timestamp-to-date") {
           const numeric = Number(input.trim());
@@ -271,7 +285,7 @@ export function DeveloperToolsPage({ kind }: DeveloperToolsPageProps): JSX.Eleme
     } catch (conversionFailure) {
       setInputError(
         kind === "url-encoder"
-          ? { message: t("developerTools.invalidInput") }
+          ? { message: t((requestedMode ?? mode) === "decode" ? "developerTools.invalidPercentEncoding" : "developerTools.invalidInput") }
           : editorError(conversionFailure, t("developerTools.invalidInput"))
       );
       setError(null);
@@ -282,8 +296,17 @@ export function DeveloperToolsPage({ kind }: DeveloperToolsPageProps): JSX.Eleme
 
   const copyOutput = async (): Promise<void> => {
     if (!output) return;
-    await navigator.clipboard?.writeText(output);
-    trackEvent("result_action_used", { tool: kind, action: "copy" });
+    if (!navigator.clipboard?.writeText) {
+      setCopyStatus(t("developerTools.copyFailed"));
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(output);
+      setCopyStatus(t("developerTools.copied"));
+      trackEvent("result_action_used", { tool: kind, action: "copy" });
+    } catch {
+      setCopyStatus(t("developerTools.copyFailed"));
+    }
   };
 
   const resetTextEditor = (): void => {
@@ -292,7 +315,9 @@ export function DeveloperToolsPage({ kind }: DeveloperToolsPageProps): JSX.Eleme
     setInputError(null);
     setSecondInputError(null);
     setError(null);
+    setCopyStatus("");
     setMode(presetMode);
+    setUrlEncodingMode("component");
     setState("idle");
   };
 
@@ -320,6 +345,7 @@ export function DeveloperToolsPage({ kind }: DeveloperToolsPageProps): JSX.Eleme
         processLabel={t("button.process")}
         processingLabel={t("button.processing")}
         copyLabel={t("developerTools.copy")}
+        copyErrorLabel={t("developerTools.copyFailed")}
         clearLabel={t("developerTools.clear")}
         resetLabel={t("developerTools.reset")}
         emptyOutputText={t("developerTools.outputEmpty")}
@@ -331,6 +357,7 @@ export function DeveloperToolsPage({ kind }: DeveloperToolsPageProps): JSX.Eleme
           setInputError(null);
           setError(null);
           setOutput("");
+          setCopyStatus("");
           setState(nextInput.trim() ? "ready" : "idle");
         }}
         onModeChange={(nextMode) => {
@@ -338,24 +365,60 @@ export function DeveloperToolsPage({ kind }: DeveloperToolsPageProps): JSX.Eleme
           setInputError(null);
           setError(null);
           setOutput("");
+          setCopyStatus("");
           setState(input.trim() ? "ready" : "idle");
         }}
-        onTransform={handleProcess}
+        onTransform={() => handleProcess()}
         onClear={clearEditor}
         onReset={resetTextEditor}
-        onCopied={() => trackEvent("result_action_used", { tool: kind, action: "copy" })}
+        onCopied={() => {
+          setCopyStatus(t("developerTools.copied"));
+          trackEvent("result_action_used", { tool: kind, action: "copy" });
+        }}
       >
         {({ workspace, options: toolkitOptions, result }) => (
           <ToolPageTemplate
             tool={tool}
             meta={toolMeta}
             breadcrumb={["Home", title]}
-            workflow={{ state, error: null, onReprocess: handleProcess }}
+            workflow={{ state, error: null, onReprocess: () => handleProcess() }}
             showIdleResult
             children={{
               workspace,
-              options: toolkitOptions,
-              result,
+              options: <div className="tool-form">{toolkitOptions}
+                    <label htmlFor={`${kind}-encoding-mode`}>{t("developerTools.encodingMode")}
+                      <select
+                        id={`${kind}-encoding-mode`}
+                        value={urlEncodingMode}
+                        onChange={(event) => {
+                          setUrlEncodingMode(event.target.value as UrlEncodingMode);
+                          setInputError(null);
+                          setError(null);
+                          setOutput("");
+                          setCopyStatus("");
+                          setState(input.trim() ? "ready" : "idle");
+                        }}
+                      >
+                        <option value="component">{t("developerTools.component")}</option>
+                        <option value="full-url">{t("developerTools.fullUrl")}</option>
+                      </select>
+                    </label>
+                    <div className="tool-actions">
+                      <button type="button" className="btn primary" onClick={() => {
+                        setMode("encode");
+                        handleProcess("encode");
+                      }} disabled={!canProcess || state === "processing"}>
+                        {t("developerTools.encode")}
+                      </button>
+                      <button type="button" className="btn secondary" onClick={() => {
+                        setMode("decode");
+                        handleProcess("decode");
+                      }} disabled={!canProcess || state === "processing"}>
+                        {t("developerTools.decode")}
+                      </button>
+                    </div>
+              </div>,
+              result: <>{result}{copyStatus ? <p role="status" aria-live="polite">{copyStatus}</p> : null}</>,
               howItWorks,
               faq,
               relatedTools: getRelatedTools(kind),
@@ -371,7 +434,7 @@ export function DeveloperToolsPage({ kind }: DeveloperToolsPageProps): JSX.Eleme
       tool={tool}
       meta={toolMeta}
       breadcrumb={["Home", title]}
-      workflow={{ state, error, onReprocess: handleProcess }}
+      workflow={{ state, error, onReprocess: () => handleProcess() }}
       children={{
         workspace: (
           <div className="tool-form">
@@ -383,6 +446,7 @@ export function DeveloperToolsPage({ kind }: DeveloperToolsPageProps): JSX.Eleme
                   setInputError(null);
                   setError(null);
                   setOutput("");
+                  setCopyStatus("");
                   setState(nextInput.trim() ? "ready" : "idle");
                 }}
                 label={inputLabel}
@@ -406,6 +470,7 @@ export function DeveloperToolsPage({ kind }: DeveloperToolsPageProps): JSX.Eleme
                     setInputError(null);
                     setError(null);
                     setOutput("");
+                    setCopyStatus("");
                     setState(nextInput.trim() && (kind !== "json-diff" || secondInput.trim()) ? "ready" : "idle");
                   }}
                   rows={10}
@@ -427,6 +492,7 @@ export function DeveloperToolsPage({ kind }: DeveloperToolsPageProps): JSX.Eleme
                     setSecondInputError(null);
                     setError(null);
                     setOutput("");
+                    setCopyStatus("");
                     setState(nextInput.trim() && input.trim() ? "ready" : "idle");
                   }}
                   rows={10}
@@ -439,23 +505,26 @@ export function DeveloperToolsPage({ kind }: DeveloperToolsPageProps): JSX.Eleme
         options: (
           <div className="tool-form">
             {kind !== "json-diff" ? (
-              <label htmlFor={`${kind}-mode`}>{t("developerTools.mode")}
-                <select
-                  id={`${kind}-mode`}
-                  value={mode}
-                  onChange={(event) => {
-                    setMode(event.target.value);
-                    setInputError(null);
-                    setError(null);
-                    setOutput("");
-                    setState(input.trim() ? "ready" : "idle");
-                  }}
-                >
-                  {options.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
-                </select>
-              </label>
+              <>
+                <label htmlFor={`${kind}-mode`}>{t("developerTools.mode")}
+                  <select
+                    id={`${kind}-mode`}
+                    value={mode}
+                    onChange={(event) => {
+                      setMode(event.target.value);
+                      setInputError(null);
+                      setError(null);
+                      setOutput("");
+                      setCopyStatus("");
+                      setState(input.trim() ? "ready" : "idle");
+                    }}
+                  >
+                    {options.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+                  </select>
+                </label>
+              </>
             ) : <p>{t("developerTools.diffMode")}</p>}
-            <button type="button" className="btn primary" onClick={handleProcess} disabled={!canProcess || state === "processing"}>
+            <button type="button" className="btn primary" onClick={() => handleProcess()} disabled={!canProcess || state === "processing"}>
               {t("button.process")}
             </button>
           </div>
@@ -483,6 +552,7 @@ export function DeveloperToolsPage({ kind }: DeveloperToolsPageProps): JSX.Eleme
                 </div>
               </>
             )}
+            {copyStatus ? <p role="status" aria-live="polite">{copyStatus}</p> : null}
           </>
         ),
         howItWorks,

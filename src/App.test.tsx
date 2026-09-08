@@ -26,12 +26,14 @@ const ROUTE_HEADINGS: Record<string, string> = {
   "/pdf/split": "Free Online PDF Splitter",
   "/pdf/rotate": "Free Online PDF Rotator",
   "/pdf/to-image": "PDF to Image",
+  "/pdf/metadata": "View & Remove PDF Metadata Online",
   "/data/json-formatter": "Free Online JSON Formatter",
   "/data/json-diff": "JSON Diff Online",
   "/data/csv-viewer": "CSV Viewer",
   "/data/csv-to-json": "CSV to JSON",
   "/data/json-to-csv": "JSON to CSV",
   "/data/json-xml": "JSON ↔ XML",
+  "/data/yaml-json": "YAML to JSON / JSON to YAML Converter",
   "/data/xml-formatter": "XML Formatter",
   "/developer/base64": "Base64",
   "/developer/json-to-csharp": "JSON → C# Class",
@@ -39,7 +41,9 @@ const ROUTE_HEADINGS: Record<string, string> = {
   "/developer/regex-tester": "Regex Tester",
   "/developer/sql-formatter": "SQL Formatter",
   "/developer/cron-builder": "Cron Expression Builder",
+  "/developer/unix-timestamp": "Unix Timestamp Converter",
   "/developer/url-parser": "URL Parser",
+  "/developer/url-encode-decode": "URL Encoder / Decoder",
   "/developer/curl-to-code": "cURL to Code",
   "/developer/secret-generator": "Password & Key Generator",
   "/text/hash": "Hash Generator",
@@ -55,6 +59,7 @@ const ROUTE_HEADINGS: Record<string, string> = {
   "/qr-code": "Free Online QR Code Generator",
   "/qr-code/reader": "QR Code Reader",
   "/barcode/generator": "Code128 / EAN-13 Barcode Generator",
+  "/qr-barcode/barcode-reader": "Online Barcode Reader",
   "/qr-code/wifi": "Wi-Fi QR Generator",
   "/qr-code/vcard": "vCard QR Generator",
 };
@@ -125,6 +130,7 @@ describe("App routes", () => {
     const paths = [
       "/qr-code/reader",
       "/barcode/generator",
+      "/qr-barcode/barcode-reader",
       "/qr-code/wifi",
       "/qr-code/vcard",
     ];
@@ -139,6 +145,7 @@ describe("App routes", () => {
       "/developer/json-to-csharp",
       "/developer/json-to-typescript",
       "/data/json-xml",
+      "/data/yaml-json",
       "/data/xml-formatter",
     ];
     paths.forEach((path) => {
@@ -435,6 +442,30 @@ describe("App routes", () => {
       const canonical = document.querySelector("link[rel='canonical']");
       expect(canonical).toHaveAttribute("href", "https://nexaforge.kimx.info/en/developer/base64");
     });
+  });
+
+  it("redirects the legacy JSON YAML route to the data converter", async () => {
+    render(
+      <MemoryRouter
+        initialEntries={["/en/developer/json-yaml"]}
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+      >
+        <LanguageProvider initialLocale="en">
+          <App />
+        </LanguageProvider>
+      </MemoryRouter>
+    );
+
+    expect(
+      await screen.findByRole("heading", {
+        level: 1,
+        name: "YAML to JSON / JSON to YAML Converter",
+      })
+    ).toBeVisible();
+    expect(document.querySelector("link[rel='canonical']")).toHaveAttribute(
+      "href",
+      "https://nexaforge.kimx.info/en/data/yaml-json"
+    );
   });
 
   it("renders a noindex not-found page for unknown client routes", async () => {
