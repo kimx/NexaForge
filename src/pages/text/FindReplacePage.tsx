@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { TextResultActions } from "../../components/text/TextResultActions";
 import { TextWorkflowLinks } from "../../components/text/TextWorkflowLinks";
 import { ToolPageTemplate } from "../../components/ToolPageTemplate";
@@ -10,9 +10,9 @@ import type { ProcessingState, ToolMeta } from "../../types/tool";
 import { getRelatedTools } from "../../utils/toolHelpers";
 
 const NEXT_TOOLS = [
-  { label: "Compare Text", path: "/text/diff" },
-  { label: "Clean Text", path: "/text/text-cleaner" },
-  { label: "Word Counter", path: "/text/word-counter" },
+  { toolId: "text-diff" },
+  { toolId: "text-cleaner" },
+  { toolId: "word-counter" },
 ];
 
 export function FindReplacePage(): JSX.Element {
@@ -25,15 +25,17 @@ export function FindReplacePage(): JSX.Element {
   const [useRegex, setUseRegex] = useState(false);
   const [flags, setFlags] = useState("g");
   const [output, setOutput] = useState("");
-  const [summary, setSummary] = useState("");
+  const [summary, setSummary] = useState<{ matches: number; replacements: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [processing, setProcessing] = useState<ProcessingState>("idle");
+  const outputRef = useRef<HTMLTextAreaElement>(null);
   const tool = FILE_TOOLS.find((item) => item.id === "find-replace") ?? FILE_TOOLS[0];
+  const title = t("tool.find-replace.title");
   const meta: ToolMeta = {
-    title: "Find and Replace Text Online | NexaForge",
-    description: "Find and replace text or regular expressions locally in your browser for free.",
+    title: `${title} | ${t("header.title")}`,
+    description: t("tool.find-replace.description"),
     canonical: "/text/find-replace",
-    h1: "Find and Replace Text Online",
+    h1: title,
   };
   useSeo(meta);
 
@@ -41,7 +43,7 @@ export function FindReplacePage(): JSX.Element {
     const result = findAndReplace(input, { find, replace, caseSensitive, wholeWord, useRegex, flags });
     setError(result.error);
     setOutput(result.text);
-    setSummary(`${result.matches} matches, ${result.replacements} replacements.`);
+    setSummary({ matches: result.matches, replacements: result.replacements });
     setProcessing(result.error ? "error" : "success");
   };
   const toggleFlag = (flag: string): void => {
@@ -54,23 +56,28 @@ export function FindReplacePage(): JSX.Element {
     setFind("");
     setReplace("");
     setOutput("");
-    setSummary("");
+    setSummary(null);
     setError(null);
     setProcessing("idle");
   };
+  const localizedError = error
+    ? error.startsWith("Enter text")
+      ? t("tool.find-replace.error.findRequired")
+      : t("tool.find-replace.error.invalidRegex", { detail: error.replace(/^Invalid regular expression:\s*/, "") })
+    : undefined;
 
   return (
     <ToolPageTemplate
       tool={tool}
       meta={meta}
-      breadcrumb={["Home", "Find and Replace Text Online"]}
-      workflow={{ state: processing, error: error ?? undefined }}
+      breadcrumb={["Home", title]}
+      workflow={{ state: processing, error: localizedError }}
       children={{
         workspace: (
           <div className="tool-form">
-            <label htmlFor="find-replace-text">Text<textarea id="find-replace-text" value={input} onChange={(event) => setInput(event.target.value)} rows={10} spellCheck={false} /></label>
-            <label htmlFor="find-replace-find">Find<input id="find-replace-find" value={find} onChange={(event) => setFind(event.target.value)} spellCheck={false} /></label>
-            <label htmlFor="find-replace-replace">Replace with<input id="find-replace-replace" value={replace} onChange={(event) => setReplace(event.target.value)} spellCheck={false} /></label>
+            <label htmlFor="find-replace-text">{t("tool.find-replace.label.input")}<textarea id="find-replace-text" value={input} onChange={(event) => setInput(event.target.value)} rows={10} spellCheck={false} /></label>
+            <label htmlFor="find-replace-find">{t("tool.find-replace.label.find")}<input id="find-replace-find" value={find} onChange={(event) => setFind(event.target.value)} spellCheck={false} /></label>
+            <label htmlFor="find-replace-replace">{t("tool.find-replace.label.replace")}<input id="find-replace-replace" value={replace} onChange={(event) => setReplace(event.target.value)} spellCheck={false} /></label>
           </div>
         ),
         options: (
@@ -89,16 +96,16 @@ export function FindReplacePage(): JSX.Element {
         ),
         result: (
           <div className="tool-form">
-            <p role="status">{summary}</p>
-            <label htmlFor="find-replace-output">Result<textarea id="find-replace-output" value={output} readOnly rows={10} spellCheck={false} /></label>
-            <TextResultActions text={output} filename="replaced-text.txt" onClear={clear} onUseAsInput={setInput} />
+            <p role="status">{t("tool.find-replace.label.summary", { matches: summary?.matches ?? 0, replacements: summary?.replacements ?? 0 })}</p>
+            <label htmlFor="find-replace-output">{t("tool.find-replace.label.result")}<textarea id="find-replace-output" ref={outputRef} value={output} readOnly rows={10} spellCheck={false} /></label>
+            <TextResultActions text={output} filename="replaced-text.txt" onClear={clear} onUseAsInput={setInput} resultRef={outputRef} labels={{ clear: t("tool.find-replace.button.clear") }} />
           </div>
         ),
         nextActions: <TextWorkflowLinks tools={NEXT_TOOLS} />,
-        howItWorks: ["Paste the source text.", "Enter a literal or regular expression to find.", "Replace all matches, then copy or continue your workflow."],
+        howItWorks: [0, 1, 2].map((index) => t(`tool.find-replace.how.${index}`)),
         faq: [
-          { q: "Does regex mode upload my pattern?", a: "No. Patterns and text stay in your browser." },
-          { q: "What happens with an invalid regex?", a: "The tool keeps your input and shows a validation error." },
+          { q: t("tool.find-replace.faq.0.question"), a: t("tool.find-replace.faq.0.answer") },
+          { q: t("tool.find-replace.faq.1.question"), a: t("tool.find-replace.faq.1.answer") },
         ],
         relatedTools: getRelatedTools("find-replace"),
       }}
