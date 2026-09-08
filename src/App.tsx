@@ -4,6 +4,7 @@ import { Footer } from "./components/Footer";
 import { Header } from "./components/Header";
 import { ToolSidebar } from "./components/ToolSidebar";
 import { useLanguage } from "./context/LanguageContext";
+import { TextWorkflowProvider } from "./context/TextWorkflowContext";
 import { FILE_TOOLS } from "./data/tools";
 import { useMediaQuery } from "./hooks/useMediaQuery";
 import { NotFoundPage } from "./pages/NotFoundPage";
@@ -416,7 +417,7 @@ function ToolFrame({ children }: { children: JSX.Element }): JSX.Element {
 
 export default function App(): JSX.Element {
   return (
-    <>
+    <TextWorkflowProvider>
       <RouteLocaleSync />
       <Routes>
         {APP_ROUTES.flatMap(({ path, element }) => [
@@ -435,6 +436,6 @@ export default function App(): JSX.Element {
         <Route path="/en/text/base64" element={<Navigate to="/en/developer/base64" replace />} />
         <Route path="*" element={<ToolFrame><NotFoundPage /></ToolFrame>} />
       </Routes>
-    </>
+    </TextWorkflowProvider>
   );
 }

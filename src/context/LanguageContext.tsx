@@ -13,6 +13,7 @@ import { ISSUE_26_EN_MESSAGES, ISSUE_26_ZH_MESSAGES } from "../i18n/issue26Messa
 import { PDF_CONVERSION_EN_MESSAGES, PDF_CONVERSION_ZH_MESSAGES } from "../i18n/pdfConversionMessages";
 import { WATERMARK_EN_MESSAGES, WATERMARK_ZH_MESSAGES } from "../i18n/watermarkMessages";
 import { QR_DESIGNER_EN_MESSAGES, QR_DESIGNER_ZH_MESSAGES } from "../i18n/qrDesignerMessages";
+import { TEXT_WORKFLOW_EN_MESSAGES, TEXT_WORKFLOW_ZH_MESSAGES } from "../i18n/textWorkflowMessages";
 
 export type Locale = "zh-TW" | "en";
 
@@ -69,6 +70,7 @@ function persistLocaleState(locale: Locale): void {
 }
 
 const zhMessages: Record<string, string> = {
+  ...TEXT_WORKFLOW_ZH_MESSAGES,
   ...ISSUE_23_ZH_MESSAGES,
   ...ISSUE_26_ZH_MESSAGES,
   ...PDF_CONVERSION_ZH_MESSAGES,
@@ -868,6 +870,7 @@ const zhMessages: Record<string, string> = {
 };
 
 const enMessages: Record<string, string> = {
+  ...TEXT_WORKFLOW_EN_MESSAGES,
   ...ISSUE_23_EN_MESSAGES,
   ...ISSUE_26_EN_MESSAGES,
   ...PDF_CONVERSION_EN_MESSAGES,

@@ -1,6 +1,9 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ToolPageTemplate } from "../../components/ToolPageTemplate";
 import { TextWorkflowLinks } from "../../components/text/TextWorkflowLinks";
+import { TextWorkflowActions } from "../../components/text/TextWorkflowActions";
+import { TextWorkflowPanel } from "../../components/text/TextWorkflowPanel";
+import { useTextWorkflowDraft } from "../../context/TextWorkflowContext";
 import { useLanguage } from "../../context/LanguageContext";
 import { FILE_TOOLS } from "../../data/tools";
 import { useSeo } from "../../hooks/useSeo";
@@ -15,10 +18,15 @@ import {
 import type { ProcessingState, ToolMeta } from "../../types/tool";
 import { trackEvent } from "../../utils/analytics";
 import { getRelatedTools } from "../../utils/toolHelpers";
+import { downloadBlob } from "../../utils/download";
 
 export type TextToolKind = "word-counter" | "case-converter" | "remove-duplicate-lines" | "sort-lines";
 
 export function TextToolsPage({ kind }: { kind: TextToolKind }): JSX.Element {
+  return <TextToolWorkspace key={kind} kind={kind} />;
+}
+
+function TextToolWorkspace({ kind }: { kind: TextToolKind }): JSX.Element {
   const { t } = useLanguage();
   const tool = FILE_TOOLS.find((item) => item.id === kind) ?? FILE_TOOLS[0];
   const title = t(`tool.${kind}.title`);
@@ -31,20 +39,28 @@ export function TextToolsPage({ kind }: { kind: TextToolKind }): JSX.Element {
   };
   useSeo(toolMeta);
 
-  const [input, setInput] = useState("");
-  const [processing, setProcessing] = useState<ProcessingState>("idle");
+  const workflowTool = kind === "remove-duplicate-lines" || kind === "sort-lines" ? kind : undefined;
+  const [draft, setDraft] = useTextWorkflowDraft(workflowTool);
+  const { input } = draft;
+  const output = draft.output ?? "";
+  const setInput = (value: string): void => setDraft((current) => ({ ...current, input: value, output: null }));
+  const setOutput = (value: string): void => setDraft((current) => ({ ...current, output: value }));
+  const [localProcessing, setProcessing] = useState<ProcessingState>("idle");
   const [error, setError] = useState<string | null>(null);
-  const [output, setOutput] = useState("");
+  const processing: ProcessingState = workflowTool
+    ? error ? "error" : draft.output !== null ? "success" : input ? "ready" : "idle"
+    : localProcessing;
   const [caseMode, setCaseMode] = useState<CaseMode>("upper");
-  const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
-  const [ignoreCase, setIgnoreCase] = useState(true);
+  const sortDirection = draft.options.sortDirection ?? "asc";
+  const ignoreCase = draft.options.ignoreCase ?? true;
   const [stats, setStats] = useState<ReturnType<typeof countTextStats> | null>(null);
+  useEffect(() => { setError(null); }, [draft]);
 
   const relatedTools = getRelatedTools(kind);
   const nextTools = kind === "remove-duplicate-lines"
-    ? [{ label: "Sort Lines", path: "/text/sort-lines" }, { label: "Compare Text", path: "/text/diff" }]
+    ? [{ label: "Compare Text", path: "/text/diff" }]
     : kind === "sort-lines"
-      ? [{ label: "Remove Duplicate Lines", path: "/text/remove-duplicate-lines" }, { label: "Compare Text", path: "/text/diff" }]
+      ? [{ label: "Compare Text", path: "/text/diff" }]
       : [];
   const howItWorks = useMemo(
     () => [0, 1, 2].map((index) => t(`tool.${kind}.how.${index}`)),
@@ -122,6 +138,7 @@ export function TextToolsPage({ kind }: { kind: TextToolKind }): JSX.Element {
       children={{
         workspace: (
           <div className="tool-form">
+            {workflowTool ? <TextWorkflowPanel currentTool={workflowTool} /> : null}
             <label htmlFor={`${kind}-input`}>{t(`tool.${kind}.label.input`)}</label>
             <textarea
               id={`${kind}-input`}
@@ -149,20 +166,20 @@ export function TextToolsPage({ kind }: { kind: TextToolKind }): JSX.Element {
             ) : null}
             {(kind === "remove-duplicate-lines" || kind === "sort-lines") ? (
               <label className="checkbox">
-                <input type="checkbox" checked={ignoreCase} onChange={(event) => setIgnoreCase(event.target.checked)} />
+                <input type="checkbox" checked={ignoreCase} onChange={(event) => setDraft((current) => ({ ...current, output: null, options: { ...current.options, ignoreCase: event.target.checked } }))} />
                 {t("tool.text-tools.option.ignoreCase")}
               </label>
             ) : null}
             {kind === "sort-lines" ? (
               <label htmlFor="sort-direction">
                 {t("tool.sort-lines.label.direction")}
-                <select id="sort-direction" value={sortDirection} onChange={(event) => setSortDirection(event.target.value as SortDirection)}>
+                <select id="sort-direction" value={sortDirection} onChange={(event) => setDraft((current) => ({ ...current, output: null, options: { ...current.options, sortDirection: event.target.value as SortDirection } }))}>
                   <option value="asc">{t("tool.sort-lines.option.asc")}</option>
                   <option value="desc">{t("tool.sort-lines.option.desc")}</option>
                 </select>
               </label>
             ) : null}
-            <button type="button" className="btn primary" onClick={handleProcess} disabled={processing === "processing"}>
+            <button type="button" className="btn primary" onClick={handleProcess} disabled={processing === "processing" || Boolean(workflowTool && !input)}>
               {processing === "processing" ? t("button.processing") : t("button.process")}
             </button>
           </div>
@@ -185,13 +202,18 @@ export function TextToolsPage({ kind }: { kind: TextToolKind }): JSX.Element {
               <pre>{output || t(`tool.${kind}.label.noOutput`)}</pre>
             )}
             <div className="tool-actions">
-              <button type="button" className="btn secondary" onClick={copyResult}>
+              <button type="button" className="btn secondary" onClick={copyResult} disabled={Boolean(workflowTool && !output)}>
                 {t("button.copy")}
               </button>
+              {workflowTool ? (
+                <button type="button" className="btn secondary" disabled={!output} onClick={() => downloadBlob(new Blob([output], { type: "text/plain;charset=utf-8" }), `${kind}.txt`)}>
+                  {t("textWorkflow.download")}
+                </button>
+              ) : null}
             </div>
           </>
         ),
-        nextActions: nextTools.length > 0 ? <TextWorkflowLinks tools={nextTools} /> : undefined,
+        nextActions: workflowTool ? <><TextWorkflowActions source={workflowTool} targets={workflowTool === "remove-duplicate-lines" ? ["sort-lines"] : ["remove-duplicate-lines"]} /><TextWorkflowLinks tools={nextTools} /></> : undefined,
         howItWorks,
         faq,
         relatedTools,
