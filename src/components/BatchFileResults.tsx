@@ -2,7 +2,7 @@ import type { BatchItem } from "../services/batch/batchService";
 import { downloadBlob } from "../utils/download";
 import { useLanguage } from "../context/LanguageContext";
 
-export function BatchFileResults({ items }: { items: BatchItem[] }): JSX.Element {
+export function BatchFileResults({ items, onDownloaded }: { items: BatchItem[]; onDownloaded?: (item: BatchItem) => void }): JSX.Element {
   const { t } = useLanguage();
   return (
     <ul className="batch-file-results" aria-label={t("toolPage.result")}>
@@ -12,7 +12,10 @@ export function BatchFileResults({ items }: { items: BatchItem[] }): JSX.Element
           {item.status === "success" ? (
             <>
               <span>{t("batch.success")}</span>
-              <button type="button" className="btn secondary" onClick={() => downloadBlob(item.result.blob, item.result.fileName)}>
+              <button type="button" className="btn secondary" onClick={() => {
+                downloadBlob(item.result.blob, item.result.fileName);
+                onDownloaded?.(item);
+              }}>
                 {t("batch.downloadFile", { name: item.result.fileName })}
               </button>
             </>

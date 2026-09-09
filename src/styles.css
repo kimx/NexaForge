@@ -4231,6 +4231,40 @@ select:focus {
   color: var(--text-primary);
 }
 
+.privacy-notice__analytics-control {
+  margin-inline-start: 6px;
+  padding: 0;
+  border: 0;
+  color: inherit;
+  background: transparent;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.feedback-prompt {
+  display: grid;
+  gap: 10px;
+}
+
+.feedback-prompt h2,
+.feedback-prompt p {
+  margin: 0;
+}
+
+.feedback-prompt__options {
+  display: grid;
+  gap: 8px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 0.7rem;
+  padding: 12px;
+}
+
+.feedback-prompt__options label {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
 .privacy-notice p,
 .notice p {
   color: var(--text-dim);
