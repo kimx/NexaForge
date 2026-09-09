@@ -68,6 +68,7 @@ const ANALYTICS_PREFERENCE_EVENT = "browser-file-tools:analytics-preference";
 const ANALYTICS_DISABLED_KEY = "nexaforge-analytics-disabled";
 const ANALYTICS_RETENTION_DAYS = 90;
 const SAFE_TOKEN = /^[a-z0-9][a-z0-9-]{0,63}$/;
+const SAFE_CATEGORY = /^[A-Za-z0-9][A-Za-z0-9-]{0,31}$/;
 const SAFE_OPERATION_ID = /^[a-zA-Z0-9][a-zA-Z0-9-]{0,95}$/;
 const SAFE_ERROR_CATEGORY = /^[a-z0-9][a-z0-9._-]{0,31}$/;
 
@@ -147,6 +148,10 @@ function sanitizePayload(payload: TrackPayload): TrackPayload {
       }
     } else if (key === "errorCategory") {
       if (isSafeToken(value, SAFE_ERROR_CATEGORY)) {
+        safe[key] = value;
+      }
+    } else if (key === "category") {
+      if (isSafeToken(value, SAFE_CATEGORY)) {
         safe[key] = value;
       }
     } else if (isSafeToken(value)) {
