@@ -19,6 +19,7 @@
 | `process_success` | 一次處理成功產生結果 | `tool`, `operationId`, `durationMs`, `resultCount` |
 | `process_failed` | 一次處理失敗 | `tool`, `operationId`, `durationMs`, `errorCategory` |
 | `copy_success` | 剪貼簿 API 成功寫入 | `tool`, `operationId` |
+| `copy_failed` | 剪貼簿 API 失敗 | `tool`, `operationId`, `errorCategory` |
 | `download_triggered` | 瀏覽器下載提示已被觸發 | `tool`, `operationId` |
 | `workflow_continue` | 結果接續到下一個文字工具 | `sourceTool`, `targetTool`, `action` |
 | `feedback_submitted` | 固定選項回饋送出 | `tool`, `feedback`, `problem` |

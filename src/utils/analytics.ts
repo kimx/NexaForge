@@ -382,6 +382,12 @@ export function aggregateAnalyticsEvents(events: readonly AnalyticsEvent[]): Ana
       return;
     }
 
+    if (event.name === "copy_failed") {
+      const category = event.payload.errorCategory ?? "copy";
+      row.errorCategories[category] = (row.errorCategories[category] ?? 0) + 1;
+      return;
+    }
+
     if (event.name === "download" || event.name === "download_triggered") {
       if (!state.downloads.has(operation)) {
         state.downloads.add(operation);
