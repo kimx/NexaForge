@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { TextResultActions } from "../../components/text/TextResultActions";
 import { TextWorkflowLinks } from "../../components/text/TextWorkflowLinks";
 import { TextWorkflowActions } from "../../components/text/TextWorkflowActions";
@@ -12,6 +12,7 @@ import { cleanText, type TextCleanerOptions } from "../../services/text/textWork
 import { countTextStats } from "../../services/text/textService";
 import type { ProcessingState, ToolMeta } from "../../types/tool";
 import { getRelatedTools } from "../../utils/toolHelpers";
+import { createOperationId, trackEvent } from "../../utils/analytics";
 
 const DEFAULT_OPTIONS: TextCleanerOptions = {
   trimLines: false,
@@ -31,15 +32,20 @@ const NEXT_TOOLS = [
 ];
 
 export function TextCleanerPage(): JSX.Element {
-  const { t } = useLanguage();
+  const { locale, t } = useLanguage();
   const [draft, setDraft] = useTextWorkflowDraft("text-cleaner");
   const { clear } = useTextWorkflow();
   const { input } = draft;
   const output = draft.output ?? "";
   const outputRef = useRef<HTMLTextAreaElement>(null);
+  const operationRef = useRef<{ id: string; startedAt: number } | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const options = draft.options.cleaner ?? DEFAULT_OPTIONS;
-  const processing: ProcessingState = draft.output !== null ? "success" : "idle";
-  const setInput = (value: string): void => setDraft((current) => ({ ...current, input: value, output: null }));
+  const processing: ProcessingState = error ? "error" : draft.output !== null ? "success" : "idle";
+  const setInput = (value: string): void => {
+    setError(null);
+    setDraft((current) => ({ ...current, input: value, output: null }));
+  };
   const tool = FILE_TOOLS.find((item) => item.id === "text-cleaner") ?? FILE_TOOLS[0];
   const title = t("tool.text-cleaner.title");
   const meta: ToolMeta = {
@@ -51,11 +57,33 @@ export function TextCleanerPage(): JSX.Element {
   useSeo(meta);
 
   const updateOption = (key: keyof TextCleanerOptions, checked: boolean): void => {
+    setError(null);
     setDraft((current) => ({ ...current, output: null, options: { ...current.options, cleaner: { ...options, [key]: checked } } }));
   };
   const clean = (): void => {
-    const result = cleanText(input, options);
-    setDraft((current) => ({ ...current, output: result.text }));
+    const operation = { id: createOperationId("text-cleaner"), startedAt: Date.now() };
+    operationRef.current = operation;
+    setError(null);
+    trackEvent("process_start", { tool: "text-cleaner", operationId: operation.id, language: locale });
+    try {
+      const result = cleanText(input, options);
+      setDraft((current) => ({ ...current, output: result.text }));
+      trackEvent("process_success", {
+        tool: "text-cleaner",
+        operationId: operation.id,
+        durationMs: Date.now() - operation.startedAt,
+        language: locale,
+      });
+    } catch {
+      setError(t("error.processingFailed"));
+      trackEvent("process_failed", {
+        tool: "text-cleaner",
+        operationId: operation.id,
+        durationMs: Date.now() - operation.startedAt,
+        errorCategory: "processing",
+        language: locale,
+      });
+    }
   };
 
   return (
@@ -98,7 +126,7 @@ export function TextCleanerPage(): JSX.Element {
             <label htmlFor="text-cleaner-output">{t("textWorkflow.output")}
               <textarea id="text-cleaner-output" ref={outputRef} value={output} readOnly rows={10} spellCheck={false} />
             </label>
-            <TextResultActions text={output} filename="cleaned-text.txt" onClear={clear} onUseAsInput={setInput} resultRef={outputRef} labels={{ copy: t("textWorkflow.copy"), download: t("textWorkflow.download"), clear: t("textWorkflow.clear"), useAsInput: t("textWorkflow.useAsInput") }} />
+            <TextResultActions text={output} filename="cleaned-text.txt" onClear={clear} onUseAsInput={setInput} resultRef={outputRef} tool="text-cleaner" operationId={operationRef.current?.id} labels={{ copy: t("textWorkflow.copy"), download: t("textWorkflow.download"), clear: t("textWorkflow.clear"), useAsInput: t("textWorkflow.useAsInput") }} />
           </div>
         ),
         nextActions: <><TextWorkflowActions source="text-cleaner" targets={["remove-duplicate-lines", "sort-lines"]} /><TextWorkflowLinks tools={NEXT_TOOLS} /></>,

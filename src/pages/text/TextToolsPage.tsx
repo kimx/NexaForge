@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ToolPageTemplate } from "../../components/ToolPageTemplate";
 import { TextWorkflowLinks } from "../../components/text/TextWorkflowLinks";
 import { TextWorkflowActions } from "../../components/text/TextWorkflowActions";
@@ -16,7 +16,7 @@ import {
   type SortDirection,
 } from "../../services/text/textService";
 import type { ProcessingState, ToolMeta } from "../../types/tool";
-import { trackEvent } from "../../utils/analytics";
+import { createOperationId, trackEvent } from "../../utils/analytics";
 import { getRelatedTools } from "../../utils/toolHelpers";
 import { downloadBlob } from "../../utils/download";
 
@@ -27,7 +27,7 @@ export function TextToolsPage({ kind }: { kind: TextToolKind }): JSX.Element {
 }
 
 function TextToolWorkspace({ kind }: { kind: TextToolKind }): JSX.Element {
-  const { t } = useLanguage();
+  const { locale, t } = useLanguage();
   const tool = FILE_TOOLS.find((item) => item.id === kind) ?? FILE_TOOLS[0];
   const title = t(`tool.${kind}.title`);
   const description = t(`tool.${kind}.description`);
@@ -54,6 +54,7 @@ function TextToolWorkspace({ kind }: { kind: TextToolKind }): JSX.Element {
   const sortDirection = draft.options.sortDirection ?? "asc";
   const ignoreCase = draft.options.ignoreCase ?? true;
   const [stats, setStats] = useState<ReturnType<typeof countTextStats> | null>(null);
+  const operationRef = useRef<{ id: string; startedAt: number } | null>(null);
   useEffect(() => { setError(null); }, [draft]);
 
   const relatedTools = getRelatedTools(kind);
@@ -72,16 +73,24 @@ function TextToolWorkspace({ kind }: { kind: TextToolKind }): JSX.Element {
   );
 
   const handleProcess = (): void => {
+    const operation = { id: createOperationId(kind), startedAt: Date.now() };
+    operationRef.current = operation;
+    trackEvent("process_start", { tool: kind, operationId: operation.id, language: locale });
     if (!input) {
       setError(t("error.selectText"));
       setProcessing("error");
+      trackEvent("process_failed", {
+        tool: kind,
+        operationId: operation.id,
+        durationMs: Date.now() - operation.startedAt,
+        errorCategory: "validation",
+        language: locale,
+      });
       return;
     }
 
     setError(null);
     setProcessing("processing");
-    trackEvent("process_start", { tool: kind });
-
     try {
       if (kind === "word-counter") {
         setStats(countTextStats(input));
@@ -97,11 +106,22 @@ function TextToolWorkspace({ kind }: { kind: TextToolKind }): JSX.Element {
         setStats(null);
       }
       setProcessing("success");
-      trackEvent("process_success", { tool: kind });
+      trackEvent("process_success", {
+        tool: kind,
+        operationId: operation.id,
+        durationMs: Date.now() - operation.startedAt,
+        language: locale,
+      });
     } catch (processError) {
       setError(t("error.processingFailed"));
       setProcessing("error");
-      trackEvent("process_failed", { tool: kind });
+      trackEvent("process_failed", {
+        tool: kind,
+        operationId: operation.id,
+        durationMs: Date.now() - operation.startedAt,
+        errorCategory: "processing",
+        language: locale,
+      });
       console.error(processError);
     }
   };
@@ -119,13 +139,16 @@ function TextToolWorkspace({ kind }: { kind: TextToolKind }): JSX.Element {
             `${t("tool.word-counter.label.nonEmptyLines")}: ${stats.nonEmptyLines}`,
           ].join("\n")
         );
+        trackEvent("copy_success", { tool: kind, operationId: operationRef.current?.id, language: locale });
         return;
       }
       if (!output) return;
       await navigator.clipboard.writeText(output);
+      trackEvent("copy_success", { tool: kind, operationId: operationRef.current?.id, language: locale });
     } catch {
       setError(t("error.copyFailed"));
       setProcessing("error");
+      trackEvent("copy_failed", { tool: kind, operationId: operationRef.current?.id, errorCategory: "copy", language: locale });
     }
   };
 
@@ -206,7 +229,14 @@ function TextToolWorkspace({ kind }: { kind: TextToolKind }): JSX.Element {
                 {t("button.copy")}
               </button>
               {workflowTool ? (
-                <button type="button" className="btn secondary" disabled={!output} onClick={() => downloadBlob(new Blob([output], { type: "text/plain;charset=utf-8" }), `${kind}.txt`)}>
+                <button type="button" className="btn secondary" disabled={!output} onClick={() => {
+                  try {
+                    downloadBlob(new Blob([output], { type: "text/plain;charset=utf-8" }), `${kind}.txt`);
+                    trackEvent("download_triggered", { tool: kind, operationId: operationRef.current?.id, language: locale });
+                  } catch {
+                    // The browser owns the save prompt; a failed trigger is not a saved file.
+                  }
+                }}>
                   {t("textWorkflow.download")}
                 </button>
               ) : null}

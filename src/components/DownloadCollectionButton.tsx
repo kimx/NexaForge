@@ -8,9 +8,10 @@ interface DownloadCollectionButtonProps {
   results: FileProcessResult[];
   fileName: string;
   disabled?: boolean;
+  onDownloaded?: () => void;
 }
 
-export function DownloadCollectionButton({ results, fileName, disabled }: DownloadCollectionButtonProps): JSX.Element {
+export function DownloadCollectionButton({ results, fileName, disabled, onDownloaded }: DownloadCollectionButtonProps): JSX.Element {
   const { t } = useLanguage();
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState(false);
@@ -21,6 +22,7 @@ export function DownloadCollectionButton({ results, fileName, disabled }: Downlo
         try {
           const archive = await createZip(results, fileName);
           downloadBlob(archive.blob, archive.fileName);
+          onDownloaded?.();
         } catch (cause) {
           console.error(cause); setError(true);
         } finally {

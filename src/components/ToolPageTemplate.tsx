@@ -11,6 +11,7 @@ import { localizePath } from "../routing/localePaths";
 import { getSeoLandingContent } from "../seo/landingPages";
 import { SeoLandingContent } from "./SeoLandingContent";
 import { RelatedTools } from "./RelatedTools";
+import { FeedbackPrompt } from "./FeedbackPrompt";
 
 interface ToolPageTemplateProps {
   tool: ToolDefinition;
@@ -191,6 +192,8 @@ export function ToolPageTemplate({
             </ol>
           </section>
         )}
+
+        <FeedbackPrompt tool={tool.id} />
 
         <AdSlot
           position="tool-result"

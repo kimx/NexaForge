@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type RefObject } from "react";
 import { useLanguage } from "../../context/LanguageContext";
+import { trackEvent } from "../../utils/analytics";
 import { downloadBlob } from "../../utils/download";
 
 interface TextResultActionsProps {
@@ -16,6 +17,8 @@ interface TextResultActionsProps {
     useAsInput: string;
   }>;
   resultRef?: RefObject<HTMLElement>;
+  tool?: string;
+  operationId?: string;
 }
 
 export function TextResultActions({
@@ -25,6 +28,8 @@ export function TextResultActions({
   onUseAsInput,
   labels,
   resultRef,
+  tool,
+  operationId,
 }: TextResultActionsProps): JSX.Element {
   const { locale, t } = useLanguage();
   const [copyStatus, setCopyStatus] = useState<"idle" | "success" | "error">("idle");
@@ -53,6 +58,7 @@ export function TextResultActions({
       if (attempt !== copyAttempt.current) return;
       setCopyStatus("success");
       setCopyMessage(labels?.copySuccess ?? t("textWorkflow.copySuccess"));
+      trackEvent("copy_success", { tool, operationId });
     } catch (error) {
       if (attempt !== copyAttempt.current) return;
       const reason = error instanceof Error && error.message === t("textWorkflow.copyUnavailable")
@@ -62,6 +68,7 @@ export function TextResultActions({
           : t("textWorkflow.copyUnknown");
       setCopyStatus("error");
       setCopyMessage(t("textWorkflow.copyFailure", { reason }));
+      trackEvent("copy_failed", { tool, operationId, errorCategory: "copy" });
     }
   };
 
@@ -84,7 +91,12 @@ export function TextResultActions({
   };
 
   const handleDownload = (): void => {
-    downloadBlob(new Blob([text], { type: "text/plain;charset=utf-8" }), filename);
+    try {
+      downloadBlob(new Blob([text], { type: "text/plain;charset=utf-8" }), filename);
+      trackEvent("download_triggered", { tool, operationId });
+    } catch {
+      // Downloads are best-effort and the browser owns the actual save prompt.
+    }
   };
 
   return (

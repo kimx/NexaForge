@@ -12,14 +12,14 @@ import { useSeo } from "../../hooks/useSeo";
 import { compressImage } from "../../services/image/imageService";
 import { MAX_FILE_BYTES, runBatch, validateImageBatch, type BatchItem } from "../../services/batch/batchService";
 import { getRelatedTools } from "../../utils/toolHelpers";
-import { trackEvent } from "../../utils/analytics";
+import { createOperationId, trackEvent } from "../../utils/analytics";
 import type { ProcessingState, ToolMeta } from "../../types/tool";
 import { useSeoLanding } from "../../hooks/useSeoLanding";
 
 const IMAGE_ACCEPT = "image/jpeg,image/png,image/webp";
 
 export function ImageCompressPage(): JSX.Element {
-  const { t } = useLanguage();
+  const { locale, t } = useLanguage();
   const landing = useSeoLanding();
   const presetFormat = landing?.definition.preset.outputFormat ?? "jpeg";
   const sourceFormat = landing?.definition.preset.sourceFormat;
@@ -37,6 +37,7 @@ export function ImageCompressPage(): JSX.Element {
   const [error, setError] = useState<string | null>(null);
   const [selectionValid, setSelectionValid] = useState(true);
   const operationRef = useRef(0);
+  const analyticsOperationRef = useRef<{ id: string; startedAt: number } | null>(null);
   const tool = FILE_TOOLS.find((item) => item.id === "image-compress") ?? FILE_TOOLS[0];
   const title = t("tool.image-compress.title");
   const meta: ToolMeta = {
@@ -65,12 +66,33 @@ export function ImageCompressPage(): JSX.Element {
   const process = async (): Promise<void> => {
     if (!files.length || !selectionValid) return;
     const operation = operationRef.current + 1; operationRef.current = operation;
-    setItems([]); setCompleted(0); setError(null); setProcessing("processing"); trackEvent("process_start", { tool: "image-compress" });
+    const analyticsOperation = { id: createOperationId("image-compress"), startedAt: Date.now() };
+    analyticsOperationRef.current = analyticsOperation;
+    setItems([]); setCompleted(0); setError(null); setProcessing("processing");
+    trackEvent("process_start", { tool: "image-compress", operationId: analyticsOperation.id, language: locale });
     const batch = await runBatch(files, (file) => compressImage(file, { quality: quality / 100, format }), { concurrency: 2, onProgress: (done) => { if (operationRef.current === operation) setCompleted(done); } });
     if (operationRef.current !== operation) return;
     setItems(batch.items);
-    if (!batch.successful) { setError(t("error.processingFailed")); setProcessing("error"); trackEvent("process_failed", { tool: "image-compress" }); }
-    else { setProcessing("success"); trackEvent("process_success", { tool: "image-compress" }); }
+    if (!batch.successful) {
+      setError(t("error.processingFailed"));
+      setProcessing("error");
+      trackEvent("process_failed", {
+        tool: "image-compress",
+        operationId: analyticsOperation.id,
+        durationMs: Date.now() - analyticsOperation.startedAt,
+        errorCategory: "processing",
+        language: locale,
+      });
+    } else {
+      setProcessing("success");
+      trackEvent("process_success", {
+        tool: "image-compress",
+        operationId: analyticsOperation.id,
+        durationMs: Date.now() - analyticsOperation.startedAt,
+        resultCount: batch.successful,
+        language: locale,
+      });
+    }
   };
   const howItWorks = useMemo(() => [0, 1, 2, 3].map((index) => t(`tool.image-compress.how.${index}`)), [t]);
   const faq = useMemo(() => [0, 1].map((index) => ({ q: t(`tool.image-compress.faq.${index}.question`), a: t(`tool.image-compress.faq.${index}.answer`) })), [t]);
@@ -78,7 +100,7 @@ export function ImageCompressPage(): JSX.Element {
     workflow={{ state: processing, error, progress: files.length ? (completed / files.length) * 100 : 0, onRetry: process, onReprocess: process }} children={{
       workspace: <><FileDropzone label={t("label.dropImage")} accept={imageAccept} onFiles={selectFiles} onRejectedFiles={(rejections) => { setError(rejections[0]?.message ?? t("error.invalidFile")); setProcessing("error"); setSelectionValid(false); }} multiple maxSize={MAX_FILE_BYTES} compact={files.length > 0} /><FileInfo files={files} mode="multi" onClear={clearSelection} compact={files.length > 0} /></>,
       options: <div className="tool-form"><label>{t("label.outputFormat")}<select value={format} onChange={(event) => { setFormat(event.target.value as "jpeg" | "png" | "webp"); clearOutputs(); }}><option value="jpeg">JPG</option><option value="png">PNG</option><option value="webp">WebP</option></select></label><label>{t("label.quality")}: {quality}<input type="range" min={1} max={100} value={quality} onChange={(event) => { setQuality(Number(event.target.value)); clearOutputs(); }} /></label><button type="button" className="btn primary" disabled={!files.length || !selectionValid || processing === "processing"} aria-busy={processing === "processing"} onClick={process}>{processing === "processing" ? t("button.processing") : t("button.process")}</button></div>,
-      result: <>{items.length ? <><p>{t("batch.progress", { completed: items.length, total: files.length })}</p><BatchFileResults items={items} />{singleResult ? <SizeComparison originalSize={files[0]?.size ?? 0} outputSize={singleResult.size} /> : null}<DownloadCollectionButton results={successes} fileName="compressed-images.zip" disabled={processing === "processing"} />{singleResult ? <details className="result-preview-disclosure"><summary>{t("label.preview")}</summary><img src={previewUrl} alt={t("label.preview")} className="preview-image" /></details> : null}</> : <p>{t("label.noResult")}</p>}</>,
+      result: <>{items.length ? <><p>{t("batch.progress", { completed: items.length, total: files.length })}</p><BatchFileResults items={items} onDownloaded={() => trackEvent("download_triggered", { tool: "image-compress", operationId: analyticsOperationRef.current?.id, language: locale })} />{singleResult ? <SizeComparison originalSize={files[0]?.size ?? 0} outputSize={singleResult.size} /> : null}<DownloadCollectionButton results={successes} fileName="compressed-images.zip" disabled={processing === "processing"} onDownloaded={() => trackEvent("download_triggered", { tool: "image-compress", operationId: analyticsOperationRef.current?.id, language: locale })} />{singleResult ? <details className="result-preview-disclosure"><summary>{t("label.preview")}</summary><img src={previewUrl} alt={t("label.preview")} className="preview-image" /></details> : null}</> : <p>{t("label.noResult")}</p>}</>,
       howItWorks, faq, relatedTools: getRelatedTools("image-compress"),
     }} />;
 }

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useLanguage, useLocalizedToolMeta } from "../../context/LanguageContext";
 import { useTextWorkflow, type TextWorkflowToolId } from "../../context/TextWorkflowContext";
 import { localizePath } from "../../routing/localePaths";
+import { trackEvent } from "../../utils/analytics";
 
 export function TextWorkflowActions({ source, targets }: { source: TextWorkflowToolId; targets: readonly TextWorkflowToolId[] }): JSX.Element {
   const { t, locale } = useLanguage();
@@ -20,6 +21,12 @@ export function TextWorkflowActions({ source, targets }: { source: TextWorkflowT
 
   const go = (target: TextWorkflowToolId, replace: boolean): void => {
     if (!output) return;
+    trackEvent("workflow_continue", {
+      sourceTool: source,
+      targetTool: target,
+      action: replace ? "replace" : "keep",
+      language: locale,
+    });
     if (replace) transfer(source, target);
     navigate(localizePath(`/text/${target}`, locale));
   };
