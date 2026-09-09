@@ -65,6 +65,9 @@ const CronBuilderPage = lazy(() =>
 const UnixTimestampPage = lazy(() =>
   import("./pages/developer/UnixTimestampPage").then((module) => ({ default: module.UnixTimestampPage }))
 );
+const LocalTimeConverterPage = lazy(() =>
+  import("./pages/developer/LocalTimeConverterPage").then((module) => ({ default: module.LocalTimeConverterPage }))
+);
 const UrlParserPage = lazy(() =>
   import("./pages/developer/UrlParserPage").then((module) => ({ default: module.UrlParserPage }))
 );
@@ -278,6 +281,7 @@ const APP_ROUTES: AppRoute[] = [
   { path: "/developer/jwt-decoder", element: <JwtDecoderPage /> },
   { path: "/developer/url-encoder", element: <DeveloperToolsPage kind="url-encoder" /> },
   { path: "/developer/unix-timestamp", element: <UnixTimestampPage /> },
+  { path: "/developer/local-time", element: <LocalTimeConverterPage /> },
   { path: "/developer/json-yaml", element: <LegacyYamlJsonRedirect /> },
   { path: "/developer/jsonpath-tester", element: <DeveloperJsonPathTesterPage /> },
   { path: "/developer/jsonpath", element: <DeveloperJsonPathTesterPage /> },
