@@ -163,12 +163,13 @@ function sanitizePayload(payload: TrackPayload): TrackPayload {
 }
 
 function createEvent(name: ToolEventName, payload: TrackPayload): AnalyticsEvent {
+  const safePayload = sanitizePayload(payload);
   return {
     id: createOperationId("event"),
     name,
-    payload: sanitizePayload(payload),
+    payload: safePayload,
     at: Date.now(),
-    language: payload.language ?? currentLanguage(),
+    language: safePayload.language ?? currentLanguage(),
   };
 }
 

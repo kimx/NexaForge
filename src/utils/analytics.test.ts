@@ -47,6 +47,7 @@ describe("trackEvent", () => {
       tool: "text-cleaner",
       operationId: "operation-1",
       durationMs: 12,
+      language: "secret",
       fileName: "secret.txt",
       fileContent: "private content",
     } as never);
@@ -60,6 +61,7 @@ describe("trackEvent", () => {
     });
     expect(JSON.stringify(event.detail)).not.toContain("secret.txt");
     expect(JSON.stringify(event.detail)).not.toContain("private content");
+    expect(JSON.stringify(event.detail)).not.toContain('"language":"secret"');
   });
 
   it("does not let an unavailable collector affect event tracking", async () => {
