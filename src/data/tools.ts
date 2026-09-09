@@ -461,6 +461,15 @@ export const FILE_TOOLS: ToolDefinition[] = [
     keywords: ["developer", "timestamp", "epoch", "date", "time"],
   },
   {
+    id: "local-time-converter",
+    title: "Local Time Converter",
+    description: "Convert ISO 8601 and UTC times to your browser's local time.",
+    path: "/developer/local-time",
+    category: "Developer",
+    aliases: ["local time", "timezone converter", "utc to local", "iso time converter"],
+    keywords: ["developer", "time", "timezone", "utc", "iso 8601", "offset"],
+  },
+  {
     id: "json-yaml",
     title: "YAML ↔ JSON Converter",
     description: "Convert common JSON and YAML data locally.",
@@ -597,6 +606,7 @@ export const TOOL_RELATIONSHIPS: Record<string, string[]> = {
   "base64": ["json-formatter", "url-encoder", "hash", "uuid"],
   "url-encoder": ["base64", "url-parser", "unix-timestamp", "json-formatter"],
   "unix-timestamp": ["uuid", "url-encoder", "json-formatter", "hash"],
+  "local-time-converter": ["unix-timestamp", "cron-builder", "url-encoder", "uuid"],
 };
 
 export const TOOLS_BY_CATEGORY = FILE_TOOLS.reduce(
