@@ -58,10 +58,11 @@ export function ImageCompressPage(): JSX.Element {
   const singleResult = files.length === 1 ? successes[0] : undefined;
   const previewUrl = useBlobUrl(singleResult?.blob);
   const targetKb = targetPreset === "custom" ? Number(customTarget.trim()) : Number(targetPreset);
-  const targetError = mode === "target" && (!customTarget.trim() && targetPreset === "custom" || !Number.isFinite(targetKb) || targetKb <= 0)
+  const computedTargetBytes = targetKb * 1024;
+  const targetError = mode === "target" && (!customTarget.trim() && targetPreset === "custom" || !Number.isFinite(targetKb) || !Number.isFinite(computedTargetBytes) || targetKb <= 0)
     ? t("image-compress.validation.target")
     : null;
-  const targetBytes = targetError || mode !== "target" ? undefined : targetKb * 1024;
+  const targetBytes = targetError || mode !== "target" ? undefined : computedTargetBytes;
   const resizeAvailable = mode === "target" && items.some((item) => item.status === "success" && item.result.targetStatus === "resize-available");
   const failedCount = items.filter((item) => item.status === "error").length;
   const invalidateOperation = (): void => {
