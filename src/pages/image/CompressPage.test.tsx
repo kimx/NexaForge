@@ -132,6 +132,8 @@ describe("ImageCompressPage", () => {
     expect(screen.getByRole("alert")).toHaveTextContent("Enter a number greater than 0.");
     expect(screen.getByRole("button", { name: "Process" })).toBeDisabled();
 
+    fireEvent.change(customInput, { target: { value: "not-a-number" } });
+    expect(screen.getByRole("alert")).toHaveTextContent("Enter a number greater than 0.");
     fireEvent.change(customInput, { target: { value: "-1" } });
     expect(screen.getByRole("alert")).toHaveTextContent("Enter a number greater than 0.");
     fireEvent.change(customInput, { target: { value: "25" } });
