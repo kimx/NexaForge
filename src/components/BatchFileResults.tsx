@@ -1,8 +1,17 @@
 import type { BatchItem } from "../services/batch/batchService";
 import { downloadBlob } from "../utils/download";
 import { useLanguage } from "../context/LanguageContext";
+import { formatFileSize } from "../utils/fileSize";
 
-export function BatchFileResults({ items, onDownloaded }: { items: BatchItem[]; onDownloaded?: (item: BatchItem) => void }): JSX.Element {
+export function BatchFileResults({
+  items,
+  onDownloaded,
+  showImageDetails = false,
+}: {
+  items: BatchItem[];
+  onDownloaded?: (item: BatchItem) => void;
+  showImageDetails?: boolean;
+}): JSX.Element {
   const { t } = useLanguage();
   return (
     <ul className="batch-file-results" aria-label={t("toolPage.result")}>
@@ -11,7 +20,18 @@ export function BatchFileResults({ items, onDownloaded }: { items: BatchItem[]; 
           <span className="batch-file-results__name">{item.file.name}</span>
           {item.status === "success" ? (
             <>
-              <span>{t("batch.success")}</span>
+              <div className="batch-file-results__details">
+                <span>{item.result.targetStatus ? t(`image-compress.status.${item.result.targetStatus}`) : t("batch.success")}</span>
+                {showImageDetails ? (
+                  <>
+                    <span>{t("label.originalSize")}: {formatFileSize(item.file.size)} · {t("label.outputSize")}: {formatFileSize(item.result.size)}</span>
+                    {item.result.width && item.result.height ? (
+                      <span>{t("image-compress.dimensions")}: {item.result.originalWidth ?? item.result.width} × {item.result.originalHeight ?? item.result.height} → {item.result.width} × {item.result.height}</span>
+                    ) : null}
+                    {item.result.targetBytes ? <span>{t("image-compress.targetLimit")}: {formatFileSize(item.result.targetBytes)}</span> : null}
+                  </>
+                ) : null}
+              </div>
               <button type="button" className="btn secondary" onClick={() => {
                 downloadBlob(item.result.blob, item.result.fileName);
                 onDownloaded?.(item);
