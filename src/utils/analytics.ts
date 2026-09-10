@@ -1,6 +1,7 @@
 export type ToolEventName =
   | "tool_open"
   | "tool_search"
+  | "task_launch"
   | "process_start"
   | "process_success"
   | "process_failed"
@@ -18,6 +19,7 @@ export type FeedbackProblem = "processing" | "copy" | "download" | "usability";
 
 export interface TrackPayload {
   tool?: string;
+  taskId?: string;
   action?: string;
   category?: string;
   queryLength?: number;
@@ -80,6 +82,7 @@ const COLLECTION_EVENT_NAMES: Partial<Record<ToolEventName, string>> = {
 
 const PAYLOAD_KEYS = new Set<keyof TrackPayload>([
   "tool",
+  "taskId",
   "action",
   "category",
   "queryLength",
@@ -140,6 +143,10 @@ function sanitizePayload(payload: TrackPayload): TrackPayload {
       }
     } else if (key === "problem") {
       if (value === "processing" || value === "copy" || value === "download" || value === "usability") {
+        safe[key] = value;
+      }
+    } else if (key === "taskId") {
+      if (isSafeToken(value)) {
         safe[key] = value;
       }
     } else if (key === "operationId") {
