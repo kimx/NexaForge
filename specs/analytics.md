@@ -15,6 +15,7 @@
 | 事件 | 意義 | 主要欄位 |
 | --- | --- | --- |
 | `tool_open` | 工具頁完成開啟 | `tool` |
+| `task_launch` | 首頁任務入口啟動 | `taskId`, `tool`, `action` |
 | `process_start` | 使用者開始一次處理 | `tool`, `operationId` |
 | `process_success` | 一次處理成功產生結果 | `tool`, `operationId`, `durationMs`, `resultCount` |
 | `process_failed` | 一次處理失敗 | `tool`, `operationId`, `durationMs`, `errorCategory` |
@@ -23,6 +24,8 @@
 | `download_triggered` | 瀏覽器下載提示已被觸發 | `tool`, `operationId` |
 | `workflow_continue` | 結果接續到下一個文字工具 | `sourceTool`, `targetTool`, `action` |
 | `feedback_submitted` | 固定選項回饋送出 | `tool`, `feedback`, `problem` |
+
+首頁搜尋只送出 `category`、`queryLength` 和 `resultCount`；任務入口只送出白名單中的任務識別碼與啟動動作，不會記錄搜尋原文或輸入內容。
 
 `download_triggered` 只是觀測代理，不代表檔案已寫入磁碟。複製失敗使用 `copy_failed`，不計入 `copy_success`；既有的 `download`、`workflow_ready` 和 `result_action_used` 名稱會在收集端映射到相同的相容事件。
 

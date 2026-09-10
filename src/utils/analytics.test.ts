@@ -64,6 +64,27 @@ describe("trackEvent", () => {
     expect(JSON.stringify(event.detail)).not.toContain('"language":"secret"');
   });
 
+  it("keeps task launch identifiers and actions in the analytics allowlist", () => {
+    const listener = vi.fn();
+    window.addEventListener("browser-file-tools:event", listener);
+
+    trackEvent("task_launch", {
+      taskId: "list-cleanup",
+      tool: "text-cleaner",
+      action: "open",
+      fileContent: "private content",
+    } as never);
+
+    window.removeEventListener("browser-file-tools:event", listener);
+    const event = listener.mock.calls[0]?.[0] as CustomEvent;
+    expect(event.detail.payload).toEqual({
+      taskId: "list-cleanup",
+      tool: "text-cleaner",
+      action: "open",
+    });
+    expect(JSON.stringify(event.detail)).not.toContain("private content");
+  });
+
   it("does not let an unavailable collector affect event tracking", async () => {
     vi.stubEnv("VITE_ANALYTICS_ENDPOINT", "https://collector.invalid/events");
     vi.spyOn(globalThis, "fetch").mockRejectedValue(new Error("offline"));

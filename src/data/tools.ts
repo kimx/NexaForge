@@ -25,7 +25,7 @@ export const FILE_TOOLS: ToolDefinition[] = [
     description: "Batch resize JPG, PNG, or WebP directly in the browser.",
     path: "/image/resize",
     category: "Image",
-    aliases: ["resize image", "scale image", "change size"],
+    aliases: ["resize image", "scale image", "change size", "照片縮小", "圖片縮小", "圖片變小"],
     keywords: ["photo", "image", "jpeg", "png", "webp"],
   },
   {
@@ -43,7 +43,7 @@ export const FILE_TOOLS: ToolDefinition[] = [
     description: "Batch compress images with quality control and compare file sizes.",
     path: "/image/compress",
     category: "Image",
-    aliases: ["compress image", "reduce image size", "optimize photo"],
+    aliases: ["compress image", "reduce image size", "optimize photo", "圖片變小", "照片壓縮", "縮小圖片"],
     keywords: ["photo", "jpeg", "png", "webp", "quality"],
   },
   {
@@ -133,7 +133,7 @@ export const FILE_TOOLS: ToolDefinition[] = [
     description: "Merge many PDF files and download a single file.",
     path: "/pdf/merge",
     category: "PDF",
-    aliases: ["combine pdf", "merge pdf", "append pdf"],
+    aliases: ["combine pdf", "merge pdf", "append pdf", "PDF 合在一起", "PDF合在一起"],
     keywords: ["document", "pdf", "combine", "stitch"],
   },
   {
@@ -322,7 +322,7 @@ export const FILE_TOOLS: ToolDefinition[] = [
     description: "Keep the first copy of each line and remove repeats.",
     path: "/text/remove-duplicate-lines",
     category: "Text",
-    aliases: ["dedupe lines", "unique lines", "remove repeated lines"],
+    aliases: ["dedupe lines", "unique lines", "remove repeated lines", "名單去重", "名單重複移除", "dedupe list"],
     keywords: ["text", "lines", "dedupe", "cleanup"],
   },
   {

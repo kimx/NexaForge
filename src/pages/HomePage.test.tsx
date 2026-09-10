@@ -53,7 +53,7 @@ describe("HomePage task-first hierarchy", () => {
     renderWithProviders(<HomePage />);
 
     const featured = screen.getByTestId("featured-tools");
-    expect(within(featured).getByRole("heading", { level: 2, name: "Popular Tools" })).toBeVisible();
+    expect(within(featured).getByRole("heading", { level: 2, name: "Featured Tools" })).toBeVisible();
     expect(within(featured).getAllByRole("article")).toHaveLength(8);
     expect(within(featured).queryByRole("heading", { name: "SVG Optimizer" })).not.toBeInTheDocument();
   });
@@ -79,7 +79,7 @@ describe("HomePage task-first hierarchy", () => {
     renderWithProviders(<HomePage />);
 
     expect(screen.getByRole("heading", { level: 2, name: "Recent Tools" })).toBeVisible();
-    expect(screen.getByRole("heading", { level: 2, name: "Popular Tools" })).toBeVisible();
+    expect(screen.getByRole("heading", { level: 2, name: "Featured Tools" })).toBeVisible();
     expect(screen.queryByRole("heading", { level: 2, name: "Browse by Category" })).not.toBeInTheDocument();
     expect(screen.queryByTestId("category-browser")).not.toBeInTheDocument();
   });
@@ -108,6 +108,59 @@ describe("HomePage task-first hierarchy", () => {
     fireEvent.click(qrCategoryButtons[0]);
     expect(screen.getByRole("heading", { name: "QR Code" })).toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "Image Resize" })).not.toBeInTheDocument();
+  });
+
+  it("offers task entries that explain the result and open registered tools", () => {
+    renderWithProviders(<HomePage />);
+
+    const taskEntries = screen.getByTestId("task-entries");
+    expect(within(taskEntries).getByRole("heading", { name: "Deliver a document or image" })).toBeVisible();
+    expect(within(taskEntries).getByText("Turn multiple images into one PDF ready to share or deliver.")).toBeVisible();
+    expect(within(taskEntries).getByRole("link", { name: "Open Image to PDF" })).toHaveAttribute(
+      "href",
+      "/en/image/to-pdf"
+    );
+    expect(within(taskEntries).getByRole("link", { name: "Open JSON Formatter" })).toHaveAttribute(
+      "href",
+      "/en/data/json-formatter"
+    );
+    expect(within(taskEntries).getByRole("link", { name: "Open Text Cleaner" })).toHaveAttribute(
+      "href",
+      "/en/text/text-cleaner"
+    );
+  });
+
+  it.each([
+    ["照片縮小", "Image Resize"],
+    ["圖片變小", "Image Resize"],
+    ["PDF 合在一起", "PDF Merge"],
+    ["名單去重", "Remove Duplicate Lines"],
+  ])("finds the %s task phrase", (query, toolTitle) => {
+    renderWithProviders(<HomePage />);
+    fireEvent.change(screen.getByRole("textbox", { name: "Search Tools" }), {
+      target: { value: query },
+    });
+
+    expect(screen.getByRole("heading", { name: toolTitle })).toBeVisible();
+  });
+
+  it("records a task identifier and launch action without input content", () => {
+    const events: CustomEvent[] = [];
+    const listener = (event: Event) => {
+      if (event instanceof CustomEvent) events.push(event);
+    };
+    window.addEventListener("browser-file-tools:event", listener);
+
+    renderWithProviders(<HomePage />);
+    fireEvent.click(screen.getByRole("link", { name: "Open Text Cleaner" }));
+
+    window.removeEventListener("browser-file-tools:event", listener);
+    const taskEvent = events.find((event) => event.detail.name === "task_launch");
+    expect(taskEvent?.detail.payload).toEqual({
+      taskId: "list-cleanup",
+      tool: "text-cleaner",
+      action: "open",
+    });
   });
 
   it("ranks the closest task match ahead of broad keyword matches", () => {
