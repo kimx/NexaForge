@@ -5,6 +5,12 @@ export interface FileProcessResult {
   fileName: string;
   mimeType: string;
   size: number;
+  width?: number;
+  height?: number;
+  originalWidth?: number;
+  originalHeight?: number;
+  targetBytes?: number;
+  targetStatus?: "met" | "resize-available" | "unmet";
 }
 
 export interface ImageResizeOptions {
@@ -18,6 +24,14 @@ export interface ImageResizeOptions {
 export interface ImageCompressOptions {
   quality: number;
   format: "jpeg" | "png" | "webp";
+  signal?: AbortSignal;
+}
+
+export interface ImageTargetCompressOptions {
+  targetBytes: number;
+  format: "jpeg" | "png" | "webp";
+  allowResize?: boolean;
+  signal?: AbortSignal;
 }
 
 export interface ImageConvertOptions {
