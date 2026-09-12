@@ -247,7 +247,7 @@ export function HomePage(): JSX.Element {
     () => recentToolIds
       .slice(0, 4)
       .map((id) => FILE_TOOLS.find((tool) => tool.id === id))
-      .filter((tool): tool is ToolDefinition => Boolean(tool) && !pinnedToolIdSet.has(tool.id)),
+      .filter((tool): tool is ToolDefinition => tool !== undefined && !pinnedToolIdSet.has(tool.id)),
     [pinnedToolIdSet, recentToolIds]
   );
 

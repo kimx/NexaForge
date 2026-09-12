@@ -69,7 +69,7 @@ describe("HomePage task-first hierarchy", () => {
 
     const allToolsHeading = screen.getByRole("heading", { level: 2, name: "All Tools" });
     const allTools = allToolsHeading.closest(".workspace-section");
-    if (!allTools) {
+    if (!(allTools instanceof HTMLElement)) {
       throw new Error("Expected All Tools heading to belong to the tool results section.");
     }
 
