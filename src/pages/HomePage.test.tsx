@@ -1,4 +1,5 @@
 import { act, fireEvent, screen, within } from "@testing-library/react";
+import { FILE_TOOLS } from "../data/tools";
 import { renderWithProviders } from "../test/renderWithProviders";
 import { HomePage } from "./HomePage";
 
@@ -10,6 +11,7 @@ describe("HomePage task-first hierarchy", () => {
 
   afterEach(() => {
     window.localStorage.removeItem("nexaforge-recent-tools");
+    window.localStorage.removeItem("nexaforge-pinned-tools");
   });
 
   it("makes tool search the primary hero action without repeating a JSON-only product story", () => {
@@ -49,13 +51,30 @@ describe("HomePage task-first hierarchy", () => {
     expect(screen.queryByText("TOOL WORKSPACE")).not.toBeInTheDocument();
   });
 
-  it("shows a concise featured collection instead of every tool by default", () => {
+  it("shows a concise featured collection with its matching active filter by default", () => {
     renderWithProviders(<HomePage />);
 
     const featured = screen.getByTestId("featured-tools");
     expect(within(featured).getByRole("heading", { level: 2, name: "Featured Tools" })).toBeVisible();
     expect(within(featured).getAllByRole("article")).toHaveLength(8);
     expect(within(featured).queryByRole("heading", { name: "SVG Optimizer" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Featured" })).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByRole("button", { name: "All" })).toHaveAttribute("aria-pressed", "false");
+  });
+
+  it("shows every registered tool when the All filter is active", () => {
+    renderWithProviders(<HomePage />);
+
+    fireEvent.click(screen.getByRole("button", { name: "All" }));
+
+    const allToolsHeading = screen.getByRole("heading", { level: 2, name: "All Tools" });
+    const allTools = allToolsHeading.closest(".workspace-section");
+    if (!(allTools instanceof HTMLElement)) {
+      throw new Error("Expected All Tools heading to belong to the tool results section.");
+    }
+
+    expect(screen.getByRole("button", { name: "All" })).toHaveAttribute("aria-pressed", "true");
+    expect(within(allTools).getAllByRole("article")).toHaveLength(FILE_TOOLS.length);
   });
 
   it("gives every tool card a unique action name under a level-three heading", () => {
@@ -84,18 +103,27 @@ describe("HomePage task-first hierarchy", () => {
     expect(screen.queryByTestId("category-browser")).not.toBeInTheDocument();
   });
 
-  it("caps recent tools at four and removes them from the featured collection", () => {
+  it("deduplicates pinned, recent, and featured tools in priority order", () => {
     window.localStorage.setItem(
       "nexaforge-recent-tools",
-      JSON.stringify(["image-resize", "pdf-merge", "uuid", "json-diff", "base64", "csv-viewer"])
+      JSON.stringify(["image-resize", "pdf-merge", "uuid", "json-diff"])
+    );
+    window.localStorage.setItem(
+      "nexaforge-pinned-tools",
+      JSON.stringify(["image-resize", "image-compress"])
     );
 
     renderWithProviders(<HomePage />);
 
+    const pinned = screen.getByTestId("pinned-tools");
     const recent = screen.getByTestId("recent-tools");
     const featured = screen.getByTestId("featured-tools");
-    expect(within(recent).getAllByRole("article")).toHaveLength(4);
+    expect(within(pinned).getByRole("heading", { name: "Image Resize" })).toBeInTheDocument();
+    expect(within(pinned).getByRole("heading", { name: "Image Compress" })).toBeInTheDocument();
+    expect(within(recent).queryByRole("heading", { name: "Image Resize" })).not.toBeInTheDocument();
+    expect(within(recent).getAllByRole("article")).toHaveLength(3);
     expect(within(featured).queryByRole("heading", { name: "Image Resize" })).not.toBeInTheDocument();
+    expect(within(featured).queryByRole("heading", { name: "Image Compress" })).not.toBeInTheDocument();
     expect(within(featured).queryByRole("heading", { name: "PDF Merge" })).not.toBeInTheDocument();
   });
 
@@ -209,6 +237,7 @@ describe("HomePage task-first hierarchy", () => {
     fireEvent.change(search, { target: { value: "json" } });
     fireEvent.keyDown(window, { key: "Escape" });
     expect(search).toHaveValue("");
+    expect(screen.getByRole("button", { name: "Featured" })).toHaveAttribute("aria-pressed", "true");
   });
 
   it("reports privacy-safe search usage without the typed query", () => {
@@ -229,7 +258,7 @@ describe("HomePage task-first hierarchy", () => {
     vi.useRealTimers();
     const searchEvent = events.find((event) => event.detail.name === "tool_search");
     expect(searchEvent?.detail.payload).toEqual({
-      category: "All",
+      category: "Featured",
       queryLength: 23,
       resultCount: 0,
     });

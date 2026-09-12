@@ -26,6 +26,8 @@ const categoryOrder: ToolDefinition["category"][] = [
   "QR & Barcode",
 ];
 
+type HomeFilter = "Featured" | "All" | ToolDefinition["category"];
+
 const FEATURED_TOOL_IDS = [
   "image-resize",
   "image-compress",
@@ -142,7 +144,7 @@ export function HomePage(): JSX.Element {
   const { t, locale } = useLanguage();
   const toolMeta = useLocalizedToolMeta();
   const [keyword, setKeyword] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState<"All" | ToolDefinition["category"]>("All");
+  const [categoryFilter, setCategoryFilter] = useState<HomeFilter>("Featured");
   const { recent: recentToolIds, pinned: pinnedToolIds } = usePersonalization();
   const personalCopy = usePersonalizationCopy();
   const searchRef = useRef<HTMLInputElement>(null);
@@ -160,7 +162,7 @@ export function HomePage(): JSX.Element {
       const target = event.target as HTMLElement | null;
       if (event.key === "Escape") {
         setKeyword("");
-        setCategoryFilter("All");
+        setCategoryFilter("Featured");
         return;
       }
       if (event.key === "/" && !event.metaKey && !event.ctrlKey && !event.altKey && target?.tagName !== "INPUT" && target?.tagName !== "TEXTAREA" && !target?.isContentEditable) {
@@ -211,7 +213,7 @@ export function HomePage(): JSX.Element {
       };
     })
       .filter(({ tool, score }) =>
-        (categoryFilter === "All" || tool.category === categoryFilter) && score > 0
+        (categoryFilter === "Featured" || categoryFilter === "All" || tool.category === categoryFilter) && score > 0
       )
       .sort((left, right) => right.score - left.score || left.index - right.index)
       .map(({ tool }) => tool);
@@ -234,18 +236,30 @@ export function HomePage(): JSX.Element {
     return () => window.clearTimeout(timer);
   }, [categoryFilter, filteredTools.length, keyword]);
 
-  const recentTools = useMemo(
-    () => recentToolIds.slice(0, 4).map((id) => FILE_TOOLS.find((tool) => tool.id === id)).filter((tool): tool is ToolDefinition => Boolean(tool)),
-    [recentToolIds]
+  const pinnedTools = useMemo(
+    () => pinnedToolIds
+      .map((id) => FILE_TOOLS.find((tool) => tool.id === id))
+      .filter((tool): tool is ToolDefinition => Boolean(tool)),
+    [pinnedToolIds]
   );
-  const pinnedTools = pinnedToolIds.map((id) => FILE_TOOLS.find((tool) => tool.id === id)).filter((tool): tool is ToolDefinition => Boolean(tool));
+  const pinnedToolIdSet = useMemo(() => new Set(pinnedTools.map((tool) => tool.id)), [pinnedTools]);
+  const recentTools = useMemo(
+    () => recentToolIds
+      .slice(0, 4)
+      .map((id) => FILE_TOOLS.find((tool) => tool.id === id))
+      .filter((tool): tool is ToolDefinition => tool !== undefined && !pinnedToolIdSet.has(tool.id)),
+    [pinnedToolIdSet, recentToolIds]
+  );
 
   const keywordActive = keyword.trim().length > 0;
-  const isFilterActive = keyword.trim().length > 0 || categoryFilter !== "All";
-  const recentToolIdSet = useMemo(() => new Set(recentTools.map((tool) => tool.id)), [recentTools]);
-  const displayedTools = isFilterActive
-    ? filteredTools
-    : FEATURED_TOOLS.filter((tool) => !recentToolIdSet.has(tool.id));
+  const isDefaultView = !keywordActive && categoryFilter === "Featured";
+  const personalizedToolIdSet = useMemo(
+    () => new Set([...pinnedTools, ...recentTools].map((tool) => tool.id)),
+    [pinnedTools, recentTools]
+  );
+  const displayedTools = isDefaultView
+    ? FEATURED_TOOLS.filter((tool) => !personalizedToolIdSet.has(tool.id))
+    : filteredTools;
 
   return (
     <div className={`home-page${keywordActive ? " home-page--searching" : ""}`}>
@@ -342,7 +356,7 @@ export function HomePage(): JSX.Element {
 
           <div className="finder-filters" aria-label={t("home.categoryFilterLabel")}>
             <span className="finder-filters__label">{t("home.filterBy")}</span>
-            {(["All", ...categoryOrder] as const).map((category) => (
+            {(["Featured", "All", ...categoryOrder] as const).map((category) => (
               <button
                 type="button"
                 key={category}
@@ -350,12 +364,16 @@ export function HomePage(): JSX.Element {
                 onClick={() => setCategoryFilter(category)}
                 aria-pressed={categoryFilter === category}
               >
-                {category === "All" ? t("home.categories.all") : localizedCategoryLabel(category, t)}
+                {category === "Featured"
+                  ? t("home.categories.featured")
+                  : category === "All"
+                    ? t("home.categories.all")
+                    : localizedCategoryLabel(category, t)}
               </button>
             ))}
           </div>
 
-          {!isFilterActive && pinnedTools.length > 0 ? (
+          {isDefaultView && pinnedTools.length > 0 ? (
             <section className="workspace-section" data-testid="pinned-tools" aria-labelledby="pinned-tools-title">
               <div className="workspace-section__heading"><h2 id="pinned-tools-title">{personalCopy.pinned}</h2></div>
               <div className="tool-grid home-tool-grid">
@@ -364,7 +382,7 @@ export function HomePage(): JSX.Element {
             </section>
           ) : null}
 
-          {!isFilterActive && recentTools.length > 0 ? (
+          {isDefaultView && recentTools.length > 0 ? (
             <div className="workspace-section recent-tools-section" data-testid="recent-tools">
               <div className="workspace-section__heading">
                 <h2>{t("home.recentTools")}</h2>
@@ -384,10 +402,10 @@ export function HomePage(): JSX.Element {
           <div
             className="workspace-section"
             id="featured-tools"
-            data-testid={!isFilterActive ? "featured-tools" : undefined}
+            data-testid={isDefaultView ? "featured-tools" : undefined}
           >
             <div className="workspace-section__heading">
-              <h2>{t(isFilterActive ? "home.searchResults" : "home.featured")}</h2>
+              <h2>{t(keywordActive ? "home.searchResults" : isDefaultView ? "home.featured" : "home.allTools")}</h2>
               <span>{t("sidebar.resultCount", { count: displayedTools.length })}</span>
             </div>
             {displayedTools.length > 0 ? (
@@ -398,7 +416,7 @@ export function HomePage(): JSX.Element {
               <div className="finder-empty" role="status">
                 <strong>{t("home.noResults")}</strong>
                 <p>{t("home.noResultsHint")}</p>
-                <button type="button" className="btn secondary" onClick={() => { setKeyword(""); setCategoryFilter("All"); }}>
+                <button type="button" className="btn secondary" onClick={() => { setKeyword(""); setCategoryFilter("Featured"); }}>
                   {t("home.clearFilters")}
                 </button>
               </div>
