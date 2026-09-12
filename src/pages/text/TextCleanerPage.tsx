@@ -8,23 +8,14 @@ import { useLanguage } from "../../context/LanguageContext";
 import { useTextWorkflow, useTextWorkflowDraft } from "../../context/TextWorkflowContext";
 import { FILE_TOOLS } from "../../data/tools";
 import { useSeo } from "../../hooks/useSeo";
-import { cleanText, type TextCleanerOptions } from "../../services/text/textWorkflowService";
+import { cleanText } from "../../services/text/textWorkflowService";
 import { countTextStats } from "../../services/text/textService";
 import type { ProcessingState, ToolMeta } from "../../types/tool";
 import { getRelatedTools } from "../../utils/toolHelpers";
 import { createOperationId, trackEvent } from "../../utils/analytics";
-
-const DEFAULT_OPTIONS: TextCleanerOptions = {
-  trimLines: false,
-  removeLeadingWhitespace: false,
-  removeTrailingWhitespace: false,
-  collapseSpaces: false,
-  removeEmptyLines: false,
-  collapseEmptyLines: false,
-  tabsToSpaces: false,
-  normalizeLineEndings: true,
-  trimDocument: false,
-};
+import { usePersonalization } from "../../hooks/usePersonalization";
+import { usePersonalizationCopy } from "../../i18n/personalization";
+import { DEFAULT_CLEANER_OPTIONS, saveToolPreferences, type CleanerPreferences } from "../../services/personalization";
 
 const NEXT_TOOLS = [
   { toolId: "find-replace" },
@@ -36,12 +27,16 @@ export function TextCleanerPage(): JSX.Element {
   const [draft, setDraft] = useTextWorkflowDraft("text-cleaner");
   const { clear } = useTextWorkflow();
   const { input } = draft;
-  const output = draft.output ?? "";
   const outputRef = useRef<HTMLTextAreaElement>(null);
   const operationRef = useRef<{ id: string; startedAt: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const options = draft.options.cleaner ?? DEFAULT_OPTIONS;
-  const processing: ProcessingState = error ? "error" : draft.output !== null ? "success" : "idle";
+  const { preferences } = usePersonalization();
+  const personalCopy = usePersonalizationCopy();
+  const options = preferences.cleaner;
+  const resultOptions = draft.options.cleaner ?? DEFAULT_CLEANER_OPTIONS;
+  const resultMatchesOptions = (Object.keys(options) as Array<keyof CleanerPreferences>).every((key) => options[key] === resultOptions[key]);
+  const output = resultMatchesOptions ? draft.output ?? "" : "";
+  const processing: ProcessingState = error ? "error" : draft.output !== null && resultMatchesOptions ? "success" : "idle";
   const setInput = (value: string): void => {
     setError(null);
     setDraft((current) => ({ ...current, input: value, output: null }));
@@ -56,8 +51,9 @@ export function TextCleanerPage(): JSX.Element {
   };
   useSeo(meta);
 
-  const updateOption = (key: keyof TextCleanerOptions, checked: boolean): void => {
+  const updateOption = (key: keyof CleanerPreferences, checked: boolean): void => {
     setError(null);
+    saveToolPreferences({ ...preferences, cleaner: { ...options, [key]: checked } });
     setDraft((current) => ({ ...current, output: null, options: { ...current.options, cleaner: { ...options, [key]: checked } } }));
   };
   const clean = (): void => {
@@ -67,7 +63,7 @@ export function TextCleanerPage(): JSX.Element {
     trackEvent("process_start", { tool: "text-cleaner", operationId: operation.id, language: locale });
     try {
       const result = cleanText(input, options);
-      setDraft((current) => ({ ...current, output: result.text }));
+      setDraft((current) => ({ ...current, output: result.text, options: { ...current.options, cleaner: { ...options } } }));
       trackEvent("process_success", {
         tool: "text-cleaner",
         operationId: operation.id,
@@ -103,11 +99,17 @@ export function TextCleanerPage(): JSX.Element {
         ),
         options: (
           <div className="tool-form text-cleaner__options text-tool-options">
+            <p className="personalization-hint">{personalCopy.saved}</p>
+            <button type="button" className="btn secondary" onClick={() => {
+              saveToolPreferences({ ...preferences, cleaner: { ...DEFAULT_CLEANER_OPTIONS } });
+              setError(null);
+              setDraft((current) => ({ ...current, output: null, options: { ...current.options, cleaner: { ...DEFAULT_CLEANER_OPTIONS } } }));
+            }}>{personalCopy.reset}</button>
             {([
               ["edgeWhitespace", [["trimLines", "trimLines"], ["removeLeadingWhitespace", "removeLeadingWhitespace"], ["removeTrailingWhitespace", "removeTrailingWhitespace"]]],
               ["spacing", [["collapseSpaces", "collapseSpaces"], ["removeEmptyLines", "removeEmptyLines"], ["collapseEmptyLines", "collapseEmptyLines"]]],
               ["normalization", [["tabsToSpaces", "tabsToSpaces"], ["normalizeLineEndings", "normalizeLineEndings"], ["trimDocument", "trimDocument"]]],
-            ] as Array<[string, Array<[keyof TextCleanerOptions, string]>]>).map(([group, items]) => (
+            ] as Array<[string, Array<[keyof CleanerPreferences, string]>]>).map(([group, items]) => (
               <section key={group} className="text-tool-options__group" aria-labelledby={`text-cleaner-${group}`}>
                 <h3 id={`text-cleaner-${group}`}>{t(`tool.text-cleaner.setting.${group}`)}</h3>
                 <div className="text-tool-options__choices">

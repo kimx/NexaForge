@@ -124,9 +124,9 @@ describe("HomePage task-first hierarchy", () => {
       "href",
       "/en/data/json-formatter"
     );
-    expect(within(taskEntries).getByRole("link", { name: "Open Text Cleaner" })).toHaveAttribute(
+    expect(within(taskEntries).getByRole("link", { name: "Open List Cleanup" })).toHaveAttribute(
       "href",
-      "/en/text/text-cleaner"
+      "/en/text/list-cleanup"
     );
   });
 
@@ -152,13 +152,13 @@ describe("HomePage task-first hierarchy", () => {
     window.addEventListener("browser-file-tools:event", listener);
 
     renderWithProviders(<HomePage />);
-    fireEvent.click(screen.getByRole("link", { name: "Open Text Cleaner" }));
+    fireEvent.click(screen.getByRole("link", { name: "Open List Cleanup" }));
 
     window.removeEventListener("browser-file-tools:event", listener);
     const taskEvent = events.find((event) => event.detail.name === "task_launch");
     expect(taskEvent?.detail.payload).toEqual({
       taskId: "list-cleanup",
-      tool: "text-cleaner",
+      tool: "list-cleanup",
       action: "open",
     });
   });

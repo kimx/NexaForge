@@ -2,6 +2,15 @@ import type { ToolDefinition } from "../types/tool";
 
 export const FILE_TOOLS: ToolDefinition[] = [
   {
+    id: "list-cleanup",
+    title: "List Cleanup",
+    description: "Clean, deduplicate, and sort lists with reusable local templates.",
+    path: "/text/list-cleanup",
+    category: "Text",
+    aliases: ["clean list", "list template", "清單清理", "清單範本"],
+    keywords: ["list", "clean", "deduplicate", "sort", "template", "清理", "去重", "排序"],
+  },
+  {
     id: "image-to-pdf",
     title: "Image to PDF",
     description: "Combine ordered JPG, PNG, and WebP images into one PDF with one image per page.",

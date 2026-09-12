@@ -15,6 +15,9 @@ import { getRelatedTools } from "../../utils/toolHelpers";
 import { createOperationId, trackEvent } from "../../utils/analytics";
 import type { ImageCompressOptions, ImageTargetCompressOptions, ProcessingState, ToolMeta } from "../../types/tool";
 import { useSeoLanding } from "../../hooks/useSeoLanding";
+import { usePersonalization } from "../../hooks/usePersonalization";
+import { usePersonalizationCopy } from "../../i18n/personalization";
+import { saveToolPreferences } from "../../services/personalization";
 
 const IMAGE_ACCEPT = "image/jpeg,image/png,image/webp";
 const TARGET_PRESETS = ["100", "300", "500", "custom"] as const;
@@ -35,8 +38,18 @@ export function ImageCompressPage(): JSX.Element {
   const [items, setItems] = useState<BatchItem[]>([]);
   const [completed, setCompleted] = useState(0);
   const [mode, setMode] = useState<CompressionMode>("quality");
-  const [quality, setQuality] = useState(80);
-  const [format, setFormat] = useState<"jpeg" | "png" | "webp">(presetFormat);
+  const { preferences } = usePersonalization();
+  const personalCopy = usePersonalizationCopy();
+  const quality = preferences.compress.quality;
+  const [formatOverride, setFormatOverride] = useState<"jpeg" | "png" | "webp" | null>(null);
+  const format = formatOverride !== null && formatOverride === preferences.compress.format
+    ? formatOverride
+    : landing ? presetFormat : preferences.compress.format;
+  const setQuality = (value: number): void => saveToolPreferences({ ...preferences, compress: { format, quality: value } });
+  const setFormat = (value: "jpeg" | "png" | "webp"): void => {
+    setFormatOverride(landing ? value : null);
+    saveToolPreferences({ ...preferences, compress: { format: value, quality } });
+  };
   const [targetPreset, setTargetPreset] = useState<TargetPreset>("500");
   const [customTarget, setCustomTarget] = useState("");
   const [processing, setProcessing] = useState<ProcessingState>("idle");
@@ -74,8 +87,12 @@ export function ImageCompressPage(): JSX.Element {
   const selectFiles = (next: File[]): void => { clearOutputs(); setFiles(next); const validation = validateImageBatch(next); setSelectionValid(!validation.length); if (validation[0]) { setError(validation[0].message); setProcessing("error"); } };
   const clearSelection = (): void => { clearOutputs(); setFiles([]); setSelectionValid(true); };
   useEffect(() => {
+    // A change in another tab must invalidate results made with earlier choices.
+    clearOutputs();
+  }, [preferences.compress.format, preferences.compress.quality]);
+  useEffect(() => {
     invalidateOperation();
-    setFormat(presetFormat);
+    setFormatOverride(null);
     setFiles([]);
     setItems([]);
     setCompleted(0);
@@ -162,6 +179,12 @@ export function ImageCompressPage(): JSX.Element {
     workflow={{ state: processing, error, progress: files.length ? (completed / files.length) * 100 : 0, onRetry: process, onReprocess: process }} children={{
       workspace: <><FileDropzone label={t("label.dropImage")} accept={imageAccept} onFiles={selectFiles} onRejectedFiles={(rejections) => { setError(rejections[0]?.message ?? t("error.invalidFile")); setProcessing("error"); setSelectionValid(false); }} multiple maxSize={MAX_FILE_BYTES} compact={files.length > 0} /><FileInfo files={files} mode="multi" onClear={clearSelection} compact={files.length > 0} /></>,
       options: <div className="tool-form image-compress-options">
+        <p className="personalization-hint">{personalCopy.saved}</p>
+        <button type="button" className="btn secondary" onClick={() => {
+          setFormatOverride(null);
+          saveToolPreferences({ ...preferences, compress: { format: presetFormat, quality: 80 } });
+          clearOutputs();
+        }}>{personalCopy.reset}</button>
         <fieldset>
           <legend>{t("image-compress.mode")}</legend>
           <label className="checkbox"><input type="radio" name="compression-mode" value="quality" checked={mode === "quality"} onChange={() => { setMode("quality"); clearOutputs(); }} />{t("image-compress.mode.quality")}</label>
