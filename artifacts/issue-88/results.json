@@ -1,0 +1,274 @@
+{
+  "checkedAt": "2026-09-12T07:31:44.534Z",
+  "base": "https://nexaforge.kimx.info",
+  "results": [
+    {
+      "name": "desktop-numbers",
+      "url": "https://nexaforge.kimx.info/en/pdf/add-page-numbers",
+      "bytes": 1887,
+      "overflow": false,
+      "pages": [
+        {
+          "page": 1,
+          "text": "Source page 1  Page 7 of 3",
+          "imageCount": 0,
+          "width": 600,
+          "height": 400
+        },
+        {
+          "page": 2,
+          "text": "Source page 2",
+          "imageCount": 0,
+          "width": 400,
+          "height": 700
+        },
+        {
+          "page": 3,
+          "text": "Source page 3  Page 8 of 3",
+          "imageCount": 0,
+          "width": 800,
+          "height": 500
+        }
+      ]
+    },
+    {
+      "name": "desktop-text",
+      "url": "https://nexaforge.kimx.info/en/pdf/watermark",
+      "bytes": 1967,
+      "overflow": false,
+      "pages": [
+        {
+          "page": 1,
+          "text": "Source page 1  AUDIT WATERMARK",
+          "imageCount": 0,
+          "width": 600,
+          "height": 400
+        },
+        {
+          "page": 2,
+          "text": "Source page 2",
+          "imageCount": 0,
+          "width": 400,
+          "height": 700
+        },
+        {
+          "page": 3,
+          "text": "Source page 3  AUDIT WATERMARK",
+          "imageCount": 0,
+          "width": 800,
+          "height": 500
+        }
+      ]
+    },
+    {
+      "name": "desktop-png",
+      "url": "https://nexaforge.kimx.info/en/pdf/watermark",
+      "bytes": 3393,
+      "overflow": false,
+      "pages": [
+        {
+          "page": 1,
+          "text": "Source page 1",
+          "imageCount": 1,
+          "width": 600,
+          "height": 400
+        },
+        {
+          "page": 2,
+          "text": "Source page 2",
+          "imageCount": 0,
+          "width": 400,
+          "height": 700
+        },
+        {
+          "page": 3,
+          "text": "Source page 3",
+          "imageCount": 1,
+          "width": 800,
+          "height": 500
+        }
+      ]
+    },
+    {
+      "name": "desktop-jpeg",
+      "url": "https://nexaforge.kimx.info/en/pdf/watermark",
+      "bytes": 4064,
+      "overflow": false,
+      "pages": [
+        {
+          "page": 1,
+          "text": "Source page 1",
+          "imageCount": 1,
+          "width": 600,
+          "height": 400
+        },
+        {
+          "page": 2,
+          "text": "Source page 2",
+          "imageCount": 0,
+          "width": 400,
+          "height": 700
+        },
+        {
+          "page": 3,
+          "text": "Source page 3",
+          "imageCount": 1,
+          "width": 800,
+          "height": 500
+        }
+      ]
+    },
+    {
+      "viewport": "desktop",
+      "outgoingWrites": [],
+      "runtimeErrors": []
+    },
+    {
+      "name": "mobile-numbers",
+      "url": "https://nexaforge.kimx.info/en/pdf/add-page-numbers",
+      "bytes": 1887,
+      "overflow": false,
+      "pages": [
+        {
+          "page": 1,
+          "text": "Source page 1  Page 7 of 3",
+          "imageCount": 0,
+          "width": 600,
+          "height": 400
+        },
+        {
+          "page": 2,
+          "text": "Source page 2",
+          "imageCount": 0,
+          "width": 400,
+          "height": 700
+        },
+        {
+          "page": 3,
+          "text": "Source page 3  Page 8 of 3",
+          "imageCount": 0,
+          "width": 800,
+          "height": 500
+        }
+      ]
+    },
+    {
+      "name": "mobile-text",
+      "url": "https://nexaforge.kimx.info/en/pdf/watermark",
+      "bytes": 1968,
+      "overflow": false,
+      "pages": [
+        {
+          "page": 1,
+          "text": "Source page 1  AUDIT WATERMARK",
+          "imageCount": 0,
+          "width": 600,
+          "height": 400
+        },
+        {
+          "page": 2,
+          "text": "Source page 2",
+          "imageCount": 0,
+          "width": 400,
+          "height": 700
+        },
+        {
+          "page": 3,
+          "text": "Source page 3  AUDIT WATERMARK",
+          "imageCount": 0,
+          "width": 800,
+          "height": 500
+        }
+      ]
+    },
+    {
+      "name": "mobile-png",
+      "url": "https://nexaforge.kimx.info/en/pdf/watermark",
+      "bytes": 3393,
+      "overflow": false,
+      "pages": [
+        {
+          "page": 1,
+          "text": "Source page 1",
+          "imageCount": 1,
+          "width": 600,
+          "height": 400
+        },
+        {
+          "page": 2,
+          "text": "Source page 2",
+          "imageCount": 0,
+          "width": 400,
+          "height": 700
+        },
+        {
+          "page": 3,
+          "text": "Source page 3",
+          "imageCount": 1,
+          "width": 800,
+          "height": 500
+        }
+      ]
+    },
+    {
+      "name": "mobile-jpeg",
+      "url": "https://nexaforge.kimx.info/en/pdf/watermark",
+      "bytes": 4064,
+      "overflow": false,
+      "pages": [
+        {
+          "page": 1,
+          "text": "Source page 1",
+          "imageCount": 1,
+          "width": 600,
+          "height": 400
+        },
+        {
+          "page": 2,
+          "text": "Source page 2",
+          "imageCount": 0,
+          "width": 400,
+          "height": 700
+        },
+        {
+          "page": 3,
+          "text": "Source page 3",
+          "imageCount": 1,
+          "width": 800,
+          "height": 500
+        }
+      ]
+    },
+    {
+      "viewport": "mobile",
+      "outgoingWrites": [
+        {
+          "url": "https://pagead2.googlesyndication.com/pagead/ping?e=1",
+          "bytes": 2194,
+          "containsFile": false
+        },
+        {
+          "url": "https://pagead2.googlesyndication.com/pagead/ping?e=1",
+          "bytes": 2025,
+          "containsFile": false
+        },
+        {
+          "url": "https://pagead2.googlesyndication.com/pagead/ping?e=1",
+          "bytes": 1925,
+          "containsFile": false
+        },
+        {
+          "url": "https://pagead2.googlesyndication.com/pagead/ping?e=1",
+          "bytes": 1925,
+          "containsFile": false
+        }
+      ],
+      "runtimeErrors": [
+        "Minified React error #421; visit https://reactjs.org/docs/error-decoder.html?invariant=421 for the full message or use the non-minified dev environment for full errors and additional helpful warnings.",
+        "Minified React error #421; visit https://reactjs.org/docs/error-decoder.html?invariant=421 for the full message or use the non-minified dev environment for full errors and additional helpful warnings.",
+        "Minified React error #421; visit https://reactjs.org/docs/error-decoder.html?invariant=421 for the full message or use the non-minified dev environment for full errors and additional helpful warnings.",
+        "Minified React error #421; visit https://reactjs.org/docs/error-decoder.html?invariant=421 for the full message or use the non-minified dev environment for full errors and additional helpful warnings."
+      ]
+    }
+  ]
+}

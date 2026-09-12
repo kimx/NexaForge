@@ -1,0 +1,12 @@
+.home-tool-card__actions,
+.personal-settings__actions { display: flex; align-items: center; flex-wrap: wrap; gap: .5rem; }
+.home-tool-card__actions { margin-top: auto; justify-content: space-between; }
+.home-tool-card__actions .home-tool-card__action { margin-top: 0; }
+.pin-tool-button { min-height: 44px; flex-shrink: 0; }
+.pin-tool-button[aria-pressed="true"] { border-color: var(--accent, #3b82f6); }
+.personal-settings { margin-block: 1.25rem; padding: 1rem; border: 1px solid var(--border, #d8dce3); border-radius: .75rem; }
+.personal-settings summary { cursor: pointer; min-height: 44px; display: list-item; align-content: center; font-weight: 600; }
+.personal-settings p, .personalization-hint { font-size: .875rem; line-height: 1.6; }
+.personal-settings__actions .btn { min-height: 44px; white-space: normal; }
+.pin-tool-button:focus-visible, .personal-settings summary:focus-visible { outline: 2px solid var(--accent, #3b82f6); outline-offset: 3px; }
+@media (max-width: 480px) { .personal-settings__actions { align-items: stretch; flex-direction: column; } }

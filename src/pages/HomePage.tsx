@@ -11,6 +11,11 @@ import {
 import { AdSlot } from "../components/AdSlot";
 import { localizePath } from "../routing/localePaths";
 import { trackEvent } from "../utils/analytics";
+import { usePersonalization } from "../hooks/usePersonalization";
+import { clearRecentTools, rememberTool } from "../services/personalization";
+import { usePersonalizationCopy } from "../i18n/personalization";
+import { PinToolButton } from "../components/PinToolButton";
+import { PersonalSettings } from "../components/PersonalSettings";
 
 const categoryOrder: ToolDefinition["category"][] = [
   "Image",
@@ -51,7 +56,7 @@ const TASK_ENTRY_DEFINITIONS = [
   },
   {
     id: "list-cleanup",
-    toolId: "text-cleaner",
+    toolId: "list-cleanup",
     titleKey: "home.task.listCleanup.title",
     descriptionKey: "home.task.listCleanup.description",
   },
@@ -117,6 +122,7 @@ function ToolCard({ tool, onOpen, className = "" }: { tool: ToolDefinition; onOp
           <p>{localToolMeta(tool.id, "description")}</p>
         </div>
       </div>
+      <div className="home-tool-card__actions">
       <Link
         to={localizePath(tool.path, locale)}
         className="btn secondary home-tool-card__action"
@@ -126,6 +132,8 @@ function ToolCard({ tool, onOpen, className = "" }: { tool: ToolDefinition; onOp
         {t("home.open")}
         <span aria-hidden="true">→</span>
       </Link>
+      <PinToolButton toolId={tool.id} />
+      </div>
     </article>
   );
 }
@@ -135,8 +143,8 @@ export function HomePage(): JSX.Element {
   const toolMeta = useLocalizedToolMeta();
   const [keyword, setKeyword] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<"All" | ToolDefinition["category"]>("All");
-  const [recentToolIds, setRecentToolIds] = useState<string[]>([]);
-  const [recentToolsLoaded, setRecentToolsLoaded] = useState(false);
+  const { recent: recentToolIds, pinned: pinnedToolIds } = usePersonalization();
+  const personalCopy = usePersonalizationCopy();
   const searchRef = useRef<HTMLInputElement>(null);
   const homeAdSlotId = import.meta.env.VITE_ADSENSE_SLOT_HOME;
   const homeMeta: ToolMeta = {
@@ -146,33 +154,6 @@ export function HomePage(): JSX.Element {
     h1: t("home.title"),
   };
   useSeo(homeMeta);
-
-  useEffect(() => {
-    try {
-      const stored = window.localStorage.getItem("nexaforge-recent-tools");
-      const parsed = stored ? JSON.parse(stored) : [];
-      setRecentToolIds(
-        Array.isArray(parsed)
-          ? parsed.filter((id): id is string => typeof id === "string").slice(0, 4)
-          : []
-      );
-    } catch {
-      setRecentToolIds([]);
-    } finally {
-      setRecentToolsLoaded(true);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!recentToolsLoaded) {
-      return;
-    }
-    try {
-      window.localStorage.setItem("nexaforge-recent-tools", JSON.stringify(recentToolIds));
-    } catch {
-      // Recent tools are best-effort when storage is unavailable.
-    }
-  }, [recentToolIds, recentToolsLoaded]);
 
   useEffect(() => {
     const handleShortcut = (event: KeyboardEvent) => {
@@ -190,10 +171,6 @@ export function HomePage(): JSX.Element {
     window.addEventListener("keydown", handleShortcut);
     return () => window.removeEventListener("keydown", handleShortcut);
   }, []);
-
-  const rememberTool = (toolId: string) => {
-    setRecentToolIds((current) => [toolId, ...current.filter((id) => id !== toolId)].slice(0, 4));
-  };
 
   const launchTaskEntry = (taskId: string, toolId: string) => {
     rememberTool(toolId);
@@ -261,6 +238,7 @@ export function HomePage(): JSX.Element {
     () => recentToolIds.slice(0, 4).map((id) => FILE_TOOLS.find((tool) => tool.id === id)).filter((tool): tool is ToolDefinition => Boolean(tool)),
     [recentToolIds]
   );
+  const pinnedTools = pinnedToolIds.map((id) => FILE_TOOLS.find((tool) => tool.id === id)).filter((tool): tool is ToolDefinition => Boolean(tool));
 
   const keywordActive = keyword.trim().length > 0;
   const isFilterActive = keyword.trim().length > 0 || categoryFilter !== "All";
@@ -377,13 +355,22 @@ export function HomePage(): JSX.Element {
             ))}
           </div>
 
+          {!isFilterActive && pinnedTools.length > 0 ? (
+            <section className="workspace-section" data-testid="pinned-tools" aria-labelledby="pinned-tools-title">
+              <div className="workspace-section__heading"><h2 id="pinned-tools-title">{personalCopy.pinned}</h2></div>
+              <div className="tool-grid home-tool-grid">
+                {pinnedTools.map((tool) => <ToolCard key={tool.id} tool={tool} onOpen={rememberTool} />)}
+              </div>
+            </section>
+          ) : null}
+
           {!isFilterActive && recentTools.length > 0 ? (
             <div className="workspace-section recent-tools-section" data-testid="recent-tools">
               <div className="workspace-section__heading">
                 <h2>{t("home.recentTools")}</h2>
                 <div className="recent-tools-section__meta">
                   <span>{t("home.recentToolsCount", { count: recentTools.length })}</span>
-                  <button type="button" className="text-button" onClick={() => setRecentToolIds([])}>
+                  <button type="button" className="text-button" onClick={clearRecentTools}>
                     {t("home.clearRecentTools")}
                   </button>
                 </div>
@@ -418,6 +405,7 @@ export function HomePage(): JSX.Element {
             )}
           </div>
 
+      <PersonalSettings />
       <AdSlot position="home" adSlotId={homeAdSlotId} />
     </div>
   );

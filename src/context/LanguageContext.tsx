@@ -1,3 +1,4 @@
+import { listCleanupToolMessages } from "../pages/text/listCleanupMessages";
 import {
   createContext,
   type PropsWithChildren,
@@ -72,6 +73,7 @@ function persistLocaleState(locale: Locale): void {
 }
 
 const zhMessages: Record<string, string> = {
+  ...listCleanupToolMessages["zh-TW"],
   ...TEXT_WORKFLOW_ZH_MESSAGES,
   ...ISSUE_23_ZH_MESSAGES,
   ...ISSUE_26_ZH_MESSAGES,
@@ -1017,6 +1019,7 @@ const zhMessages: Record<string, string> = {
 };
 
 const enMessages: Record<string, string> = {
+  ...listCleanupToolMessages.en,
   ...TEXT_WORKFLOW_EN_MESSAGES,
   ...ISSUE_23_EN_MESSAGES,
   ...ISSUE_26_EN_MESSAGES,

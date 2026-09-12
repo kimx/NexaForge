@@ -5,7 +5,6 @@ import { Header } from "./components/Header";
 import { ToolSidebar } from "./components/ToolSidebar";
 import { useLanguage } from "./context/LanguageContext";
 import { TextWorkflowProvider } from "./context/TextWorkflowContext";
-import { FILE_TOOLS } from "./data/tools";
 import { useMediaQuery } from "./hooks/useMediaQuery";
 import { NotFoundPage } from "./pages/NotFoundPage";
 import {
@@ -188,6 +187,9 @@ const TextDiffPage = lazy(() =>
 const TextCleanerPage = lazy(() =>
   import("./pages/text/TextCleanerPage").then((module) => ({ default: module.TextCleanerPage }))
 );
+const ListCleanupPage = lazy(() =>
+  import("./pages/text/ListCleanupPage").then((module) => ({ default: module.ListCleanupPage }))
+);
 const FindReplacePage = lazy(() =>
   import("./pages/text/FindReplacePage").then((module) => ({ default: module.FindReplacePage }))
 );
@@ -272,6 +274,7 @@ const APP_ROUTES: AppRoute[] = [
   { path: "/text/remove-duplicate-lines", element: <TextToolsPage kind="remove-duplicate-lines" /> },
   { path: "/text/sort-lines", element: <TextToolsPage kind="sort-lines" /> },
   { path: "/text/text-cleaner", element: <TextCleanerPage /> },
+  { path: "/text/list-cleanup", element: <ListCleanupPage /> },
   { path: "/text/find-replace", element: <FindReplacePage /> },
   { path: "/text/diff", element: <TextDiffPage /> },
   { path: "/text/html-encoder", element: <HtmlEncoderPage /> },
@@ -353,7 +356,6 @@ function ToolFrame({ children }: { children: JSX.Element }): JSX.Element {
   const { t } = useLanguage();
   const basePath = stripLocalePrefix(pathname);
   const isHome = basePath === "/";
-  const currentTool = FILE_TOOLS.find((tool) => tool.path === basePath);
   const isNarrowViewport = useMediaQuery("(max-width: 900px)");
   const [isToolsOpen, setToolsOpen] = useState(false);
   const toolsButtonRef = useRef<HTMLButtonElement>(null);
@@ -382,28 +384,6 @@ function ToolFrame({ children }: { children: JSX.Element }): JSX.Element {
       document.body.style.overflow = previousOverflow;
     };
   }, [isNarrowViewport, isToolsOpen]);
-
-  useEffect(() => {
-    if (!currentTool || isHome) {
-      return;
-    }
-    try {
-      const stored = window.localStorage.getItem("nexaforge-recent-tools");
-      const previous = stored ? JSON.parse(stored) : [];
-      const recent = Array.isArray(previous)
-        ? previous.filter((id): id is string => typeof id === "string")
-        : [];
-      window.localStorage.setItem(
-        "nexaforge-recent-tools",
-        JSON.stringify([
-          currentTool.id,
-          ...recent.filter((id) => id !== currentTool.id),
-        ].slice(0, 6))
-      );
-    } catch {
-      // Recent tools are best-effort when storage is unavailable.
-    }
-  }, [currentTool, isHome]);
 
   return (
     <div className="site-shell">
