@@ -1,0 +1,61 @@
+{
+  "base": "http://127.0.0.1:4187",
+  "results": [
+    {
+      "name": "en-1440",
+      "toolCount": 64,
+      "categories": [
+        "Image",
+        "PDF",
+        "Data",
+        "Developer",
+        "Text",
+        "QR & Barcode"
+      ],
+      "clippedTitles": [],
+      "errors": []
+    },
+    {
+      "name": "en-390",
+      "toolCount": 64,
+      "categories": [
+        "Image",
+        "PDF",
+        "Data",
+        "Developer",
+        "Text",
+        "QR & Barcode"
+      ],
+      "clippedTitles": [],
+      "errors": []
+    },
+    {
+      "name": "zh-1440",
+      "toolCount": 64,
+      "categories": [
+        "影像",
+        "PDF",
+        "資料",
+        "開發者",
+        "文字",
+        "QR 與條碼"
+      ],
+      "clippedTitles": [],
+      "errors": []
+    },
+    {
+      "name": "zh-390",
+      "toolCount": 64,
+      "categories": [
+        "影像",
+        "PDF",
+        "資料",
+        "開發者",
+        "文字",
+        "QR 與條碼"
+      ],
+      "clippedTitles": [],
+      "errors": []
+    }
+  ]
+}

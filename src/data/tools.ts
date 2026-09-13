@@ -1,4 +1,5 @@
 import type { ToolDefinition } from "../types/tool";
+import { TOOL_CATEGORY_ORDER } from "./toolVisuals";
 
 export const FILE_TOOLS: ToolDefinition[] = [
   {
@@ -627,5 +628,5 @@ export const TOOLS_BY_CATEGORY = FILE_TOOLS.reduce(
     acc[key].push(tool);
     return acc;
   },
-  {} as Record<ToolDefinition["category"], ToolDefinition[]>
+  Object.fromEntries(TOOL_CATEGORY_ORDER.map(category => [category, [] as ToolDefinition[]])) as Record<ToolDefinition["category"], ToolDefinition[]>
 );
