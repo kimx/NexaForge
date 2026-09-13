@@ -312,7 +312,7 @@ Files never leave your browser.
 
 Search Tools
 
-Popular Tools
+Featured Tools
 ┌──────────────┐
 │ Image Resize │
 └──────────────┘

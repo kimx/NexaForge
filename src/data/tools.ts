@@ -2,6 +2,15 @@ import type { ToolDefinition } from "../types/tool";
 
 export const FILE_TOOLS: ToolDefinition[] = [
   {
+    id: "list-cleanup",
+    title: "List Cleanup",
+    description: "Clean, deduplicate, and sort lists with reusable local templates.",
+    path: "/text/list-cleanup",
+    category: "Text",
+    aliases: ["clean list", "list template", "清單清理", "清單範本"],
+    keywords: ["list", "clean", "deduplicate", "sort", "template", "清理", "去重", "排序"],
+  },
+  {
     id: "image-to-pdf",
     title: "Image to PDF",
     description: "Combine ordered JPG, PNG, and WebP images into one PDF with one image per page.",
@@ -25,7 +34,7 @@ export const FILE_TOOLS: ToolDefinition[] = [
     description: "Batch resize JPG, PNG, or WebP directly in the browser.",
     path: "/image/resize",
     category: "Image",
-    aliases: ["resize image", "scale image", "change size"],
+    aliases: ["resize image", "scale image", "change size", "照片縮小", "圖片縮小", "圖片變小"],
     keywords: ["photo", "image", "jpeg", "png", "webp"],
   },
   {
@@ -43,7 +52,7 @@ export const FILE_TOOLS: ToolDefinition[] = [
     description: "Batch compress images with quality control and compare file sizes.",
     path: "/image/compress",
     category: "Image",
-    aliases: ["compress image", "reduce image size", "optimize photo"],
+    aliases: ["compress image", "reduce image size", "optimize photo", "圖片變小", "照片壓縮", "縮小圖片"],
     keywords: ["photo", "jpeg", "png", "webp", "quality"],
   },
   {
@@ -133,7 +142,7 @@ export const FILE_TOOLS: ToolDefinition[] = [
     description: "Merge many PDF files and download a single file.",
     path: "/pdf/merge",
     category: "PDF",
-    aliases: ["combine pdf", "merge pdf", "append pdf"],
+    aliases: ["combine pdf", "merge pdf", "append pdf", "PDF 合在一起", "PDF合在一起"],
     keywords: ["document", "pdf", "combine", "stitch"],
   },
   {
@@ -322,7 +331,7 @@ export const FILE_TOOLS: ToolDefinition[] = [
     description: "Keep the first copy of each line and remove repeats.",
     path: "/text/remove-duplicate-lines",
     category: "Text",
-    aliases: ["dedupe lines", "unique lines", "remove repeated lines"],
+    aliases: ["dedupe lines", "unique lines", "remove repeated lines", "名單去重", "名單重複移除", "dedupe list"],
     keywords: ["text", "lines", "dedupe", "cleanup"],
   },
   {
@@ -461,6 +470,15 @@ export const FILE_TOOLS: ToolDefinition[] = [
     keywords: ["developer", "timestamp", "epoch", "date", "time"],
   },
   {
+    id: "local-time-converter",
+    title: "Local Time Converter",
+    description: "Convert ISO 8601 and UTC times to your browser's local time.",
+    path: "/developer/local-time",
+    category: "Developer",
+    aliases: ["local time", "timezone converter", "utc to local", "iso time converter"],
+    keywords: ["developer", "time", "timezone", "utc", "iso 8601", "offset"],
+  },
+  {
     id: "json-yaml",
     title: "YAML ↔ JSON Converter",
     description: "Convert common JSON and YAML data locally.",
@@ -597,6 +615,7 @@ export const TOOL_RELATIONSHIPS: Record<string, string[]> = {
   "base64": ["json-formatter", "url-encoder", "hash", "uuid"],
   "url-encoder": ["base64", "url-parser", "unix-timestamp", "json-formatter"],
   "unix-timestamp": ["uuid", "url-encoder", "json-formatter", "hash"],
+  "local-time-converter": ["unix-timestamp", "cron-builder", "url-encoder", "uuid"],
 };
 
 export const TOOLS_BY_CATEGORY = FILE_TOOLS.reduce(

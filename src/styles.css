@@ -4231,6 +4231,40 @@ select:focus {
   color: var(--text-primary);
 }
 
+.privacy-notice__analytics-control {
+  margin-inline-start: 6px;
+  padding: 0;
+  border: 0;
+  color: inherit;
+  background: transparent;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.feedback-prompt {
+  display: grid;
+  gap: 10px;
+}
+
+.feedback-prompt h2,
+.feedback-prompt p {
+  margin: 0;
+}
+
+.feedback-prompt__options {
+  display: grid;
+  gap: 8px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 0.7rem;
+  padding: 12px;
+}
+
+.feedback-prompt__options label {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
 .privacy-notice p,
 .notice p {
   color: var(--text-dim);
@@ -4933,6 +4967,76 @@ button:hover,
   outline: none;
 }
 
+.home-task-entries {
+  margin: 0 0 18px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 0.8rem;
+  background: var(--surface);
+}
+
+.home-task-entries__heading h2 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 1.15rem;
+  letter-spacing: -0.025em;
+}
+
+.home-task-entries__heading p {
+  margin: 5px 0 14px;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+.home-task-entries__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.home-task-entry {
+  display: flex;
+  min-height: 148px;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px;
+  border: 1px solid rgba(135, 178, 226, 0.2);
+  border-radius: 13px;
+  background: rgba(255, 255, 255, 0.74);
+}
+
+.home-task-entry h3 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 0.92rem;
+}
+
+.home-task-entry p {
+  margin: 7px 0 0;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+.home-task-entry__link {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: 7px;
+  color: var(--brand-primary);
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.home-task-entry__link:hover,
+.home-task-entry__link:focus-visible {
+  color: var(--text-primary);
+  outline: 2px solid rgba(61, 126, 211, 0.35);
+  outline-offset: 3px;
+}
+
 .home-hero__actions {
   margin-top: 16px;
 }
@@ -5416,6 +5520,10 @@ button:hover,
 
   .home-discovery__links {
     justify-content: flex-start;
+  }
+
+  .home-task-entries__grid {
+    grid-template-columns: 1fr;
   }
 
   .page-mini-banner {
@@ -6514,6 +6622,81 @@ button.pdf-page-picker__action:disabled {
   overflow-wrap: anywhere;
 }
 
+.local-time__workspace,
+.local-time__options {
+  min-width: 0;
+}
+
+.local-time__workspace textarea {
+  width: 100%;
+  min-width: 0;
+  font: 1rem/1.4 ui-monospace, SFMono-Regular, Consolas, monospace;
+}
+
+.local-time__hint,
+.local-time__empty,
+.local-time__status {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  line-height: 1.45;
+}
+
+.local-time__timezone {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+}
+
+.local-time__timezone span {
+  color: var(--text-primary);
+  font: 1rem/1.4 ui-monospace, SFMono-Regular, Consolas, monospace;
+}
+
+.local-time__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.local-time__result-list {
+  display: grid;
+  gap: 0;
+  margin: 0 0 16px;
+}
+
+.local-time__result-row {
+  display: grid;
+  grid-template-columns: minmax(116px, 0.7fr) minmax(0, 1.3fr);
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.local-time__result-row:first-child {
+  padding-top: 0;
+}
+
+.local-time__result-row:last-child {
+  border-bottom: 0;
+}
+
+.local-time__result-row dt {
+  color: var(--text-secondary);
+  font-weight: 700;
+}
+
+.local-time__result-row dd {
+  min-width: 0;
+  margin: 0;
+  color: var(--text-primary);
+  overflow-wrap: anywhere;
+}
+
+.local-time__result-row code {
+  font: 0.84rem/1.5 ui-monospace, SFMono-Regular, Consolas, monospace;
+}
+
 /* JSON topic hub */
 .json-workspace-nav {
   margin: 18px 0 24px;
@@ -7606,6 +7789,11 @@ button.tool-sidebar__category-toggle .tool-sidebar__icon .tool-sidebar__svg {
   }
 
   .unix-timestamp__result-row {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+
+  .local-time__result-row {
     grid-template-columns: 1fr;
     gap: 4px;
   }

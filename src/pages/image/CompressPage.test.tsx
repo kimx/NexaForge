@@ -122,4 +122,87 @@ describe("ImageCompressPage", () => {
     expect(previewDisclosure).not.toHaveAttribute("open");
     expect(downloadZip.compareDocumentPosition(previewDisclosure as Node) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
+
+  it("validates custom target sizes and keeps the process action disabled", () => {
+    const { container } = renderWithProviders(<ImageCompressPage />);
+    fireEvent.click(screen.getByLabelText("Target-size mode"));
+    fireEvent.change(screen.getByRole("combobox", { name: /Target size/i }), { target: { value: "custom" } });
+
+    const customInput = screen.getByRole("spinbutton", { name: /Custom limit/i });
+    expect(screen.getByRole("alert")).toHaveTextContent("Enter a number greater than 0.");
+    expect(screen.getByRole("button", { name: "Process" })).toBeDisabled();
+
+    fireEvent.change(customInput, { target: { value: "not-a-number" } });
+    expect(screen.getByRole("alert")).toHaveTextContent("Enter a number greater than 0.");
+    fireEvent.change(customInput, { target: { value: "-1" } });
+    expect(screen.getByRole("alert")).toHaveTextContent("Enter a number greater than 0.");
+    fireEvent.change(customInput, { target: { value: "25" } });
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    expect(container.querySelector('input[type="number"]')).toHaveValue(25);
+  });
+
+  it("shows target status and asks before resizing dimensions", async () => {
+    vi.spyOn(imageService, "compressImageToTarget").mockResolvedValue({
+      blob: new Blob(["over-limit"], { type: "image/jpeg" }),
+      fileName: "sample.jpg",
+      mimeType: "image/jpeg",
+      size: 9,
+      width: 100,
+      height: 50,
+      originalWidth: 100,
+      originalHeight: 50,
+      targetBytes: 8,
+      targetStatus: "resize-available",
+    });
+    const { container } = renderWithProviders(<ImageCompressPage />);
+    fireEvent.click(screen.getByLabelText("Target-size mode"));
+    fireEvent.change(container.querySelector('input[type="file"]') as HTMLInputElement, {
+      target: { files: [new File(["source"], "sample.png", { type: "image/png" })] },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Process" }));
+
+    expect(await screen.findByText("Can reduce dimensions")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Reduce dimensions" })).toBeEnabled();
+    fireEvent.click(screen.getByRole("button", { name: "Keep current dimensions" }));
+    expect(await screen.findByText("Target not met")).toBeInTheDocument();
+    expect(screen.queryByText("Can reduce dimensions")).not.toBeInTheDocument();
+  });
+
+  it("keeps successful downloads available when one batch file fails", async () => {
+    vi.spyOn(imageService, "compressImage").mockImplementation(async (file) => {
+      if (file.name === "broken.png") {
+        throw new Error("broken image");
+      }
+      return { blob: new Blob(["ok"]), fileName: "ok.jpg", mimeType: "image/jpeg", size: 2, width: 1, height: 1 };
+    });
+    const { container } = renderWithProviders(<ImageCompressPage />);
+    fireEvent.change(container.querySelector('input[type="file"]') as HTMLInputElement, {
+      target: { files: [new File(["a"], "ok.png", { type: "image/png" }), new File(["b"], "broken.png", { type: "image/png" })] },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Process" }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent("1 file(s) failed");
+    expect(screen.getByRole("button", { name: "Download ok.jpg" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Download ZIP" })).toBeEnabled();
+  });
+
+  it("cancels processing and ignores the late result", async () => {
+    let signal: AbortSignal | undefined;
+    let resolveProcessing: (result: FileProcessResult) => void = () => {};
+    vi.spyOn(imageService, "compressImage").mockImplementation((_file, options) => new Promise((resolve) => {
+      signal = options.signal;
+      resolveProcessing = resolve;
+    }));
+    const { container } = renderWithProviders(<ImageCompressPage />);
+    fireEvent.change(container.querySelector('input[type="file"]') as HTMLInputElement, {
+      target: { files: [new File(["a"], "sample.png", { type: "image/png" })] },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Process" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Cancel" }));
+
+    expect(signal?.aborted).toBe(true);
+    resolveProcessing({ blob: new Blob(["late"]), fileName: "late.jpg", mimeType: "image/jpeg", size: 4 });
+    await waitFor(() => expect(screen.getByRole("button", { name: "Process" })).toBeEnabled());
+    expect(screen.queryByRole("button", { name: "Download late.jpg" })).not.toBeInTheDocument();
+  });
 });

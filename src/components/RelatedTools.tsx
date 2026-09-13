@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useLanguage, useLocalizedToolMeta } from "../context/LanguageContext";
+import { FILE_TOOLS } from "../data/tools";
 import { localizePath } from "../routing/localePaths";
 import type { ToolDefinition } from "../types/tool";
 
@@ -25,10 +26,18 @@ export function RelatedTools({
 }: RelatedToolsProps): JSX.Element {
   const { locale } = useLanguage();
   const localToolMeta = useLocalizedToolMeta();
-  const items = links ?? tools.map((tool) => ({
-    path: tool.path,
-    label: localToolMeta(tool.id, "title"),
-  }));
+  const items = links
+    ? links.map((link) => {
+        const tool = FILE_TOOLS.find((item) => item.path === link.path);
+        return {
+          path: link.path,
+          label: link.label === link.path && tool ? localToolMeta(tool.id, "title") : link.label,
+        };
+      })
+    : tools.map((tool) => ({
+        path: tool.path,
+        label: localToolMeta(tool.id, "title"),
+      }));
 
   return (
     <nav className={`related-tools-nav ${className}`.trim()} aria-label={ariaLabel ?? heading}>

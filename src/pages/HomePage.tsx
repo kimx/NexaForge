@@ -11,6 +11,11 @@ import {
 import { AdSlot } from "../components/AdSlot";
 import { localizePath } from "../routing/localePaths";
 import { trackEvent } from "../utils/analytics";
+import { usePersonalization } from "../hooks/usePersonalization";
+import { clearRecentTools, rememberTool } from "../services/personalization";
+import { usePersonalizationCopy } from "../i18n/personalization";
+import { PinToolButton } from "../components/PinToolButton";
+import { PersonalSettings } from "../components/PersonalSettings";
 
 const categoryOrder: ToolDefinition["category"][] = [
   "Image",
@@ -20,6 +25,8 @@ const categoryOrder: ToolDefinition["category"][] = [
   "Text",
   "QR & Barcode",
 ];
+
+type HomeFilter = "Featured" | "All" | ToolDefinition["category"];
 
 const FEATURED_TOOL_IDS = [
   "image-resize",
@@ -35,6 +42,27 @@ const FEATURED_TOOL_IDS = [
 const FEATURED_TOOLS = FEATURED_TOOL_IDS
   .map((id) => FILE_TOOLS.find((tool) => tool.id === id))
   .filter((tool): tool is ToolDefinition => Boolean(tool));
+
+const TASK_ENTRY_DEFINITIONS = [
+  {
+    id: "document-delivery",
+    toolId: "image-to-pdf",
+    titleKey: "home.task.documentDelivery.title",
+    descriptionKey: "home.task.documentDelivery.description",
+  },
+  {
+    id: "developer-data",
+    toolId: "json-formatter",
+    titleKey: "home.task.developerData.title",
+    descriptionKey: "home.task.developerData.description",
+  },
+  {
+    id: "list-cleanup",
+    toolId: "list-cleanup",
+    titleKey: "home.task.listCleanup.title",
+    descriptionKey: "home.task.listCleanup.description",
+  },
+] as const;
 
 const TOOL_VISUALS: Record<string, { label: string; tone: string }> = {
   "image-resize": { label: "IMG", tone: "blue" },
@@ -96,6 +124,7 @@ function ToolCard({ tool, onOpen, className = "" }: { tool: ToolDefinition; onOp
           <p>{localToolMeta(tool.id, "description")}</p>
         </div>
       </div>
+      <div className="home-tool-card__actions">
       <Link
         to={localizePath(tool.path, locale)}
         className="btn secondary home-tool-card__action"
@@ -105,6 +134,8 @@ function ToolCard({ tool, onOpen, className = "" }: { tool: ToolDefinition; onOp
         {t("home.open")}
         <span aria-hidden="true">→</span>
       </Link>
+      <PinToolButton toolId={tool.id} />
+      </div>
     </article>
   );
 }
@@ -113,9 +144,9 @@ export function HomePage(): JSX.Element {
   const { t, locale } = useLanguage();
   const toolMeta = useLocalizedToolMeta();
   const [keyword, setKeyword] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState<"All" | ToolDefinition["category"]>("All");
-  const [recentToolIds, setRecentToolIds] = useState<string[]>([]);
-  const [recentToolsLoaded, setRecentToolsLoaded] = useState(false);
+  const [categoryFilter, setCategoryFilter] = useState<HomeFilter>("Featured");
+  const { recent: recentToolIds, pinned: pinnedToolIds } = usePersonalization();
+  const personalCopy = usePersonalizationCopy();
   const searchRef = useRef<HTMLInputElement>(null);
   const homeAdSlotId = import.meta.env.VITE_ADSENSE_SLOT_HOME;
   const homeMeta: ToolMeta = {
@@ -127,38 +158,11 @@ export function HomePage(): JSX.Element {
   useSeo(homeMeta);
 
   useEffect(() => {
-    try {
-      const stored = window.localStorage.getItem("nexaforge-recent-tools");
-      const parsed = stored ? JSON.parse(stored) : [];
-      setRecentToolIds(
-        Array.isArray(parsed)
-          ? parsed.filter((id): id is string => typeof id === "string").slice(0, 4)
-          : []
-      );
-    } catch {
-      setRecentToolIds([]);
-    } finally {
-      setRecentToolsLoaded(true);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!recentToolsLoaded) {
-      return;
-    }
-    try {
-      window.localStorage.setItem("nexaforge-recent-tools", JSON.stringify(recentToolIds));
-    } catch {
-      // Recent tools are best-effort when storage is unavailable.
-    }
-  }, [recentToolIds, recentToolsLoaded]);
-
-  useEffect(() => {
     const handleShortcut = (event: KeyboardEvent) => {
       const target = event.target as HTMLElement | null;
       if (event.key === "Escape") {
         setKeyword("");
-        setCategoryFilter("All");
+        setCategoryFilter("Featured");
         return;
       }
       if (event.key === "/" && !event.metaKey && !event.ctrlKey && !event.altKey && target?.tagName !== "INPUT" && target?.tagName !== "TEXTAREA" && !target?.isContentEditable) {
@@ -170,8 +174,13 @@ export function HomePage(): JSX.Element {
     return () => window.removeEventListener("keydown", handleShortcut);
   }, []);
 
-  const rememberTool = (toolId: string) => {
-    setRecentToolIds((current) => [toolId, ...current.filter((id) => id !== toolId)].slice(0, 4));
+  const launchTaskEntry = (taskId: string, toolId: string) => {
+    rememberTool(toolId);
+    trackEvent("task_launch", {
+      taskId,
+      tool: toolId,
+      action: "open",
+    });
   };
 
   const filteredTools = useMemo(() => {
@@ -204,7 +213,7 @@ export function HomePage(): JSX.Element {
       };
     })
       .filter(({ tool, score }) =>
-        (categoryFilter === "All" || tool.category === categoryFilter) && score > 0
+        (categoryFilter === "Featured" || categoryFilter === "All" || tool.category === categoryFilter) && score > 0
       )
       .sort((left, right) => right.score - left.score || left.index - right.index)
       .map(({ tool }) => tool);
@@ -227,17 +236,30 @@ export function HomePage(): JSX.Element {
     return () => window.clearTimeout(timer);
   }, [categoryFilter, filteredTools.length, keyword]);
 
+  const pinnedTools = useMemo(
+    () => pinnedToolIds
+      .map((id) => FILE_TOOLS.find((tool) => tool.id === id))
+      .filter((tool): tool is ToolDefinition => Boolean(tool)),
+    [pinnedToolIds]
+  );
+  const pinnedToolIdSet = useMemo(() => new Set(pinnedTools.map((tool) => tool.id)), [pinnedTools]);
   const recentTools = useMemo(
-    () => recentToolIds.slice(0, 4).map((id) => FILE_TOOLS.find((tool) => tool.id === id)).filter((tool): tool is ToolDefinition => Boolean(tool)),
-    [recentToolIds]
+    () => recentToolIds
+      .slice(0, 4)
+      .map((id) => FILE_TOOLS.find((tool) => tool.id === id))
+      .filter((tool): tool is ToolDefinition => tool !== undefined && !pinnedToolIdSet.has(tool.id)),
+    [pinnedToolIdSet, recentToolIds]
   );
 
   const keywordActive = keyword.trim().length > 0;
-  const isFilterActive = keyword.trim().length > 0 || categoryFilter !== "All";
-  const recentToolIdSet = useMemo(() => new Set(recentTools.map((tool) => tool.id)), [recentTools]);
-  const displayedTools = isFilterActive
-    ? filteredTools
-    : FEATURED_TOOLS.filter((tool) => !recentToolIdSet.has(tool.id));
+  const isDefaultView = !keywordActive && categoryFilter === "Featured";
+  const personalizedToolIdSet = useMemo(
+    () => new Set([...pinnedTools, ...recentTools].map((tool) => tool.id)),
+    [pinnedTools, recentTools]
+  );
+  const displayedTools = isDefaultView
+    ? FEATURED_TOOLS.filter((tool) => !personalizedToolIdSet.has(tool.id))
+    : filteredTools;
 
   return (
     <div className={`home-page${keywordActive ? " home-page--searching" : ""}`}>
@@ -296,9 +318,45 @@ export function HomePage(): JSX.Element {
             </nav>
           ) : null}
 
+          {!keywordActive ? (
+            <section className="home-task-entries" data-testid="task-entries" aria-labelledby="home-task-entries-title">
+              <div className="home-task-entries__heading">
+                <h2 id="home-task-entries-title">{t("home.taskEntries")}</h2>
+                <p>{t("home.taskEntriesSubtitle")}</p>
+              </div>
+              <div className="home-task-entries__grid">
+                {TASK_ENTRY_DEFINITIONS.map((task) => {
+                  const tool = FILE_TOOLS.find((candidate) => candidate.id === task.toolId);
+                  if (!tool) {
+                    return null;
+                  }
+
+                  const localizedTitle = toolMeta(tool.id, "title");
+                  return (
+                    <article className="home-task-entry" key={task.id}>
+                      <div>
+                        <h3>{t(task.titleKey)}</h3>
+                        <p>{t(task.descriptionKey)}</p>
+                      </div>
+                      <Link
+                        to={localizePath(tool.path, locale)}
+                        className="home-task-entry__link"
+                        aria-label={t("home.openNamed", { tool: localizedTitle })}
+                        onClick={() => launchTaskEntry(task.id, tool.id)}
+                      >
+                        {t("home.open")}
+                        <span aria-hidden="true">→</span>
+                      </Link>
+                    </article>
+                  );
+                })}
+              </div>
+            </section>
+          ) : null}
+
           <div className="finder-filters" aria-label={t("home.categoryFilterLabel")}>
             <span className="finder-filters__label">{t("home.filterBy")}</span>
-            {(["All", ...categoryOrder] as const).map((category) => (
+            {(["Featured", "All", ...categoryOrder] as const).map((category) => (
               <button
                 type="button"
                 key={category}
@@ -306,18 +364,31 @@ export function HomePage(): JSX.Element {
                 onClick={() => setCategoryFilter(category)}
                 aria-pressed={categoryFilter === category}
               >
-                {category === "All" ? t("home.categories.all") : localizedCategoryLabel(category, t)}
+                {category === "Featured"
+                  ? t("home.categories.featured")
+                  : category === "All"
+                    ? t("home.categories.all")
+                    : localizedCategoryLabel(category, t)}
               </button>
             ))}
           </div>
 
-          {!isFilterActive && recentTools.length > 0 ? (
+          {isDefaultView && pinnedTools.length > 0 ? (
+            <section className="workspace-section" data-testid="pinned-tools" aria-labelledby="pinned-tools-title">
+              <div className="workspace-section__heading"><h2 id="pinned-tools-title">{personalCopy.pinned}</h2></div>
+              <div className="tool-grid home-tool-grid">
+                {pinnedTools.map((tool) => <ToolCard key={tool.id} tool={tool} onOpen={rememberTool} />)}
+              </div>
+            </section>
+          ) : null}
+
+          {isDefaultView && recentTools.length > 0 ? (
             <div className="workspace-section recent-tools-section" data-testid="recent-tools">
               <div className="workspace-section__heading">
                 <h2>{t("home.recentTools")}</h2>
                 <div className="recent-tools-section__meta">
                   <span>{t("home.recentToolsCount", { count: recentTools.length })}</span>
-                  <button type="button" className="text-button" onClick={() => setRecentToolIds([])}>
+                  <button type="button" className="text-button" onClick={clearRecentTools}>
                     {t("home.clearRecentTools")}
                   </button>
                 </div>
@@ -330,11 +401,11 @@ export function HomePage(): JSX.Element {
 
           <div
             className="workspace-section"
-            id="popular-tools"
-            data-testid={!isFilterActive ? "featured-tools" : undefined}
+            id="featured-tools"
+            data-testid={isDefaultView ? "featured-tools" : undefined}
           >
             <div className="workspace-section__heading">
-              <h2>{t(isFilterActive ? "home.searchResults" : "home.popular")}</h2>
+              <h2>{t(keywordActive ? "home.searchResults" : isDefaultView ? "home.featured" : "home.allTools")}</h2>
               <span>{t("sidebar.resultCount", { count: displayedTools.length })}</span>
             </div>
             {displayedTools.length > 0 ? (
@@ -345,13 +416,14 @@ export function HomePage(): JSX.Element {
               <div className="finder-empty" role="status">
                 <strong>{t("home.noResults")}</strong>
                 <p>{t("home.noResultsHint")}</p>
-                <button type="button" className="btn secondary" onClick={() => { setKeyword(""); setCategoryFilter("All"); }}>
+                <button type="button" className="btn secondary" onClick={() => { setKeyword(""); setCategoryFilter("Featured"); }}>
                   {t("home.clearFilters")}
                 </button>
               </div>
             )}
           </div>
 
+      <PersonalSettings />
       <AdSlot position="home" adSlotId={homeAdSlotId} />
     </div>
   );

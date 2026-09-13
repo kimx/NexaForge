@@ -1,0 +1,19 @@
+.list-cleanup { min-width: 0; }
+.list-cleanup textarea, .list-cleanup select, .list-cleanup input:not([type="checkbox"]) { width: 100%; min-width: 0; box-sizing: border-box; }
+.list-cleanup__rules { border: 0; padding: 0; margin: 0; min-width: 0; display: grid; gap: 1.25rem; }
+.list-cleanup__rules section { display: grid; gap: .65rem; }
+.list-cleanup__rules h3, .list-cleanup__rules p { margin: 0; }
+.tool-form.list-cleanup .checkbox-option { display: grid; grid-template-columns: 1.1rem minmax(0, 1fr); align-items: start; gap: .6rem; font-weight: 400; line-height: 1.5; }
+.tool-form.list-cleanup .checkbox-option input { width: 1rem; height: 1rem; margin: .2rem 0 0; padding: 0; }
+.list-cleanup__templates { display: grid; gap: .8rem; }
+.list-cleanup__preview { min-width: 0; }
+.list-cleanup__preview summary { cursor: pointer; padding-block: .75rem; overflow-wrap: anywhere; }
+.list-cleanup .tool-actions { flex-wrap: wrap; }
+.list-cleanup .btn { white-space: normal; min-height: 44px; }
+.list-cleanup :is(input, select, textarea, button, summary):focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
+@media (max-width: 600px) {
+  .list-cleanup .tool-actions { flex-direction: column; flex-wrap: nowrap; align-items: stretch; }
+  .list-cleanup .tool-actions .btn { flex: 0 0 auto; width: 100%; }
+}
+@media (min-width: 1100px) { .tool-page--list-cleanup .tool-page__duo { grid-template-columns: minmax(0, 1.5fr) minmax(18rem, 1fr); } }
+@media (max-width: 1099px) { .tool-page--list-cleanup .tool-page__duo { grid-template-columns: minmax(0, 1fr); } }

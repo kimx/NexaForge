@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { useLanguage, useLocalizedToolMeta } from "../../context/LanguageContext";
 import { TEXT_WORKFLOW_TOOLS, useTextWorkflow, type TextWorkflowToolId } from "../../context/TextWorkflowContext";
 import { localizePath } from "../../routing/localePaths";
+import { listCleanupMessages } from "../../pages/text/listCleanupMessages";
 
 export function TextWorkflowPanel({ currentTool }: { currentTool: TextWorkflowToolId }): JSX.Element {
   const { t, locale } = useLanguage();
@@ -12,6 +13,7 @@ export function TextWorkflowPanel({ currentTool }: { currentTool: TextWorkflowTo
   return (
     <div className="text-workflow-panel">
       <p className="text-workflow-panel__notice">{t("textWorkflow.memory")}</p>
+      <Link className="btn secondary" to={localizePath("/text/list-cleanup", locale)}>{listCleanupMessages[locale].title}</Link>
       <nav aria-label={t("textWorkflow.steps")} className="tool-actions">
         {TEXT_WORKFLOW_TOOLS.filter((tool) => tool === currentTool || drafts[tool].input || drafts[tool].output !== null).map((tool) => (
           <Link key={tool} to={localizePath(`/text/${tool}`, locale)} aria-current={tool === currentTool ? "step" : undefined}>

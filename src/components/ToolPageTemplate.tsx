@@ -11,6 +11,9 @@ import { localizePath } from "../routing/localePaths";
 import { getSeoLandingContent } from "../seo/landingPages";
 import { SeoLandingContent } from "./SeoLandingContent";
 import { RelatedTools } from "./RelatedTools";
+import { FeedbackPrompt } from "./FeedbackPrompt";
+import { PinToolButton } from "./PinToolButton";
+import { rememberTool } from "../services/personalization";
 
 interface ToolPageTemplateProps {
   tool: ToolDefinition;
@@ -71,6 +74,10 @@ export function ToolPageTemplate({
   }, [tool.id]);
 
   useEffect(() => {
+    rememberTool(tool.id);
+  }, [tool.id, pathname]);
+
+  useEffect(() => {
     const previousState = previousWorkflowState.current;
     const nextState = workflow?.state;
     previousWorkflowState.current = nextState;
@@ -126,6 +133,7 @@ export function ToolPageTemplate({
 
         <div className="tool-page__title-row">
           <h1 className="tool-page__title">{displayTitle}</h1>
+          <PinToolButton toolId={tool.id} />
           <PrivacyNotice inline contentOnly={tool.category === "QR & Barcode"} />
         </div>
         <p className="short-description tool-page__description">{displayDescription}</p>
@@ -191,6 +199,8 @@ export function ToolPageTemplate({
             </ol>
           </section>
         )}
+
+        <FeedbackPrompt tool={tool.id} />
 
         <AdSlot
           position="tool-result"
