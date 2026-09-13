@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { FILE_TOOLS } from "../data/tools";
+import { TOOL_CATEGORY_ORDER, getToolVisual } from "../data/toolVisuals";
 import type { ToolDefinition, ToolMeta } from "../types/tool";
 import { useSeo } from "../hooks/useSeo";
 import {
@@ -16,15 +17,6 @@ import { clearRecentTools, rememberTool } from "../services/personalization";
 import { usePersonalizationCopy } from "../i18n/personalization";
 import { PinToolButton } from "../components/PinToolButton";
 import { PersonalSettings } from "../components/PersonalSettings";
-
-const categoryOrder: ToolDefinition["category"][] = [
-  "Image",
-  "PDF",
-  "Data",
-  "Developer",
-  "Text",
-  "QR & Barcode",
-];
 
 type HomeFilter = "Featured" | "All" | ToolDefinition["category"];
 
@@ -64,36 +56,6 @@ const TASK_ENTRY_DEFINITIONS = [
   },
 ] as const;
 
-const TOOL_VISUALS: Record<string, { label: string; tone: string }> = {
-  "image-resize": { label: "IMG", tone: "blue" },
-  "image-compress": { label: "↘", tone: "mint" },
-  "image-convert": { label: "IMG", tone: "sky" },
-  "image-exif-viewer": { label: "EXIF", tone: "amber" },
-  "image-remove-exif": { label: "META", tone: "violet" },
-  "pdf-merge": { label: "PDF", tone: "red" },
-  "pdf-split": { label: "✂", tone: "violet" },
-  "pdf-rotate": { label: "PDF", tone: "red" },
-  "json-formatter": { label: "{}", tone: "blue" },
-  "csv-viewer": { label: "CSV", tone: "mint" },
-  "csv-to-json": { label: "CSV", tone: "mint" },
-  "json-to-csv": { label: "{}", tone: "blue" },
-  base64: { label: "64", tone: "amber" },
-  "word-counter": { label: "TXT", tone: "mint" },
-  "case-converter": { label: "Aa", tone: "amber" },
-  "remove-duplicate-lines": { label: "≡", tone: "violet" },
-  "sort-lines": { label: "AZ", tone: "sky" },
-  "markdown-previewer": { label: "MD", tone: "sky" },
-  hash: { label: "#", tone: "violet" },
-  uuid: { label: "ID", tone: "sky" },
-  "jwt-key": { label: "KEY", tone: "violet" },
-  "jwt-decoder": { label: "JWT", tone: "blue" },
-  "url-encoder": { label: "URL", tone: "sky" },
-  "unix-timestamp": { label: "TIME", tone: "mint" },
-  "json-yaml": { label: "YAML", tone: "amber" },
-  "json-diff": { label: "DIFF", tone: "violet" },
-  "qr-code": { label: "QR", tone: "blue" },
-};
-
 function searchMatchScore(values: string[], query: string): number {
   return values.reduce((best, value) => {
     const normalized = value.trim().toLowerCase();
@@ -107,7 +69,7 @@ function searchMatchScore(values: string[], query: string): number {
 function ToolCard({ tool, onOpen, className = "" }: { tool: ToolDefinition; onOpen?: (toolId: string) => void; className?: string }): JSX.Element {
   const { t, locale } = useLanguage();
   const localToolMeta = useLocalizedToolMeta();
-  const visual = TOOL_VISUALS[tool.id] ?? { label: "FILE", tone: "blue" };
+  const visual = getToolVisual(tool);
   const localizedTitle = localToolMeta(tool.id, "title");
 
   return (
@@ -356,7 +318,7 @@ export function HomePage(): JSX.Element {
 
           <div className="finder-filters" aria-label={t("home.categoryFilterLabel")}>
             <span className="finder-filters__label">{t("home.filterBy")}</span>
-            {(["Featured", "All", ...categoryOrder] as const).map((category) => (
+            {(["Featured", "All", ...TOOL_CATEGORY_ORDER] as const).map((category) => (
               <button
                 type="button"
                 key={category}
