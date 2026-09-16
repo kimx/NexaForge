@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
 import { mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -134,9 +135,50 @@ const errored = await verifyOutput(erroredRoot);
 assert.equal(errored.ok, true, errored.errors.join("\n"));
 assert.match(errored.warnings.join("\n"), /incomplete/i);
 
+const cliRoot = await mkdtemp(path.join(tmpdir(), "web-demo-recorder-cli-"));
+const cliOutput = path.join(cliRoot, "output");
+await mkdir(path.join(cliOutput, "screenshots"), { recursive: true });
+await mkdir(path.join(cliOutput, "video"), { recursive: true });
+await writeFile(path.join(cliOutput, "video", "demo.webm"), "video");
+await writeFile(path.join(cliOutput, "demo.spec.ts"), "import { test } from '@playwright/test';\n");
+for (const step of manifest.steps) {
+  await writeFile(path.join(cliOutput, step.screenshot), "png");
+}
+const cliManifest = path.join(cliRoot, "manifest.json");
+await writeFile(cliManifest, `${JSON.stringify(manifest, null, 2)}\n`);
+
+const buildCli = spawnSync(
+  process.execPath,
+  [path.resolve(".codex/skills/web-demo-recorder/scripts/build-artifacts.mjs"), cliManifest, cliOutput],
+  { encoding: "utf8" },
+);
+assert.equal(buildCli.status, 0, buildCli.stderr);
+assert.match(buildCli.stdout, /Generated 5 synchronized artifacts/);
+
+const verifyCli = spawnSync(
+  process.execPath,
+  [path.resolve(".codex/skills/web-demo-recorder/scripts/verify-output.mjs"), cliOutput],
+  { encoding: "utf8" },
+);
+assert.equal(verifyCli.status, 0, verifyCli.stderr);
+assert.match(verifyCli.stdout, /Verified 2 synchronized recording steps/);
+
+const invalidCliManifest = clone(manifest);
+invalidCliManifest.steps[1].startMs = 4000;
+const invalidCliManifestPath = path.join(cliRoot, "invalid-manifest.json");
+await writeFile(invalidCliManifestPath, `${JSON.stringify(invalidCliManifest, null, 2)}\n`);
+const invalidBuildCli = spawnSync(
+  process.execPath,
+  [path.resolve(".codex/skills/web-demo-recorder/scripts/build-artifacts.mjs"), invalidCliManifestPath, cliOutput],
+  { encoding: "utf8" },
+);
+assert.notEqual(invalidBuildCli.status, 0);
+assert.match(invalidBuildCli.stderr, /overlap/i);
+
 await rm(root, { recursive: true, force: true });
 await rm(brokenSrtRoot, { recursive: true, force: true });
 await rm(missingVideoRoot, { recursive: true, force: true });
 await rm(missingScreenshotRoot, { recursive: true, force: true });
 await rm(erroredRoot, { recursive: true, force: true });
+await rm(cliRoot, { recursive: true, force: true });
 console.log("artifact generator tests passed");
