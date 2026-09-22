@@ -26,14 +26,16 @@ const ZH_ANNOTATIONS = `
 <ldml><annotations>
   <annotation cp="😀">臉 | 笑</annotation>
   <annotation cp="😀" type="tts">笑臉</annotation>
+  <annotation cp="☺">微笑 | 表情</annotation>
+  <annotation cp="☺" type="tts">微笑臉</annotation>
 </annotations></ldml>`;
 
 describe("emoji data generation", () => {
   it("keeps only fully-qualified emoji and preserves group order and complete ids", () => {
     expect(parseEmojiTest(EMOJI_TEST_FIXTURE)).toEqual([
-      { id: "1F600", emoji: "😀", group: "Smileys & Emotion", order: 0 },
-      { id: "263A-FE0F", emoji: "☺️", group: "Smileys & Emotion", order: 1 },
-      { id: "1F680", emoji: "🚀", group: "Travel & Places", order: 2 },
+      { id: "1F600", emoji: "😀", group: "Smileys & Emotion", order: 0, sourceNameEn: "grinning face" },
+      { id: "263A-FE0F", emoji: "☺️", group: "Smileys & Emotion", order: 1, sourceNameEn: "smiling face" },
+      { id: "1F680", emoji: "🚀", group: "Travel & Places", order: 2, sourceNameEn: "rocket" },
     ]);
   });
 
@@ -59,6 +61,11 @@ describe("emoji data generation", () => {
       nameEn: "rocket & spacecraft",
       nameZhHant: "rocket & spacecraft",
       keywordsZhHant: [],
+    });
+    expect(records.find((record) => record.emoji === "☺️")).toMatchObject({
+      nameEn: "smiling face",
+      nameZhHant: "微笑臉",
+      keywordsZhHant: ["微笑", "表情"],
     });
   });
 });

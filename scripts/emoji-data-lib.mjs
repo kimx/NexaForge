@@ -33,7 +33,7 @@ export function parseEmojiTest(source) {
     }
     if (!GROUPS.has(group)) continue;
 
-    const match = rawLine.match(/^([0-9A-F ]+)\s*;\s*fully-qualified\s*#\s*(\S+)/);
+    const match = rawLine.match(/^([0-9A-F ]+)\s*;\s*fully-qualified\s*#\s*(\S+)\s+E[0-9.]+\s+(.+?)\s*$/);
     if (!match) continue;
     const codePoints = match[1].trim().split(/\s+/);
     records.push({
@@ -41,6 +41,7 @@ export function parseEmojiTest(source) {
       emoji: String.fromCodePoint(...codePoints.map((value) => Number.parseInt(value, 16))),
       group,
       order: records.length,
+      sourceNameEn: match[3],
     });
   }
 
@@ -86,11 +87,13 @@ export function buildEmojiRecords(emojiTest, englishSources, traditionalChineseS
   const traditionalChinese = mergeAnnotationSources(traditionalChineseSources);
 
   return parseEmojiTest(emojiTest).map((record) => {
-    const englishAnnotation = english.get(record.emoji) ?? { name: "", keywords: [] };
-    const chineseAnnotation = traditionalChinese.get(record.emoji) ?? { name: "", keywords: [] };
-    const fallbackName = englishAnnotation.name || record.emoji;
+    const annotationKey = record.emoji.replaceAll("\uFE0F", "");
+    const englishAnnotation = english.get(record.emoji) ?? english.get(annotationKey) ?? { name: "", keywords: [] };
+    const chineseAnnotation = traditionalChinese.get(record.emoji) ?? traditionalChinese.get(annotationKey) ?? { name: "", keywords: [] };
+    const fallbackName = englishAnnotation.name || record.sourceNameEn;
+    const { sourceNameEn: _sourceNameEn, ...baseRecord } = record;
     return {
-      ...record,
+      ...baseRecord,
       nameEn: fallbackName,
       nameZhHant: chineseAnnotation.name || fallbackName,
       keywordsEn: englishAnnotation.keywords,
