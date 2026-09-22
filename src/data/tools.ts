@@ -309,6 +309,15 @@ export const FILE_TOOLS: ToolDefinition[] = [
     keywords: ["uuid", "v4", "v7", "guid", "identifier", "random", "rfc 9562"],
   },
   {
+    id: "emoji-picker",
+    title: "Emoji Picker & Unicode Tool",
+    description: "Search, copy, and inspect emoji with complete Unicode encoding details.",
+    path: "/tools/emoji-picker",
+    category: "Text",
+    aliases: ["emoji picker", "emoji copy", "emoji search", "unicode emoji", "表情符號", "emoji 搜尋", "emoji 複製"],
+    keywords: ["emoji", "unicode", "utf-8", "html entity", "javascript escape", "copy", "favorite"],
+  },
+  {
     id: "word-counter",
     title: "Word Counter",
     description: "Count words, characters, and lines from pasted text.",
@@ -617,6 +626,7 @@ export const TOOL_RELATIONSHIPS: Record<string, string[]> = {
   "url-encoder": ["base64", "url-parser", "unix-timestamp", "json-formatter"],
   "unix-timestamp": ["uuid", "url-encoder", "json-formatter", "hash"],
   "local-time-converter": ["unix-timestamp", "cron-builder", "url-encoder", "uuid"],
+  "emoji-picker": ["html-encoder", "base64", "url-encoder", "word-counter"],
 };
 
 export const TOOLS_BY_CATEGORY = FILE_TOOLS.reduce(
