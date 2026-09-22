@@ -90,6 +90,10 @@ const overlap = clone(manifest);
 overlap.steps[1].startMs = 4000;
 assert.match(validateManifest(overlap).join("\n"), /overlap/i);
 
+const invalidStatus = clone(manifest);
+invalidStatus.status = "successful-ish";
+assert.match(validateManifest(invalidStatus).join("\n"), /status/i);
+
 const root = await createCompleteFixture();
 const srt = await readFile(path.join(root, "subtitles.srt"), "utf8");
 const timeline = JSON.parse(
@@ -105,6 +109,7 @@ assert.equal(timeline[1].start, "00:04.200");
 assert.match(actions, /File:\nassets\/sample\.png/);
 assert.match(capcut, /旁白：\n接著選擇要處理的圖片。/);
 assert.match(summary, /Duration:\n00:13/);
+assert.match(summary, /Duration Milliseconds:\n12600/);
 assert.match(summary, /Steps:\n2/);
 
 const verified = await verifyOutput(root);
@@ -116,6 +121,43 @@ await writeFile(path.join(brokenSrtRoot, "subtitles.srt"), "2\ninvalid\n");
 const brokenSrt = await verifyOutput(brokenSrtRoot);
 assert.equal(brokenSrt.ok, false);
 assert.match(brokenSrt.errors.join("\n"), /subtitle|SRT/i);
+
+const driftedSrtRoot = await createCompleteFixture();
+const driftedSrtSource = await readFile(path.join(driftedSrtRoot, "subtitles.srt"), "utf8");
+await writeFile(
+  path.join(driftedSrtRoot, "subtitles.srt"),
+  driftedSrtSource.replace("00:00:00,000 --> 00:00:04,200", "00:00:01,000 --> 00:00:04,200"),
+);
+const driftedSrt = await verifyOutput(driftedSrtRoot);
+assert.equal(driftedSrt.ok, false);
+assert.match(driftedSrt.errors.join("\n"), /SRT.*timeline|timeline.*SRT/i);
+
+const driftedActionsRoot = await createCompleteFixture();
+const driftedActionsSource = await readFile(path.join(driftedActionsRoot, "actions.md"), "utf8");
+await writeFile(
+  path.join(driftedActionsRoot, "actions.md"),
+  driftedActionsSource.replace("00:00.000 - 00:04.200", "00:01.000 - 00:04.200"),
+);
+const driftedActions = await verifyOutput(driftedActionsRoot);
+assert.equal(driftedActions.ok, false);
+assert.match(driftedActions.errors.join("\n"), /actions.*timeline|timeline.*actions/i);
+
+const driftedCapcutRoot = await createCompleteFixture();
+const driftedCapcutSource = await readFile(path.join(driftedCapcutRoot, "capcut-script.md"), "utf8");
+await writeFile(
+  path.join(driftedCapcutRoot, "capcut-script.md"),
+  driftedCapcutSource.replace("00:00.000 - 00:04.200", "00:01.000 - 00:04.200"),
+);
+const driftedCapcut = await verifyOutput(driftedCapcutRoot);
+assert.equal(driftedCapcut.ok, false);
+assert.match(driftedCapcut.errors.join("\n"), /CapCut.*timeline|timeline.*CapCut/i);
+
+const structuredText = clone(manifest);
+structuredText.steps[0].description = "開啟工具\n## Step 99 - injected";
+structuredText.steps[0].subtitle = "開啟工具\n\n額外段落";
+const structuredTextRoot = await createCompleteFixture(structuredText);
+const structuredTextResult = await verifyOutput(structuredTextRoot);
+assert.equal(structuredTextResult.ok, true, structuredTextResult.errors.join("\n"));
 
 const missingVideoRoot = await createCompleteFixture();
 await rm(path.join(missingVideoRoot, "video", "demo.webm"));
@@ -134,6 +176,27 @@ await writeFile(path.join(erroredRoot, "errors.md"), "# Recording Errors\n\nBloc
 const errored = await verifyOutput(erroredRoot);
 assert.equal(errored.ok, true, errored.errors.join("\n"));
 assert.match(errored.warnings.join("\n"), /incomplete/i);
+
+const incompleteWithoutErrorsRoot = await createCompleteFixture({ ...manifest, status: "incomplete" });
+const incompleteWithoutErrors = await verifyOutput(incompleteWithoutErrorsRoot);
+assert.equal(incompleteWithoutErrors.ok, false);
+assert.match(incompleteWithoutErrors.errors.join("\n"), /requires errors\.md/i);
+
+const errorsWithCompleteRoot = await createCompleteFixture();
+await writeFile(path.join(errorsWithCompleteRoot, "errors.md"), "# Recording Errors\n\nBlocked.\n");
+const errorsWithComplete = await verifyOutput(errorsWithCompleteRoot);
+assert.equal(errorsWithComplete.ok, false);
+assert.match(errorsWithComplete.errors.join("\n"), /mark.*incomplete/i);
+
+const shortDurationRoot = await createCompleteFixture();
+const shortDurationSummary = await readFile(path.join(shortDurationRoot, "summary.md"), "utf8");
+await writeFile(
+  path.join(shortDurationRoot, "summary.md"),
+  shortDurationSummary.replace("Duration Milliseconds:\n12600", "Duration Milliseconds:\n10000"),
+);
+const shortDuration = await verifyOutput(shortDurationRoot);
+assert.equal(shortDuration.ok, false);
+assert.match(shortDuration.errors.join("\n"), /timeline exceeds.*duration/i);
 
 const cliRoot = await mkdtemp(path.join(tmpdir(), "web-demo-recorder-cli-"));
 const cliOutput = path.join(cliRoot, "output");
@@ -177,8 +240,15 @@ assert.match(invalidBuildCli.stderr, /overlap/i);
 
 await rm(root, { recursive: true, force: true });
 await rm(brokenSrtRoot, { recursive: true, force: true });
+await rm(driftedSrtRoot, { recursive: true, force: true });
+await rm(driftedActionsRoot, { recursive: true, force: true });
+await rm(driftedCapcutRoot, { recursive: true, force: true });
+await rm(structuredTextRoot, { recursive: true, force: true });
 await rm(missingVideoRoot, { recursive: true, force: true });
 await rm(missingScreenshotRoot, { recursive: true, force: true });
 await rm(erroredRoot, { recursive: true, force: true });
+await rm(incompleteWithoutErrorsRoot, { recursive: true, force: true });
+await rm(errorsWithCompleteRoot, { recursive: true, force: true });
+await rm(shortDurationRoot, { recursive: true, force: true });
 await rm(cliRoot, { recursive: true, force: true });
 console.log("artifact generator tests passed");

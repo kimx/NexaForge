@@ -61,6 +61,7 @@ function validateSrt(source, expectedCount, errors) {
     );
   }
   let previousEnd = 0;
+  const ranges = [];
   blocks.forEach((block, index) => {
     const lines = block.split("\n");
     if (lines[0] !== String(index + 1)) {
@@ -74,9 +75,32 @@ function validateSrt(source, expectedCount, errors) {
     } else if (start < previousEnd) {
       errors.push(`SRT subtitle cue ${index + 1} overlaps the previous cue`);
     }
+    ranges.push({ start, end });
     if (end !== null) previousEnd = end;
     if (!lines.slice(2).join("\n").trim()) {
       errors.push(`SRT subtitle cue ${index + 1} has no text`);
+    }
+  });
+  return ranges;
+}
+
+function parseMarkdownRanges(source, expression) {
+  return [...source.matchAll(expression)].map((match) => ({
+    start: parseTimelineTime(match[1]),
+    end: parseTimelineTime(match[2]),
+  }));
+}
+
+function compareRanges(label, actual, expected, errors) {
+  if (actual.length !== expected.length) return;
+  actual.forEach((range, index) => {
+    if (
+      range.start === null ||
+      range.end === null ||
+      range.start !== expected[index].start ||
+      range.end !== expected[index].end
+    ) {
+      errors.push(`${label} step ${index + 1} time range does not match timeline`);
     }
   });
 }
@@ -160,6 +184,10 @@ export async function verifyOutput(outputDir) {
   const summary = contents.get("summary.md")?.toString("utf8") ?? "";
 
   if (expectedCount > 0) {
+    const timelineRanges = timeline.map((item) => ({
+      start: parseTimelineTime(item.start),
+      end: parseTimelineTime(item.end),
+    }));
     const actionCount = countMatches(actions, /^## Step \d+ - /gm);
     const capcutCount = countMatches(capcut, /^## (?!Generated Assets|Demo Flow)/gm);
     if (actionCount !== expectedCount) {
@@ -168,10 +196,25 @@ export async function verifyOutput(outputDir) {
     if (capcutCount !== expectedCount) {
       errors.push(`capcut-script.md section count ${capcutCount} does not match timeline step count ${expectedCount}`);
     }
-    validateSrt(subtitles, expectedCount, errors);
+    const actionRanges = parseMarkdownRanges(actions, /^Time: (\S+) - (\S+)$/gm);
+    const capcutRanges = parseMarkdownRanges(capcut, /^## (\S+) - (\S+)$/gm);
+    const srtRanges = validateSrt(subtitles, expectedCount, errors);
+    compareRanges("actions.md", actionRanges, timelineRanges, errors);
+    compareRanges("CapCut", capcutRanges, timelineRanges, errors);
+    compareRanges("SRT", srtRanges, timelineRanges, errors);
     const summaryCount = /Steps:\s*\n(\d+)/i.exec(summary);
     if (!summaryCount || Number(summaryCount[1]) !== expectedCount) {
       errors.push("summary.md step count does not match the timeline");
+    }
+    const durationMatch = /Duration Milliseconds:\s*\n(\d+)/i.exec(summary);
+    if (!durationMatch) {
+      errors.push("summary.md must include exact duration milliseconds");
+    } else {
+      const durationMs = Number(durationMatch[1]);
+      const lastEnd = timelineRanges.at(-1)?.end;
+      if (lastEnd === null || lastEnd > durationMs) {
+        errors.push("timeline exceeds summary duration milliseconds");
+      }
     }
   }
 
@@ -182,11 +225,19 @@ export async function verifyOutput(outputDir) {
     errors.push("summary.md must name demo.spec.ts");
   }
 
-  if (await exists(path.join(outputDir, "errors.md"))) {
+  const hasErrorsDocument = await exists(path.join(outputDir, "errors.md"));
+  const statusMatch = /Status:\s*\n([^\r\n]+)/i.exec(summary);
+  const status = statusMatch?.[1].trim();
+  if (status !== "complete" && status !== "incomplete") {
+    errors.push("summary.md status must be exactly complete or incomplete");
+  }
+  if (hasErrorsDocument) {
     warnings.push("errors.md is present; recording is incomplete");
-    if (!/Status:\s*\nincomplete/i.test(summary)) {
+    if (status !== "incomplete") {
       errors.push("summary.md must mark an errored run incomplete");
     }
+  } else if (status === "incomplete") {
+    errors.push("an incomplete summary requires errors.md");
   }
 
   return {

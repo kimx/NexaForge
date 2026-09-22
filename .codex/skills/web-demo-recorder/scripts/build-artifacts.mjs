@@ -34,7 +34,7 @@ function splitTime(ms) {
 }
 
 function text(value) {
-  return String(value).trim().replace(/\r\n?/g, "\n");
+  return String(value).trim().replace(/\s+/gu, " ");
 }
 
 function summaryDuration(ms) {
@@ -68,6 +68,9 @@ export function validateManifest(manifest) {
     if (typeof manifest[field] !== "string" || !manifest[field].trim()) {
       errors.push(`Missing ${field}`);
     }
+  }
+  if (!new Set(["complete", "incomplete"]).has(manifest.status)) {
+    errors.push("Status must be exactly complete or incomplete");
   }
   if (!Number.isInteger(manifest.durationMs) || manifest.durationMs <= 0) {
     errors.push("Invalid durationMs");
@@ -198,6 +201,9 @@ ${text(manifest.replayScript)}
 
 Duration:
 ${summaryDuration(manifest.durationMs)}
+
+Duration Milliseconds:
+${manifest.durationMs}
 
 Steps:
 ${manifest.steps.length}

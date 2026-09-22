@@ -71,7 +71,7 @@ The builder writes:
 - `actions.md`: detailed action, target, optional file, purpose, result, screenshot, and exact time range;
 - `capcut-script.md`: one segment per observed step with `畫面`, short natural `旁白`, and concise `字幕`;
 - `subtitles.srt`: sequential UTF-8 cues derived from the same ranges;
-- `summary.md`: URL, video, replay script, rounded duration, status, step count, flow, and generated assets.
+- `summary.md`: URL, video, replay script, rounded duration, exact duration milliseconds, status, step count, flow, and generated assets.
 
 Narration defaults to Traditional Chinese, uses short AI-voice-friendly sentences, and states only what the footage shows. Avoid hype, technical documentation voice, or features absent from the take.
 

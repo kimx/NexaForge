@@ -22,8 +22,8 @@ Read [recording-workflow.md](references/recording-workflow.md) before opening th
 3. **Dry run when uncertain** — resolve routes, locators, uploads, drag gestures, state changes, and downloads outside the formal recording.
 4. **Reset** — use a new context and known initial state.
 5. **Record** — use Chromium, 1440×900, `recordVideo`, condition-based waits, and readable 500–1200 ms presentation pauses.
-6. **Build** — retain only observed formal-run events in the manifest, save `demo.webm` after context closure, then generate text artifacts with `scripts/build-artifacts.mjs`.
-7. **Replay when safe** — rerun `demo.spec.ts` unless it would repeat a consequential action.
+6. **Replay when safe** — rerun `demo.spec.ts` in non-recording replay mode unless it would repeat a consequential action. Replay must not overwrite delivered video, screenshots, or manifest.
+7. **Build** — retain only observed formal-run events in the manifest, save `demo.webm` after context closure, then generate text artifacts with `scripts/build-artifacts.mjs`.
 8. **Verify** — run `scripts/verify-output.mjs`; report completion only when it passes.
 
 If any wrong click, timeout, selector repair, debug action, or visible failure occurs during formal recording, discard that entire take. Reinspect in a non-recorded context and record again from the beginning. Time pressure is not a reason to deliver dirty footage or hide an interval from the timeline.

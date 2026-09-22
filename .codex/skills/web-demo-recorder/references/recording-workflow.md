@@ -49,10 +49,13 @@ import { test, expect } from "@playwright/test";
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 
+test.use({ browserName: "chromium" });
+
 test("records the requested website demo", async ({ browser }) => {
   const outputDir = path.resolve("output");
   const videoDir = path.join(outputDir, "video");
   const screenshotDir = path.join(outputDir, "screenshots");
+  const recordMode = process.env.DEMO_MODE !== "replay";
   await Promise.all([
     mkdir(videoDir, { recursive: true }),
     mkdir(screenshotDir, { recursive: true }),
@@ -60,12 +63,16 @@ test("records the requested website demo", async ({ browser }) => {
 
   const context = await browser.newContext({
     viewport: { width: 1440, height: 900 },
-    recordVideo: { dir: path.join(outputDir, ".video-tmp"), size: { width: 1440, height: 900 } },
+    ...(recordMode
+      ? { recordVideo: { dir: path.join(outputDir, ".video-tmp"), size: { width: 1440, height: 900 } } }
+      : {}),
   });
 
-  const recordingStart = performance.now();
   const page = await context.newPage();
-  const video = page.video();
+  const video = recordMode ? page.video() : null;
+  // Video begins when the page is created. Establish the practical timeline
+  // origin immediately afterward; the tiny retained opening lead-in is intentional.
+  const recordingStart = performance.now();
   const steps: Array<Record<string, unknown>> = [];
   let completed = false;
 
@@ -96,7 +103,9 @@ test("records the requested website demo", async ({ browser }) => {
         await page.goto("https://example.com/image-crop", { waitUntil: "domcontentloaded" });
         await expect(page.getByRole("heading", { name: "圖片裁切" })).toBeVisible();
         await page.waitForTimeout(800);
-        await page.screenshot({ path: path.join(screenshotDir, "01-open-tool.png") });
+        if (recordMode) {
+          await page.screenshot({ path: path.join(screenshotDir, "01-open-tool.png") });
+        }
       },
     );
 
@@ -107,7 +116,7 @@ test("records the requested website demo", async ({ browser }) => {
   } finally {
     const durationMs = Math.round(performance.now() - recordingStart);
     await context.close();
-    if (completed && video) {
+    if (recordMode && completed && video) {
       await video.saveAs(path.join(videoDir, "demo.webm"));
       await writeFile(
         path.join(outputDir, "run-manifest.json"),
@@ -122,19 +131,19 @@ test("records the requested website demo", async ({ browser }) => {
           steps,
         }, null, 2)}\n`,
       );
-    } else if (video) {
+    } else if (recordMode && video) {
       await video.delete();
     }
   }
 });
 ```
 
-The agent writes all actual steps; the user does not. A formal script should fail on a bad locator rather than repair itself inside the take.
+The agent writes all actual steps; the user does not. Add `test.use({ browserName: "chromium" })` at file scope and run exactly one worker so project configuration cannot select another engine or race on output paths. A formal script should fail on a bad locator rather than repair itself inside the take.
 
 ## Formal recording
 
 - Use a fresh Chromium context with a fixed 1440×900 viewport and video size.
-- Start one monotonic clock immediately before creating the recorded page. Treat its zero as the delivered take's practical video origin.
+- Create the recorded page, obtain its `Video` handle, then start one monotonic clock immediately. Treat its zero as the first actionable frame; the very short opening lead-in created with the page remains intentionally outside step ranges.
 - Use condition-based waits for readiness and results. Use `waitForTimeout(500..1200)` only after a meaningful visible state is ready, so viewers can understand it.
 - Move at teaching pace. Avoid rapid consecutive clicks, long idle intervals, unrelated scrolling, notifications, cursor searching, and debug UI.
 - Capture each step screenshot only after its result is visible.
@@ -159,4 +168,4 @@ Allow at most two corrected formal retries for the same step. Never keep a take 
 
 Retain the `Video` handle before closing the context. Close the page/context before calling `video.saveAs()`; saving waits for the encoder to finish. Write the manifest only for the retained successful take.
 
-Replay `demo.spec.ts` once when the action is safely repeatable. Skip replay for destructive or consequential external mutations, explain the limitation in `summary.md`, and verify all captured evidence instead. Then build and verify artifacts using the commands in the output contract.
+Replay `demo.spec.ts` once with `DEMO_MODE=replay`, Chromium, and one worker when the action is safely repeatable. For PowerShell, set `$env:DEMO_MODE = "replay"`, run `npx playwright test output/demo.spec.ts --workers=1`, then remove the environment variable. Replay mode must omit `recordVideo` and must not write delivered screenshots, video, or manifest. Skip replay for destructive or consequential external mutations, explain the limitation in `summary.md`, and verify all captured evidence instead. Build text artifacts only after replay succeeds, then verify using the commands in the output contract.
