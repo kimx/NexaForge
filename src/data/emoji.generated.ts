@@ -26,7 +26,7 @@ export interface EmojiRecord {
 
 export const EMOJI_DATA_VERSION = { emoji: "17.0", unicode: "17.0.0", cldr: "48" } as const;
 
-export const EMOJI_DATA: readonly EmojiRecord[] = [
+const EMOJI_DATA_0: EmojiRecord[] = [
   {"id":"1F600","emoji":"😀","group":"Smileys & Emotion","order":0,"nameEn":"grinning face","nameZhHant":"笑臉","keywordsEn":["cheerful","cheery","face","grin","grinning","happy","laugh","nice","smile","smiling","teeth"],"keywordsZhHant":["微笑","欣喜","笑容","笑臉","臉","露齒而笑"]},
   {"id":"1F603","emoji":"😃","group":"Smileys & Emotion","order":1,"nameEn":"grinning face with big eyes","nameZhHant":"大笑","keywordsEn":["awesome","big","eyes","face","grin","grinning","happy","mouth","open","smile","smiling","teeth","yay"],"keywordsZhHant":["呵呵","咧嘴大笑","哈哈","大笑","笑臉","臉"]},
   {"id":"1F604","emoji":"😄","group":"Smileys & Emotion","order":2,"nameEn":"grinning face with smiling eyes","nameZhHant":"呵呵","keywordsEn":["eye","eyes","face","grin","grinning","happy","laugh","lol","mouth","open","smile","smiling"],"keywordsZhHant":["呵呵","哈哈","笑臉","臉"]},
@@ -226,7 +226,10 @@ export const EMOJI_DATA: readonly EmojiRecord[] = [
   {"id":"1F596-1F3FB","emoji":"🖖🏻","group":"People & Body","order":196,"nameEn":"vulcan salute: light skin tone","nameZhHant":"你好：白皮膚","keywordsEn":["finger","hand","hands","light skin tone","salute","Vulcan"],"keywordsZhHant":["你好","瓦肯式敬禮","生生不息，繁榮昌盛","白皮膚"]},
   {"id":"1F596-1F3FC","emoji":"🖖🏼","group":"People & Body","order":197,"nameEn":"vulcan salute: medium-light skin tone","nameZhHant":"你好：黃皮膚","keywordsEn":["finger","hand","hands","medium-light skin tone","salute","Vulcan"],"keywordsZhHant":["你好","瓦肯式敬禮","生生不息，繁榮昌盛","黃皮膚"]},
   {"id":"1F596-1F3FD","emoji":"🖖🏽","group":"People & Body","order":198,"nameEn":"vulcan salute: medium skin tone","nameZhHant":"你好：淺褐皮膚","keywordsEn":["finger","hand","hands","medium skin tone","salute","Vulcan"],"keywordsZhHant":["你好","淺褐皮膚","瓦肯式敬禮","生生不息，繁榮昌盛"]},
-  {"id":"1F596-1F3FE","emoji":"🖖🏾","group":"People & Body","order":199,"nameEn":"vulcan salute: medium-dark skin tone","nameZhHant":"你好：褐皮膚","keywordsEn":["finger","hand","hands","medium-dark skin tone","salute","Vulcan"],"keywordsZhHant":["你好","瓦肯式敬禮","生生不息，繁榮昌盛","褐皮膚"]},
+  {"id":"1F596-1F3FE","emoji":"🖖🏾","group":"People & Body","order":199,"nameEn":"vulcan salute: medium-dark skin tone","nameZhHant":"你好：褐皮膚","keywordsEn":["finger","hand","hands","medium-dark skin tone","salute","Vulcan"],"keywordsZhHant":["你好","瓦肯式敬禮","生生不息，繁榮昌盛","褐皮膚"]}
+];
+
+const EMOJI_DATA_1: EmojiRecord[] = [
   {"id":"1F596-1F3FF","emoji":"🖖🏿","group":"People & Body","order":200,"nameEn":"vulcan salute: dark skin tone","nameZhHant":"你好：黑皮膚","keywordsEn":["dark skin tone","finger","hand","hands","salute","Vulcan"],"keywordsZhHant":["你好","瓦肯式敬禮","生生不息，繁榮昌盛","黑皮膚"]},
   {"id":"1FAF1","emoji":"🫱","group":"People & Body","order":201,"nameEn":"rightwards hand","nameZhHant":"向右的手","keywordsEn":["hand","handshake","hold","reach","right","rightward","rightwards","shake"],"keywordsZhHant":["伸手","右","右手","向右","向右的手","手","握","握手"]},
   {"id":"1FAF1-1F3FB","emoji":"🫱🏻","group":"People & Body","order":202,"nameEn":"rightwards hand: light skin tone","nameZhHant":"向右的手：白皮膚","keywordsEn":["hand","handshake","hold","light skin tone","reach","right","rightward","rightwards","shake"],"keywordsZhHant":["伸手","右","右手","向右","向右的手","手","握","握手","白皮膚"]},
@@ -426,7 +429,10 @@ export const EMOJI_DATA: readonly EmojiRecord[] = [
   {"id":"1F932-1F3FD","emoji":"🤲🏽","group":"People & Body","order":396,"nameEn":"palms up together: medium skin tone","nameZhHant":"雙手掌朝上：淺褐皮膚","keywordsEn":["cupped","dua","hands","medium skin tone","palms","pray","prayer","together","up","wish"],"keywordsZhHant":["合掌向上","淺褐皮膚","祈禱","禱告","雙手掌朝上"]},
   {"id":"1F932-1F3FE","emoji":"🤲🏾","group":"People & Body","order":397,"nameEn":"palms up together: medium-dark skin tone","nameZhHant":"雙手掌朝上：褐皮膚","keywordsEn":["cupped","dua","hands","medium-dark skin tone","palms","pray","prayer","together","up","wish"],"keywordsZhHant":["合掌向上","祈禱","禱告","褐皮膚","雙手掌朝上"]},
   {"id":"1F932-1F3FF","emoji":"🤲🏿","group":"People & Body","order":398,"nameEn":"palms up together: dark skin tone","nameZhHant":"雙手掌朝上：黑皮膚","keywordsEn":["cupped","dark skin tone","dua","hands","palms","pray","prayer","together","up","wish"],"keywordsZhHant":["合掌向上","祈禱","禱告","雙手掌朝上","黑皮膚"]},
-  {"id":"1F91D","emoji":"🤝","group":"People & Body","order":399,"nameEn":"handshake","nameZhHant":"握手","keywordsEn":["agreement","deal","hand","handshake","meeting","shake"],"keywordsZhHant":["成交","手","握","握手","講定"]},
+  {"id":"1F91D","emoji":"🤝","group":"People & Body","order":399,"nameEn":"handshake","nameZhHant":"握手","keywordsEn":["agreement","deal","hand","handshake","meeting","shake"],"keywordsZhHant":["成交","手","握","握手","講定"]}
+];
+
+const EMOJI_DATA_2: EmojiRecord[] = [
   {"id":"1F91D-1F3FB","emoji":"🤝🏻","group":"People & Body","order":400,"nameEn":"handshake: light skin tone","nameZhHant":"握手：白皮膚","keywordsEn":["agreement","deal","hand","handshake","light skin tone","meeting","shake"],"keywordsZhHant":["成交","手","握","握手","白皮膚","講定"]},
   {"id":"1F91D-1F3FC","emoji":"🤝🏼","group":"People & Body","order":401,"nameEn":"handshake: medium-light skin tone","nameZhHant":"握手：黃皮膚","keywordsEn":["agreement","deal","hand","handshake","medium-light skin tone","meeting","shake"],"keywordsZhHant":["成交","手","握","握手","講定","黃皮膚"]},
   {"id":"1F91D-1F3FD","emoji":"🤝🏽","group":"People & Body","order":402,"nameEn":"handshake: medium skin tone","nameZhHant":"握手：淺褐皮膚","keywordsEn":["agreement","deal","hand","handshake","medium skin tone","meeting","shake"],"keywordsZhHant":["成交","手","握","握手","淺褐皮膚","講定"]},
@@ -626,7 +632,10 @@ export const EMOJI_DATA: readonly EmojiRecord[] = [
   {"id":"1F9D1-1F3FD-200D-1F9B0","emoji":"🧑🏽‍🦰","group":"People & Body","order":596,"nameEn":"person: medium skin tone, red hair","nameZhHant":"大人：淺褐皮膚 紅髮","keywordsEn":["adult","medium skin tone","person","red hair"],"keywordsZhHant":["大人","成人","淺褐皮膚","紅髮"]},
   {"id":"1F9D1-1F3FE-200D-1F9B0","emoji":"🧑🏾‍🦰","group":"People & Body","order":597,"nameEn":"person: medium-dark skin tone, red hair","nameZhHant":"大人：褐皮膚 紅髮","keywordsEn":["adult","medium-dark skin tone","person","red hair"],"keywordsZhHant":["大人","成人","紅髮","褐皮膚"]},
   {"id":"1F9D1-1F3FF-200D-1F9B0","emoji":"🧑🏿‍🦰","group":"People & Body","order":598,"nameEn":"person: dark skin tone, red hair","nameZhHant":"大人：黑皮膚 紅髮","keywordsEn":["adult","dark skin tone","person","red hair"],"keywordsZhHant":["大人","成人","紅髮","黑皮膚"]},
-  {"id":"1F469-200D-1F9B1","emoji":"👩‍🦱","group":"People & Body","order":599,"nameEn":"woman: curly hair","nameZhHant":"女人：卷髮","keywordsEn":["adult","curly hair","lady","woman"],"keywordsZhHant":["卷髮","女","女人","女性"]},
+  {"id":"1F469-200D-1F9B1","emoji":"👩‍🦱","group":"People & Body","order":599,"nameEn":"woman: curly hair","nameZhHant":"女人：卷髮","keywordsEn":["adult","curly hair","lady","woman"],"keywordsZhHant":["卷髮","女","女人","女性"]}
+];
+
+const EMOJI_DATA_3: EmojiRecord[] = [
   {"id":"1F469-1F3FB-200D-1F9B1","emoji":"👩🏻‍🦱","group":"People & Body","order":600,"nameEn":"woman: light skin tone, curly hair","nameZhHant":"女人：白皮膚 卷髮","keywordsEn":["adult","curly hair","lady","light skin tone","woman"],"keywordsZhHant":["卷髮","女","女人","女性","白皮膚"]},
   {"id":"1F469-1F3FC-200D-1F9B1","emoji":"👩🏼‍🦱","group":"People & Body","order":601,"nameEn":"woman: medium-light skin tone, curly hair","nameZhHant":"女人：黃皮膚 卷髮","keywordsEn":["adult","curly hair","lady","medium-light skin tone","woman"],"keywordsZhHant":["卷髮","女","女人","女性","黃皮膚"]},
   {"id":"1F469-1F3FD-200D-1F9B1","emoji":"👩🏽‍🦱","group":"People & Body","order":602,"nameEn":"woman: medium skin tone, curly hair","nameZhHant":"女人：淺褐皮膚 卷髮","keywordsEn":["adult","curly hair","lady","medium skin tone","woman"],"keywordsZhHant":["卷髮","女","女人","女性","淺褐皮膚"]},
@@ -826,7 +835,10 @@ export const EMOJI_DATA: readonly EmojiRecord[] = [
   {"id":"1F647-1F3FF","emoji":"🙇🏿","group":"People & Body","order":796,"nameEn":"person bowing: dark skin tone","nameZhHant":"鞠躬：黑皮膚","keywordsEn":["apology","ask","beg","bow","bowing","dark skin tone","favor","forgive","gesture","meditate","meditation","person","pity","regret","sorry"],"keywordsZhHant":["下跪","不好意思","原諒","姿勢","姿態","對不起","後悔","抱歉","道歉","鞠躬","黑皮膚"]},
   {"id":"1F647-200D-2642-FE0F","emoji":"🙇‍♂️","group":"People & Body","order":797,"nameEn":"🙇‍♂️","nameZhHant":"🙇‍♂️","keywordsEn":[],"keywordsZhHant":[]},
   {"id":"1F647-1F3FB-200D-2642-FE0F","emoji":"🙇🏻‍♂️","group":"People & Body","order":798,"nameEn":"🙇🏻‍♂️","nameZhHant":"🙇🏻‍♂️","keywordsEn":[],"keywordsZhHant":[]},
-  {"id":"1F647-1F3FC-200D-2642-FE0F","emoji":"🙇🏼‍♂️","group":"People & Body","order":799,"nameEn":"🙇🏼‍♂️","nameZhHant":"🙇🏼‍♂️","keywordsEn":[],"keywordsZhHant":[]},
+  {"id":"1F647-1F3FC-200D-2642-FE0F","emoji":"🙇🏼‍♂️","group":"People & Body","order":799,"nameEn":"🙇🏼‍♂️","nameZhHant":"🙇🏼‍♂️","keywordsEn":[],"keywordsZhHant":[]}
+];
+
+const EMOJI_DATA_4: EmojiRecord[] = [
   {"id":"1F647-1F3FD-200D-2642-FE0F","emoji":"🙇🏽‍♂️","group":"People & Body","order":800,"nameEn":"🙇🏽‍♂️","nameZhHant":"🙇🏽‍♂️","keywordsEn":[],"keywordsZhHant":[]},
   {"id":"1F647-1F3FE-200D-2642-FE0F","emoji":"🙇🏾‍♂️","group":"People & Body","order":801,"nameEn":"🙇🏾‍♂️","nameZhHant":"🙇🏾‍♂️","keywordsEn":[],"keywordsZhHant":[]},
   {"id":"1F647-1F3FF-200D-2642-FE0F","emoji":"🙇🏿‍♂️","group":"People & Body","order":802,"nameEn":"🙇🏿‍♂️","nameZhHant":"🙇🏿‍♂️","keywordsEn":[],"keywordsZhHant":[]},
@@ -1026,7 +1038,10 @@ export const EMOJI_DATA: readonly EmojiRecord[] = [
   {"id":"1F468-1F3FB-200D-1F4BC","emoji":"👨🏻‍💼","group":"People & Body","order":996,"nameEn":"man office worker: light skin tone","nameZhHant":"男性上班族：白皮膚","keywordsEn":["architect","business","light skin tone","man","manager","office","white-collar","worker"],"keywordsZhHant":["上班族","建築師","男","男性上班族","白皮膚","白領"]},
   {"id":"1F468-1F3FC-200D-1F4BC","emoji":"👨🏼‍💼","group":"People & Body","order":997,"nameEn":"man office worker: medium-light skin tone","nameZhHant":"男性上班族：黃皮膚","keywordsEn":["architect","business","man","manager","medium-light skin tone","office","white-collar","worker"],"keywordsZhHant":["上班族","建築師","男","男性上班族","白領","黃皮膚"]},
   {"id":"1F468-1F3FD-200D-1F4BC","emoji":"👨🏽‍💼","group":"People & Body","order":998,"nameEn":"man office worker: medium skin tone","nameZhHant":"男性上班族：淺褐皮膚","keywordsEn":["architect","business","man","manager","medium skin tone","office","white-collar","worker"],"keywordsZhHant":["上班族","建築師","淺褐皮膚","男","男性上班族","白領"]},
-  {"id":"1F468-1F3FE-200D-1F4BC","emoji":"👨🏾‍💼","group":"People & Body","order":999,"nameEn":"man office worker: medium-dark skin tone","nameZhHant":"男性上班族：褐皮膚","keywordsEn":["architect","business","man","manager","medium-dark skin tone","office","white-collar","worker"],"keywordsZhHant":["上班族","建築師","男","男性上班族","白領","褐皮膚"]},
+  {"id":"1F468-1F3FE-200D-1F4BC","emoji":"👨🏾‍💼","group":"People & Body","order":999,"nameEn":"man office worker: medium-dark skin tone","nameZhHant":"男性上班族：褐皮膚","keywordsEn":["architect","business","man","manager","medium-dark skin tone","office","white-collar","worker"],"keywordsZhHant":["上班族","建築師","男","男性上班族","白領","褐皮膚"]}
+];
+
+const EMOJI_DATA_5: EmojiRecord[] = [
   {"id":"1F468-1F3FF-200D-1F4BC","emoji":"👨🏿‍💼","group":"People & Body","order":1000,"nameEn":"man office worker: dark skin tone","nameZhHant":"男性上班族：黑皮膚","keywordsEn":["architect","business","dark skin tone","man","manager","office","white-collar","worker"],"keywordsZhHant":["上班族","建築師","男","男性上班族","白領","黑皮膚"]},
   {"id":"1F469-200D-1F4BC","emoji":"👩‍💼","group":"People & Body","order":1001,"nameEn":"woman office worker","nameZhHant":"女性上班族","keywordsEn":["architect","business","manager","office","white-collar","woman","worker"],"keywordsZhHant":["上班族","女","女性上班族","白領","經理"]},
   {"id":"1F469-1F3FB-200D-1F4BC","emoji":"👩🏻‍💼","group":"People & Body","order":1002,"nameEn":"woman office worker: light skin tone","nameZhHant":"女性上班族：白皮膚","keywordsEn":["architect","business","light skin tone","manager","office","white-collar","woman","worker"],"keywordsZhHant":["上班族","女","女性上班族","白皮膚","白領","經理"]},
@@ -1226,7 +1241,10 @@ export const EMOJI_DATA: readonly EmojiRecord[] = [
   {"id":"1F477-1F3FD","emoji":"👷🏽","group":"People & Body","order":1196,"nameEn":"construction worker: medium skin tone","nameZhHant":"建築工人：淺褐皮膚","keywordsEn":["build","construction","fix","hardhat","hat","man","medium skin tone","person","rebuild","remodel","repair","work","worker"],"keywordsZhHant":["安全帽","工地","建築工人","淺褐皮膚","男人","維修","頭盔"]},
   {"id":"1F477-1F3FE","emoji":"👷🏾","group":"People & Body","order":1197,"nameEn":"construction worker: medium-dark skin tone","nameZhHant":"建築工人：褐皮膚","keywordsEn":["build","construction","fix","hardhat","hat","man","medium-dark skin tone","person","rebuild","remodel","repair","work","worker"],"keywordsZhHant":["安全帽","工地","建築工人","男人","維修","褐皮膚","頭盔"]},
   {"id":"1F477-1F3FF","emoji":"👷🏿","group":"People & Body","order":1198,"nameEn":"construction worker: dark skin tone","nameZhHant":"建築工人：黑皮膚","keywordsEn":["build","construction","dark skin tone","fix","hardhat","hat","man","person","rebuild","remodel","repair","work","worker"],"keywordsZhHant":["安全帽","工地","建築工人","男人","維修","頭盔","黑皮膚"]},
-  {"id":"1F477-200D-2642-FE0F","emoji":"👷‍♂️","group":"People & Body","order":1199,"nameEn":"👷‍♂️","nameZhHant":"👷‍♂️","keywordsEn":[],"keywordsZhHant":[]},
+  {"id":"1F477-200D-2642-FE0F","emoji":"👷‍♂️","group":"People & Body","order":1199,"nameEn":"👷‍♂️","nameZhHant":"👷‍♂️","keywordsEn":[],"keywordsZhHant":[]}
+];
+
+const EMOJI_DATA_6: EmojiRecord[] = [
   {"id":"1F477-1F3FB-200D-2642-FE0F","emoji":"👷🏻‍♂️","group":"People & Body","order":1200,"nameEn":"👷🏻‍♂️","nameZhHant":"👷🏻‍♂️","keywordsEn":[],"keywordsZhHant":[]},
   {"id":"1F477-1F3FC-200D-2642-FE0F","emoji":"👷🏼‍♂️","group":"People & Body","order":1201,"nameEn":"👷🏼‍♂️","nameZhHant":"👷🏼‍♂️","keywordsEn":[],"keywordsZhHant":[]},
   {"id":"1F477-1F3FD-200D-2642-FE0F","emoji":"👷🏽‍♂️","group":"People & Body","order":1202,"nameEn":"👷🏽‍♂️","nameZhHant":"👷🏽‍♂️","keywordsEn":[],"keywordsZhHant":[]},
@@ -1426,7 +1444,10 @@ export const EMOJI_DATA: readonly EmojiRecord[] = [
   {"id":"1F9B9-1F3FF-200D-2640-FE0F","emoji":"🦹🏿‍♀️","group":"People & Body","order":1396,"nameEn":"🦹🏿‍♀️","nameZhHant":"🦹🏿‍♀️","keywordsEn":[],"keywordsZhHant":[]},
   {"id":"1F9D9","emoji":"🧙","group":"People & Body","order":1397,"nameEn":"mage","nameZhHant":"魔術師","keywordsEn":["fantasy","mage","magic","play","sorcerer","sorceress","sorcery","spell","summon","witch","wizard"],"keywordsZhHant":["巫師","男巫","著魔","魔咒","魔術師"]},
   {"id":"1F9D9-1F3FB","emoji":"🧙🏻","group":"People & Body","order":1398,"nameEn":"mage: light skin tone","nameZhHant":"魔術師：白皮膚","keywordsEn":["fantasy","light skin tone","mage","magic","play","sorcerer","sorceress","sorcery","spell","summon","witch","wizard"],"keywordsZhHant":["巫師","男巫","白皮膚","著魔","魔咒","魔術師"]},
-  {"id":"1F9D9-1F3FC","emoji":"🧙🏼","group":"People & Body","order":1399,"nameEn":"mage: medium-light skin tone","nameZhHant":"魔術師：黃皮膚","keywordsEn":["fantasy","mage","magic","medium-light skin tone","play","sorcerer","sorceress","sorcery","spell","summon","witch","wizard"],"keywordsZhHant":["巫師","男巫","著魔","魔咒","魔術師","黃皮膚"]},
+  {"id":"1F9D9-1F3FC","emoji":"🧙🏼","group":"People & Body","order":1399,"nameEn":"mage: medium-light skin tone","nameZhHant":"魔術師：黃皮膚","keywordsEn":["fantasy","mage","magic","medium-light skin tone","play","sorcerer","sorceress","sorcery","spell","summon","witch","wizard"],"keywordsZhHant":["巫師","男巫","著魔","魔咒","魔術師","黃皮膚"]}
+];
+
+const EMOJI_DATA_7: EmojiRecord[] = [
   {"id":"1F9D9-1F3FD","emoji":"🧙🏽","group":"People & Body","order":1400,"nameEn":"mage: medium skin tone","nameZhHant":"魔術師：淺褐皮膚","keywordsEn":["fantasy","mage","magic","medium skin tone","play","sorcerer","sorceress","sorcery","spell","summon","witch","wizard"],"keywordsZhHant":["巫師","淺褐皮膚","男巫","著魔","魔咒","魔術師"]},
   {"id":"1F9D9-1F3FE","emoji":"🧙🏾","group":"People & Body","order":1401,"nameEn":"mage: medium-dark skin tone","nameZhHant":"魔術師：褐皮膚","keywordsEn":["fantasy","mage","magic","medium-dark skin tone","play","sorcerer","sorceress","sorcery","spell","summon","witch","wizard"],"keywordsZhHant":["巫師","男巫","著魔","褐皮膚","魔咒","魔術師"]},
   {"id":"1F9D9-1F3FF","emoji":"🧙🏿","group":"People & Body","order":1402,"nameEn":"mage: dark skin tone","nameZhHant":"魔術師：黑皮膚","keywordsEn":["dark skin tone","fantasy","mage","magic","play","sorcerer","sorceress","sorcery","spell","summon","witch","wizard"],"keywordsZhHant":["巫師","男巫","著魔","魔咒","魔術師","黑皮膚"]},
@@ -1626,7 +1647,10 @@ export const EMOJI_DATA: readonly EmojiRecord[] = [
   {"id":"1F9CE-1F3FF-200D-2642-FE0F","emoji":"🧎🏿‍♂️","group":"People & Body","order":1596,"nameEn":"🧎🏿‍♂️","nameZhHant":"🧎🏿‍♂️","keywordsEn":[],"keywordsZhHant":[]},
   {"id":"1F9CE-200D-2640-FE0F","emoji":"🧎‍♀️","group":"People & Body","order":1597,"nameEn":"🧎‍♀️","nameZhHant":"🧎‍♀️","keywordsEn":[],"keywordsZhHant":[]},
   {"id":"1F9CE-1F3FB-200D-2640-FE0F","emoji":"🧎🏻‍♀️","group":"People & Body","order":1598,"nameEn":"🧎🏻‍♀️","nameZhHant":"🧎🏻‍♀️","keywordsEn":[],"keywordsZhHant":[]},
-  {"id":"1F9CE-1F3FC-200D-2640-FE0F","emoji":"🧎🏼‍♀️","group":"People & Body","order":1599,"nameEn":"🧎🏼‍♀️","nameZhHant":"🧎🏼‍♀️","keywordsEn":[],"keywordsZhHant":[]},
+  {"id":"1F9CE-1F3FC-200D-2640-FE0F","emoji":"🧎🏼‍♀️","group":"People & Body","order":1599,"nameEn":"🧎🏼‍♀️","nameZhHant":"🧎🏼‍♀️","keywordsEn":[],"keywordsZhHant":[]}
+];
+
+const EMOJI_DATA_8: EmojiRecord[] = [
   {"id":"1F9CE-1F3FD-200D-2640-FE0F","emoji":"🧎🏽‍♀️","group":"People & Body","order":1600,"nameEn":"🧎🏽‍♀️","nameZhHant":"🧎🏽‍♀️","keywordsEn":[],"keywordsZhHant":[]},
   {"id":"1F9CE-1F3FE-200D-2640-FE0F","emoji":"🧎🏾‍♀️","group":"People & Body","order":1601,"nameEn":"🧎🏾‍♀️","nameZhHant":"🧎🏾‍♀️","keywordsEn":[],"keywordsZhHant":[]},
   {"id":"1F9CE-1F3FF-200D-2640-FE0F","emoji":"🧎🏿‍♀️","group":"People & Body","order":1602,"nameEn":"🧎🏿‍♀️","nameZhHant":"🧎🏿‍♀️","keywordsEn":[],"keywordsZhHant":[]},
@@ -1826,7 +1850,10 @@ export const EMOJI_DATA: readonly EmojiRecord[] = [
   {"id":"1F46F-1F3FB-200D-2642-FE0F","emoji":"👯🏻‍♂️","group":"People & Body","order":1796,"nameEn":"👯🏻‍♂️","nameZhHant":"👯🏻‍♂️","keywordsEn":[],"keywordsZhHant":[]},
   {"id":"1F46F-1F3FC-200D-2642-FE0F","emoji":"👯🏼‍♂️","group":"People & Body","order":1797,"nameEn":"👯🏼‍♂️","nameZhHant":"👯🏼‍♂️","keywordsEn":[],"keywordsZhHant":[]},
   {"id":"1F46F-1F3FD-200D-2642-FE0F","emoji":"👯🏽‍♂️","group":"People & Body","order":1798,"nameEn":"👯🏽‍♂️","nameZhHant":"👯🏽‍♂️","keywordsEn":[],"keywordsZhHant":[]},
-  {"id":"1F46F-1F3FE-200D-2642-FE0F","emoji":"👯🏾‍♂️","group":"People & Body","order":1799,"nameEn":"👯🏾‍♂️","nameZhHant":"👯🏾‍♂️","keywordsEn":[],"keywordsZhHant":[]},
+  {"id":"1F46F-1F3FE-200D-2642-FE0F","emoji":"👯🏾‍♂️","group":"People & Body","order":1799,"nameEn":"👯🏾‍♂️","nameZhHant":"👯🏾‍♂️","keywordsEn":[],"keywordsZhHant":[]}
+];
+
+const EMOJI_DATA_9: EmojiRecord[] = [
   {"id":"1F46F-1F3FF-200D-2642-FE0F","emoji":"👯🏿‍♂️","group":"People & Body","order":1800,"nameEn":"👯🏿‍♂️","nameZhHant":"👯🏿‍♂️","keywordsEn":[],"keywordsZhHant":[]},
   {"id":"1F46F-200D-2640-FE0F","emoji":"👯‍♀️","group":"People & Body","order":1801,"nameEn":"👯‍♀️","nameZhHant":"👯‍♀️","keywordsEn":[],"keywordsZhHant":[]},
   {"id":"1F46F-1F3FB-200D-2640-FE0F","emoji":"👯🏻‍♀️","group":"People & Body","order":1802,"nameEn":"👯🏻‍♀️","nameZhHant":"👯🏻‍♀️","keywordsEn":[],"keywordsZhHant":[]},
@@ -2026,7 +2053,10 @@ export const EMOJI_DATA: readonly EmojiRecord[] = [
   {"id":"26F9-1F3FB-200D-2642-FE0F","emoji":"⛹🏻‍♂️","group":"People & Body","order":1996,"nameEn":"⛹🏻‍♂️","nameZhHant":"⛹🏻‍♂️","keywordsEn":[],"keywordsZhHant":[]},
   {"id":"26F9-1F3FC-200D-2642-FE0F","emoji":"⛹🏼‍♂️","group":"People & Body","order":1997,"nameEn":"⛹🏼‍♂️","nameZhHant":"⛹🏼‍♂️","keywordsEn":[],"keywordsZhHant":[]},
   {"id":"26F9-1F3FD-200D-2642-FE0F","emoji":"⛹🏽‍♂️","group":"People & Body","order":1998,"nameEn":"⛹🏽‍♂️","nameZhHant":"⛹🏽‍♂️","keywordsEn":[],"keywordsZhHant":[]},
-  {"id":"26F9-1F3FE-200D-2642-FE0F","emoji":"⛹🏾‍♂️","group":"People & Body","order":1999,"nameEn":"⛹🏾‍♂️","nameZhHant":"⛹🏾‍♂️","keywordsEn":[],"keywordsZhHant":[]},
+  {"id":"26F9-1F3FE-200D-2642-FE0F","emoji":"⛹🏾‍♂️","group":"People & Body","order":1999,"nameEn":"⛹🏾‍♂️","nameZhHant":"⛹🏾‍♂️","keywordsEn":[],"keywordsZhHant":[]}
+];
+
+const EMOJI_DATA_10: EmojiRecord[] = [
   {"id":"26F9-1F3FF-200D-2642-FE0F","emoji":"⛹🏿‍♂️","group":"People & Body","order":2000,"nameEn":"⛹🏿‍♂️","nameZhHant":"⛹🏿‍♂️","keywordsEn":[],"keywordsZhHant":[]},
   {"id":"26F9-FE0F-200D-2640-FE0F","emoji":"⛹️‍♀️","group":"People & Body","order":2001,"nameEn":"⛹️‍♀️","nameZhHant":"⛹️‍♀️","keywordsEn":[],"keywordsZhHant":[]},
   {"id":"26F9-1F3FB-200D-2640-FE0F","emoji":"⛹🏻‍♀️","group":"People & Body","order":2002,"nameEn":"⛹🏻‍♀️","nameZhHant":"⛹🏻‍♀️","keywordsEn":[],"keywordsZhHant":[]},
@@ -2226,7 +2256,10 @@ export const EMOJI_DATA: readonly EmojiRecord[] = [
   {"id":"1F939-1F3FD","emoji":"🤹🏽","group":"People & Body","order":2196,"nameEn":"person juggling: medium skin tone","nameZhHant":"雜耍：淺褐皮膚","keywordsEn":["act","balance","balancing","handle","juggle","juggling","manage","medium skin tone","multitask","person","skill"],"keywordsZhHant":["人物","多才多藝","平衡","平衡感","技藝","淺褐皮膚","特技","表演","雜耍"]},
   {"id":"1F939-1F3FE","emoji":"🤹🏾","group":"People & Body","order":2197,"nameEn":"person juggling: medium-dark skin tone","nameZhHant":"雜耍：褐皮膚","keywordsEn":["act","balance","balancing","handle","juggle","juggling","manage","medium-dark skin tone","multitask","person","skill"],"keywordsZhHant":["人物","多才多藝","平衡","平衡感","技藝","特技","表演","褐皮膚","雜耍"]},
   {"id":"1F939-1F3FF","emoji":"🤹🏿","group":"People & Body","order":2198,"nameEn":"person juggling: dark skin tone","nameZhHant":"雜耍：黑皮膚","keywordsEn":["act","balance","balancing","dark skin tone","handle","juggle","juggling","manage","multitask","person","skill"],"keywordsZhHant":["人物","多才多藝","平衡","平衡感","技藝","特技","表演","雜耍","黑皮膚"]},
-  {"id":"1F939-200D-2642-FE0F","emoji":"🤹‍♂️","group":"People & Body","order":2199,"nameEn":"🤹‍♂️","nameZhHant":"🤹‍♂️","keywordsEn":[],"keywordsZhHant":[]},
+  {"id":"1F939-200D-2642-FE0F","emoji":"🤹‍♂️","group":"People & Body","order":2199,"nameEn":"🤹‍♂️","nameZhHant":"🤹‍♂️","keywordsEn":[],"keywordsZhHant":[]}
+];
+
+const EMOJI_DATA_11: EmojiRecord[] = [
   {"id":"1F939-1F3FB-200D-2642-FE0F","emoji":"🤹🏻‍♂️","group":"People & Body","order":2200,"nameEn":"🤹🏻‍♂️","nameZhHant":"🤹🏻‍♂️","keywordsEn":[],"keywordsZhHant":[]},
   {"id":"1F939-1F3FC-200D-2642-FE0F","emoji":"🤹🏼‍♂️","group":"People & Body","order":2201,"nameEn":"🤹🏼‍♂️","nameZhHant":"🤹🏼‍♂️","keywordsEn":[],"keywordsZhHant":[]},
   {"id":"1F939-1F3FD-200D-2642-FE0F","emoji":"🤹🏽‍♂️","group":"People & Body","order":2202,"nameEn":"🤹🏽‍♂️","nameZhHant":"🤹🏽‍♂️","keywordsEn":[],"keywordsZhHant":[]},
@@ -2426,7 +2459,10 @@ export const EMOJI_DATA: readonly EmojiRecord[] = [
   {"id":"1F469-1F3FF-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FF","emoji":"👩🏿‍❤️‍💋‍👨🏿","group":"People & Body","order":2396,"nameEn":"👩🏿‍❤️‍💋‍👨🏿","nameZhHant":"👩🏿‍❤️‍💋‍👨🏿","keywordsEn":[],"keywordsZhHant":[]},
   {"id":"1F468-200D-2764-FE0F-200D-1F48B-200D-1F468","emoji":"👨‍❤️‍💋‍👨","group":"People & Body","order":2397,"nameEn":"👨‍❤️‍💋‍👨","nameZhHant":"👨‍❤️‍💋‍👨","keywordsEn":[],"keywordsZhHant":[]},
   {"id":"1F468-1F3FB-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FB","emoji":"👨🏻‍❤️‍💋‍👨🏻","group":"People & Body","order":2398,"nameEn":"👨🏻‍❤️‍💋‍👨🏻","nameZhHant":"👨🏻‍❤️‍💋‍👨🏻","keywordsEn":[],"keywordsZhHant":[]},
-  {"id":"1F468-1F3FB-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FC","emoji":"👨🏻‍❤️‍💋‍👨🏼","group":"People & Body","order":2399,"nameEn":"👨🏻‍❤️‍💋‍👨🏼","nameZhHant":"👨🏻‍❤️‍💋‍👨🏼","keywordsEn":[],"keywordsZhHant":[]},
+  {"id":"1F468-1F3FB-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FC","emoji":"👨🏻‍❤️‍💋‍👨🏼","group":"People & Body","order":2399,"nameEn":"👨🏻‍❤️‍💋‍👨🏼","nameZhHant":"👨🏻‍❤️‍💋‍👨🏼","keywordsEn":[],"keywordsZhHant":[]}
+];
+
+const EMOJI_DATA_12: EmojiRecord[] = [
   {"id":"1F468-1F3FB-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FD","emoji":"👨🏻‍❤️‍💋‍👨🏽","group":"People & Body","order":2400,"nameEn":"👨🏻‍❤️‍💋‍👨🏽","nameZhHant":"👨🏻‍❤️‍💋‍👨🏽","keywordsEn":[],"keywordsZhHant":[]},
   {"id":"1F468-1F3FB-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FE","emoji":"👨🏻‍❤️‍💋‍👨🏾","group":"People & Body","order":2401,"nameEn":"👨🏻‍❤️‍💋‍👨🏾","nameZhHant":"👨🏻‍❤️‍💋‍👨🏾","keywordsEn":[],"keywordsZhHant":[]},
   {"id":"1F468-1F3FB-200D-2764-FE0F-200D-1F48B-200D-1F468-1F3FF","emoji":"👨🏻‍❤️‍💋‍👨🏿","group":"People & Body","order":2402,"nameEn":"👨🏻‍❤️‍💋‍👨🏿","nameZhHant":"👨🏻‍❤️‍💋‍👨🏿","keywordsEn":[],"keywordsZhHant":[]},
@@ -2626,7 +2662,10 @@ export const EMOJI_DATA: readonly EmojiRecord[] = [
   {"id":"1F415-200D-1F9BA","emoji":"🐕‍🦺","group":"Animals & Nature","order":2596,"nameEn":"service dog","nameZhHant":"服務犬","keywordsEn":["accessibility","animal","assistance","dog","service"],"keywordsZhHant":["服務","服務犬","狗","行動不便","輔助"]},
   {"id":"1F429","emoji":"🐩","group":"Animals & Nature","order":2597,"nameEn":"poodle","nameZhHant":"貴賓犬","keywordsEn":["animal","dog","fluffy","poodle"],"keywordsZhHant":["捲毛狗","貴賓犬","貴賓狗"]},
   {"id":"1F43A","emoji":"🐺","group":"Animals & Nature","order":2598,"nameEn":"wolf","nameZhHant":"狼","keywordsEn":["animal","face","wolf"],"keywordsZhHant":["動物","狼","狼面"]},
-  {"id":"1F98A","emoji":"🦊","group":"Animals & Nature","order":2599,"nameEn":"fox","nameZhHant":"狐狸","keywordsEn":["animal","face","fox"],"keywordsZhHant":["動物","狐狸"]},
+  {"id":"1F98A","emoji":"🦊","group":"Animals & Nature","order":2599,"nameEn":"fox","nameZhHant":"狐狸","keywordsEn":["animal","face","fox"],"keywordsZhHant":["動物","狐狸"]}
+];
+
+const EMOJI_DATA_13: EmojiRecord[] = [
   {"id":"1F99D","emoji":"🦝","group":"Animals & Nature","order":2600,"nameEn":"raccoon","nameZhHant":"浣熊","keywordsEn":["animal","curious","raccoon","sly"],"keywordsZhHant":["好奇","浣熊","淘氣","狡猾"]},
   {"id":"1F431","emoji":"🐱","group":"Animals & Nature","order":2601,"nameEn":"cat face","nameZhHant":"貓頭","keywordsEn":["animal","cat","face","kitten","kitty","pet"],"keywordsZhHant":["動物","貓","貓頭"]},
   {"id":"1F408","emoji":"🐈","group":"Animals & Nature","order":2602,"nameEn":"cat","nameZhHant":"貓","keywordsEn":["animal","animals","cat","cats","kitten","pet"],"keywordsZhHant":["小貓","貓"]},
@@ -2826,7 +2865,10 @@ export const EMOJI_DATA: readonly EmojiRecord[] = [
   {"id":"1F9C0","emoji":"🧀","group":"Food & Drink","order":2796,"nameEn":"cheese wedge","nameZhHant":"起士","keywordsEn":["cheese","wedge"],"keywordsZhHant":["乳酪","起士"]},
   {"id":"1F356","emoji":"🍖","group":"Food & Drink","order":2797,"nameEn":"meat on bone","nameZhHant":"排骨","keywordsEn":["bone","meat"],"keywordsZhHant":["帶骨肉","排骨"]},
   {"id":"1F357","emoji":"🍗","group":"Food & Drink","order":2798,"nameEn":"poultry leg","nameZhHant":"雞腿","keywordsEn":["bone","chicken","drumstick","hungry","leg","poultry","turkey"],"keywordsZhHant":["帶骨肉","雞腿"]},
-  {"id":"1F969","emoji":"🥩","group":"Food & Drink","order":2799,"nameEn":"cut of meat","nameZhHant":"肉片","keywordsEn":["chop","cut","lambchop","meat","porkchop","red","steak"],"keywordsZhHant":["牛扒","牛排","紅肉","羊排","肉片","肉類","豬排"]},
+  {"id":"1F969","emoji":"🥩","group":"Food & Drink","order":2799,"nameEn":"cut of meat","nameZhHant":"肉片","keywordsEn":["chop","cut","lambchop","meat","porkchop","red","steak"],"keywordsZhHant":["牛扒","牛排","紅肉","羊排","肉片","肉類","豬排"]}
+];
+
+const EMOJI_DATA_14: EmojiRecord[] = [
   {"id":"1F953","emoji":"🥓","group":"Food & Drink","order":2800,"nameEn":"bacon","nameZhHant":"培根","keywordsEn":["bacon","breakfast","food","meat"],"keywordsZhHant":["培根","肉類","食物"]},
   {"id":"1F354","emoji":"🍔","group":"Food & Drink","order":2801,"nameEn":"hamburger","nameZhHant":"漢堡","keywordsEn":["burger","eat","fast","food","hamburger","hungry"],"keywordsZhHant":["漢堡","漢堡包","餓了"]},
   {"id":"1F35F","emoji":"🍟","group":"Food & Drink","order":2802,"nameEn":"french fries","nameZhHant":"薯條","keywordsEn":["fast","food","french","fries"],"keywordsZhHant":["炸薯條","薯條","速食"]},
@@ -3026,7 +3068,10 @@ export const EMOJI_DATA: readonly EmojiRecord[] = [
   {"id":"1F6A7","emoji":"🚧","group":"Travel & Places","order":2996,"nameEn":"construction","nameZhHant":"施工","keywordsEn":["barrier","construction"],"keywordsZhHant":["工地","施工","施工中"]},
   {"id":"2693","emoji":"⚓","group":"Travel & Places","order":2997,"nameEn":"anchor","nameZhHant":"錨","keywordsEn":["anchor","ship","tool"],"keywordsZhHant":["船錨","錨"]},
   {"id":"1F6DF","emoji":"🛟","group":"Travel & Places","order":2998,"nameEn":"ring buoy","nameZhHant":"救生圈","keywordsEn":["buoy","float","life","lifesaver","preserver","rescue","ring","safety","save","saver","swim"],"keywordsZhHant":["保命工具","安全","救援","救生","救生圈","救生用具","浮具","浮標","游泳"]},
-  {"id":"26F5","emoji":"⛵","group":"Travel & Places","order":2999,"nameEn":"sailboat","nameZhHant":"帆船","keywordsEn":["boat","resort","sailboat","sailing","sea","yacht"],"keywordsZhHant":["帆船","遊艇"]},
+  {"id":"26F5","emoji":"⛵","group":"Travel & Places","order":2999,"nameEn":"sailboat","nameZhHant":"帆船","keywordsEn":["boat","resort","sailboat","sailing","sea","yacht"],"keywordsZhHant":["帆船","遊艇"]}
+];
+
+const EMOJI_DATA_15: EmojiRecord[] = [
   {"id":"1F6F6","emoji":"🛶","group":"Travel & Places","order":3000,"nameEn":"canoe","nameZhHant":"獨木舟","keywordsEn":["boat","canoe"],"keywordsZhHant":["獨木舟","船"]},
   {"id":"1F6A4","emoji":"🚤","group":"Travel & Places","order":3001,"nameEn":"speedboat","nameZhHant":"快艇","keywordsEn":["billionaire","boat","lake","luxury","millionaire","speedboat","summer","travel"],"keywordsZhHant":["快艇"]},
   {"id":"1F6F3-FE0F","emoji":"🛳️","group":"Travel & Places","order":3002,"nameEn":"🛳️","nameZhHant":"🛳️","keywordsEn":[],"keywordsZhHant":[]},
@@ -3226,7 +3271,10 @@ export const EMOJI_DATA: readonly EmojiRecord[] = [
   {"id":"1F457","emoji":"👗","group":"Objects","order":3196,"nameEn":"dress","nameZhHant":"洋裝","keywordsEn":["clothes","clothing","dress","dressed","fancy","shopping"],"keywordsZhHant":["洋裝","血拼","裙子"]},
   {"id":"1F458","emoji":"👘","group":"Objects","order":3197,"nameEn":"kimono","nameZhHant":"和服","keywordsEn":["clothing","comfortable","kimono"],"keywordsZhHant":["和服","日本","舒服"]},
   {"id":"1F97B","emoji":"🥻","group":"Objects","order":3198,"nameEn":"sari","nameZhHant":"莎麗服","keywordsEn":["clothing","dress","sari"],"keywordsZhHant":["洋裝","莎麗服","衣服"]},
-  {"id":"1FA71","emoji":"🩱","group":"Objects","order":3199,"nameEn":"one-piece swimsuit","nameZhHant":"一件式泳裝","keywordsEn":["bathing","one-piece","suit","swimsuit"],"keywordsZhHant":["一件式泳裝","泳衣","泳裝"]},
+  {"id":"1FA71","emoji":"🩱","group":"Objects","order":3199,"nameEn":"one-piece swimsuit","nameZhHant":"一件式泳裝","keywordsEn":["bathing","one-piece","suit","swimsuit"],"keywordsZhHant":["一件式泳裝","泳衣","泳裝"]}
+];
+
+const EMOJI_DATA_16: EmojiRecord[] = [
   {"id":"1FA72","emoji":"🩲","group":"Objects","order":3200,"nameEn":"briefs","nameZhHant":"泳褲","keywordsEn":["bathing","briefs","one-piece","suit","swimsuit","underwear"],"keywordsZhHant":["一件式","內衣","泳裝","泳褲","短褲"]},
   {"id":"1FA73","emoji":"🩳","group":"Objects","order":3201,"nameEn":"shorts","nameZhHant":"短泳褲","keywordsEn":["bathing","pants","shorts","suit","swimsuit","underwear"],"keywordsZhHant":["內衣","泳裝","泳褲","短泳褲","短褲","褲裝"]},
   {"id":"1F459","emoji":"👙","group":"Objects","order":3202,"nameEn":"bikini","nameZhHant":"比基尼","keywordsEn":["bathing","beach","bikini","clothing","pool","suit","swim"],"keywordsZhHant":["三點式","比基尼","海灘","游泳","游泳池"]},
@@ -3426,7 +3474,10 @@ export const EMOJI_DATA: readonly EmojiRecord[] = [
   {"id":"26D3-FE0F","emoji":"⛓️","group":"Objects","order":3396,"nameEn":"⛓️","nameZhHant":"⛓️","keywordsEn":[],"keywordsZhHant":[]},
   {"id":"1FA9D","emoji":"🪝","group":"Objects","order":3397,"nameEn":"hook","nameZhHant":"鉤子","keywordsEn":["catch","crook","curve","ensnare","hook","point","selling"],"keywordsZhHant":["勾","彎曲","鉤","鉤子","鉤形"]},
   {"id":"1F9F0","emoji":"🧰","group":"Objects","order":3398,"nameEn":"toolbox","nameZhHant":"工具箱","keywordsEn":["box","chest","mechanic","red","tool","toolbox"],"keywordsZhHant":["器具","工具","工具箱","機械工","箱子","紅盒子"]},
-  {"id":"1F9F2","emoji":"🧲","group":"Objects","order":3399,"nameEn":"magnet","nameZhHant":"磁鐵","keywordsEn":["attraction","horseshoe","magnet","magnetic","negative","positive","shape","u"],"keywordsZhHant":["U 型","五金","吸引","正負","磁力","磁吸","磁鐵","馬蹄"]},
+  {"id":"1F9F2","emoji":"🧲","group":"Objects","order":3399,"nameEn":"magnet","nameZhHant":"磁鐵","keywordsEn":["attraction","horseshoe","magnet","magnetic","negative","positive","shape","u"],"keywordsZhHant":["U 型","五金","吸引","正負","磁力","磁吸","磁鐵","馬蹄"]}
+];
+
+const EMOJI_DATA_17: EmojiRecord[] = [
   {"id":"1FA9C","emoji":"🪜","group":"Objects","order":3400,"nameEn":"ladder","nameZhHant":"梯子","keywordsEn":["climb","ladder","rung","step"],"keywordsZhHant":["梯凳","梯子","橫木","爬","踩","階梯"]},
   {"id":"1FA8F","emoji":"🪏","group":"Objects","order":3401,"nameEn":"shovel","nameZhHant":"鏟子","keywordsEn":["bury","dig","garden","hole","plant","scoop","shovel","snow","spade"],"keywordsZhHant":["挖","洞","鏟","鏟子"]},
   {"id":"2697-FE0F","emoji":"⚗️","group":"Objects","order":3402,"nameEn":"⚗️","nameZhHant":"⚗️","keywordsEn":[],"keywordsZhHant":[]},
@@ -3626,7 +3677,10 @@ export const EMOJI_DATA: readonly EmojiRecord[] = [
   {"id":"0036-FE0F-20E3","emoji":"6️⃣","group":"Symbols","order":3596,"nameEn":"6️⃣","nameZhHant":"6️⃣","keywordsEn":[],"keywordsZhHant":[]},
   {"id":"0037-FE0F-20E3","emoji":"7️⃣","group":"Symbols","order":3597,"nameEn":"7️⃣","nameZhHant":"7️⃣","keywordsEn":[],"keywordsZhHant":[]},
   {"id":"0038-FE0F-20E3","emoji":"8️⃣","group":"Symbols","order":3598,"nameEn":"8️⃣","nameZhHant":"8️⃣","keywordsEn":[],"keywordsZhHant":[]},
-  {"id":"0039-FE0F-20E3","emoji":"9️⃣","group":"Symbols","order":3599,"nameEn":"9️⃣","nameZhHant":"9️⃣","keywordsEn":[],"keywordsZhHant":[]},
+  {"id":"0039-FE0F-20E3","emoji":"9️⃣","group":"Symbols","order":3599,"nameEn":"9️⃣","nameZhHant":"9️⃣","keywordsEn":[],"keywordsZhHant":[]}
+];
+
+const EMOJI_DATA_18: EmojiRecord[] = [
   {"id":"1F51F","emoji":"🔟","group":"Symbols","order":3600,"nameEn":"keycap: 10","nameZhHant":"按鍵：10","keywordsEn":["keycap"],"keywordsZhHant":["按鍵"]},
   {"id":"1F520","emoji":"🔠","group":"Symbols","order":3601,"nameEn":"input latin uppercase","nameZhHant":"大寫字母鍵","keywordsEn":["ABCD","input","latin","letters","uppercase"],"keywordsZhHant":["ABCD","大寫","大寫字母鍵","字母","輸入"]},
   {"id":"1F521","emoji":"🔡","group":"Symbols","order":3602,"nameEn":"input latin lowercase","nameZhHant":"小寫字母鍵","keywordsEn":["abcd","input","latin","letters","lowercase"],"keywordsZhHant":["abcd","字母","小寫","小寫字母鍵","輸入"]},
@@ -3826,7 +3880,10 @@ export const EMOJI_DATA: readonly EmojiRecord[] = [
   {"id":"1F1EE-1F1F7","emoji":"🇮🇷","group":"Flags","order":3796,"nameEn":"flag: Iran","nameZhHant":"旗子：伊朗","keywordsEn":["flag"],"keywordsZhHant":["旗子"]},
   {"id":"1F1EE-1F1F8","emoji":"🇮🇸","group":"Flags","order":3797,"nameEn":"flag: Iceland","nameZhHant":"旗子：冰島","keywordsEn":["flag"],"keywordsZhHant":["旗子"]},
   {"id":"1F1EE-1F1F9","emoji":"🇮🇹","group":"Flags","order":3798,"nameEn":"flag: Italy","nameZhHant":"旗子：義大利","keywordsEn":["flag"],"keywordsZhHant":["旗子"]},
-  {"id":"1F1EF-1F1EA","emoji":"🇯🇪","group":"Flags","order":3799,"nameEn":"flag: Jersey","nameZhHant":"旗子：澤西島","keywordsEn":["flag"],"keywordsZhHant":["旗子"]},
+  {"id":"1F1EF-1F1EA","emoji":"🇯🇪","group":"Flags","order":3799,"nameEn":"flag: Jersey","nameZhHant":"旗子：澤西島","keywordsEn":["flag"],"keywordsZhHant":["旗子"]}
+];
+
+const EMOJI_DATA_19: EmojiRecord[] = [
   {"id":"1F1EF-1F1F2","emoji":"🇯🇲","group":"Flags","order":3800,"nameEn":"flag: Jamaica","nameZhHant":"旗子：牙買加","keywordsEn":["flag"],"keywordsZhHant":["旗子"]},
   {"id":"1F1EF-1F1F4","emoji":"🇯🇴","group":"Flags","order":3801,"nameEn":"flag: Jordan","nameZhHant":"旗子：約旦","keywordsEn":["flag"],"keywordsZhHant":["旗子"]},
   {"id":"1F1EF-1F1F5","emoji":"🇯🇵","group":"Flags","order":3802,"nameEn":"flag: Japan","nameZhHant":"旗子：日本","keywordsEn":["flag"],"keywordsZhHant":["旗子"]},
@@ -3972,3 +4029,5 @@ export const EMOJI_DATA: readonly EmojiRecord[] = [
   {"id":"1F3F4-E0067-E0062-E0073-E0063-E0074-E007F","emoji":"🏴󠁧󠁢󠁳󠁣󠁴󠁿","group":"Flags","order":3942,"nameEn":"flag: Scotland","nameZhHant":"旗子：蘇格蘭","keywordsEn":["flag"],"keywordsZhHant":["旗子"]},
   {"id":"1F3F4-E0067-E0062-E0077-E006C-E0073-E007F","emoji":"🏴󠁧󠁢󠁷󠁬󠁳󠁿","group":"Flags","order":3943,"nameEn":"flag: Wales","nameZhHant":"旗子：威爾斯","keywordsEn":["flag"],"keywordsZhHant":["旗子"]}
 ];
+
+export const EMOJI_DATA: readonly EmojiRecord[] = [EMOJI_DATA_0, EMOJI_DATA_1, EMOJI_DATA_2, EMOJI_DATA_3, EMOJI_DATA_4, EMOJI_DATA_5, EMOJI_DATA_6, EMOJI_DATA_7, EMOJI_DATA_8, EMOJI_DATA_9, EMOJI_DATA_10, EMOJI_DATA_11, EMOJI_DATA_12, EMOJI_DATA_13, EMOJI_DATA_14, EMOJI_DATA_15, EMOJI_DATA_16, EMOJI_DATA_17, EMOJI_DATA_18, EMOJI_DATA_19].flat();

@@ -16,6 +16,14 @@ function normalizeSearch(value: string): string {
   return value.normalize("NFKC").trim().toLocaleLowerCase("en");
 }
 
+const COMMON_ZH_HANT_SYNONYMS: Record<string, readonly string[]> = {
+  "🔥": ["火", "火焰"],
+  "❤️": ["愛心", "愛", "心"],
+  "♥️": ["愛心", "愛", "心"],
+  "🐱": ["貓"],
+  "🐈": ["貓"],
+};
+
 export function filterEmoji(records: readonly EmojiRecord[], filter: EmojiFilter): EmojiRecord[] {
   const query = normalizeSearch(filter.query);
   return records.filter((record) => {
@@ -27,6 +35,7 @@ export function filterEmoji(records: readonly EmojiRecord[], filter: EmojiFilter
       record.nameZhHant,
       ...record.keywordsEn,
       ...record.keywordsZhHant,
+      ...(COMMON_ZH_HANT_SYNONYMS[record.emoji] ?? []),
     ].join(" ");
     return normalizeSearch(searchable).includes(query);
   });
