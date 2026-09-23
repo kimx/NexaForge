@@ -3990,6 +3990,7 @@ section,
 .markdown-preview--pdf-export pre {
   max-height: none;
   overflow: visible;
+  background: #eaf2ff;
 }
 
 .file-dropzone-label {

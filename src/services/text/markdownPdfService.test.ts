@@ -1,4 +1,6 @@
 import { vi } from "vitest";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import html2pdf from "html2pdf.js";
 import { exportMarkdownPreviewToPdf } from "./markdownPdfService";
 
@@ -41,5 +43,13 @@ describe("exportMarkdownPreviewToPdf", () => {
 
     await expect(exportMarkdownPreviewToPdf(preview)).rejects.toThrow("canvas failed");
     expect(preview).not.toHaveClass("markdown-preview--pdf-export");
+  });
+
+  it("uses an html2canvas-compatible background for exported code blocks", () => {
+    const styles = readFileSync(resolve(process.cwd(), "src/styles.css"), "utf8");
+    const exportPreRule = styles.match(/\.markdown-preview--pdf-export pre\s*\{([^}]*)\}/)?.[1];
+
+    expect(exportPreRule).toContain("background: #eaf2ff");
+    expect(exportPreRule).not.toContain("color-mix(");
   });
 });
