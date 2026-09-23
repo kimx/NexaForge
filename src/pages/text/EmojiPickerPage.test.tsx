@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor, within } from "@testing-library/react";
+import { act, fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { renderWithProviders } from "../../test/renderWithProviders";
 import { EmojiPickerPage } from "./EmojiPickerPage";
@@ -86,5 +86,59 @@ describe("EmojiPickerPage", () => {
     renderWithProviders(<EmojiPickerPage />);
     expect(screen.getByRole("alert")).toHaveTextContent("Changes will be kept for this page only");
     expect(screen.getByRole("searchbox", { name: "Search emoji" })).toBeEnabled();
+  });
+
+  it("preserves a favorite added while an emoji copy is pending", async () => {
+    let resolveCopy: () => void = () => {};
+    vi.mocked(navigator.clipboard.writeText).mockImplementationOnce(() => new Promise<void>((resolve) => { resolveCopy = resolve; }));
+    renderWithProviders(<EmojiPickerPage />);
+    fireEvent.change(screen.getByRole("searchbox", { name: "Search emoji" }), { target: { value: "rocket" } });
+    fireEvent.click(screen.getByRole("button", { name: /Copy 🚀 rocket/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Add 🚀 to favorites/i }));
+    await act(async () => resolveCopy());
+    const stored = JSON.parse(localStorage.getItem("nexaforge.emoji-picker.v1") ?? "{}") as { recentIds: string[]; favoriteIds: string[] };
+    expect(stored.recentIds).toContain("1F680");
+    expect(stored.favoriteIds).toContain("1F680");
+  });
+
+  it("preserves both recents when clipboard writes finish out of order", async () => {
+    const resolves: Array<() => void> = [];
+    vi.mocked(navigator.clipboard.writeText).mockImplementation(() => new Promise<void>((resolve) => { resolves.push(resolve); }));
+    renderWithProviders(<EmojiPickerPage />);
+    fireEvent.change(screen.getByRole("searchbox", { name: "Search emoji" }), { target: { value: "rocket" } });
+    fireEvent.click(screen.getByRole("button", { name: /Copy 🚀 rocket/i }));
+    fireEvent.change(screen.getByRole("searchbox", { name: "Search emoji" }), { target: { value: "fire" } });
+    fireEvent.click(screen.getByRole("button", { name: /Copy 🔥 fire/i }));
+    await act(async () => { resolves[1](); await Promise.resolve(); resolves[0](); });
+    const stored = JSON.parse(localStorage.getItem("nexaforge.emoji-picker.v1") ?? "{}") as { recentIds: string[] };
+    expect(stored.recentIds).toEqual(["1F680", "1F525"]);
+  });
+
+  it("does not restore a pending copy after recents are cleared", async () => {
+    let resolvePending: () => void = () => {};
+    vi.mocked(navigator.clipboard.writeText)
+      .mockResolvedValueOnce(undefined)
+      .mockImplementationOnce(() => new Promise<void>((resolve) => { resolvePending = resolve; }));
+    renderWithProviders(<EmojiPickerPage />);
+    fireEvent.change(screen.getByRole("searchbox", { name: "Search emoji" }), { target: { value: "rocket" } });
+    fireEvent.click(screen.getByRole("button", { name: /Copy 🚀 rocket/i }));
+    await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent("Copied 🚀"));
+    fireEvent.click(screen.getByRole("button", { name: /Copy 🚀 rocket/i }));
+    fireEvent.click(screen.getByRole("button", { name: "Recently used" }));
+    fireEvent.click(screen.getByRole("button", { name: "Clear recently used" }));
+    await act(async () => resolvePending());
+    expect(screen.getByText("No recently used emoji")).toBeVisible();
+  });
+
+  it("shows encoding copy success and failure inside the details dialog", async () => {
+    vi.mocked(navigator.clipboard.writeText).mockResolvedValueOnce(undefined).mockRejectedValueOnce(new DOMException("denied"));
+    renderWithProviders(<EmojiPickerPage />);
+    fireEvent.change(screen.getByRole("searchbox", { name: "Search emoji" }), { target: { value: "rocket" } });
+    fireEvent.click(screen.getByRole("button", { name: /View information for 🚀/i }));
+    const dialog = screen.getByRole("dialog");
+    fireEvent.click(within(dialog).getByRole("button", { name: "Copy Unicode Code Points" }));
+    expect(await within(dialog).findByRole("status")).toHaveTextContent("Copied Unicode Code Points");
+    fireEvent.click(within(dialog).getByRole("button", { name: "Copy UTF-8" }));
+    expect(await within(dialog).findByRole("alert")).toHaveTextContent("Clipboard access failed");
   });
 });

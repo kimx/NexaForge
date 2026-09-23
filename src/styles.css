@@ -5605,6 +5605,17 @@ button:hover,
   font-size: 1.5rem;
 }
 
+.emoji-dialog__feedback {
+  position: sticky;
+  z-index: 1;
+  top: 0;
+  margin: var(--space-3) 0;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--bg-surface);
+}
+
 .emoji-dialog__identity {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

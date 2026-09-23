@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { EmojiDetailsDialog } from "../../components/emoji/EmojiDetailsDialog";
 import { EmojiGrid } from "../../components/emoji/EmojiGrid";
 import { ToolPageTemplate } from "../../components/ToolPageTemplate";
@@ -7,7 +7,7 @@ import { EMOJI_DATA, type EmojiGroup, type EmojiRecord } from "../../data/emoji.
 import { FILE_TOOLS } from "../../data/tools";
 import { useSeo } from "../../hooks/useSeo";
 import { filterEmoji } from "../../services/text/emojiService";
-import { addRecentEmoji, loadEmojiState, saveEmojiState, toggleFavoriteEmoji } from "../../services/text/emojiStorage";
+import { addRecentEmoji, loadEmojiState, saveEmojiState, toggleFavoriteEmoji, type EmojiStoredValues } from "../../services/text/emojiStorage";
 import type { ToolDefinition, ToolMeta } from "../../types/tool";
 import { getRelatedTools } from "../../utils/toolHelpers";
 
@@ -32,13 +32,18 @@ export function EmojiPickerPage(): JSX.Element {
   const [group, setGroup] = useState<EmojiGroup | "all">("all");
   const [view, setView] = useState<EmojiView>("all");
   const [visibleLimit, setVisibleLimit] = useState(DISPLAY_STEP);
-  const [recentIds, setRecentIds] = useState<string[]>([]);
-  const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
+  const [stored, setStored] = useState<EmojiStoredValues>({ recentIds: [], favoriteIds: [] });
+  const storedRef = useRef(stored);
+  const recentClearEpoch = useRef(0);
+  const dialogEpoch = useRef(0);
+  const { recentIds, favoriteIds } = stored;
   const [persistenceAvailable, setPersistenceAvailable] = useState(true);
   const [selected, setSelected] = useState<EmojiRecord | null>(null);
   const [detailsTrigger, setDetailsTrigger] = useState<HTMLButtonElement | null>(null);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [dialogMessage, setDialogMessage] = useState("");
+  const [dialogError, setDialogError] = useState("");
 
   const tool = FILE_TOOLS.find((candidate) => candidate.id === "emoji-picker") ?? FALLBACK_TOOL;
   const title = t("tool.emoji-picker.title");
@@ -53,8 +58,8 @@ export function EmojiPickerPage(): JSX.Element {
 
   useEffect(() => {
     const stored = loadEmojiState();
-    setRecentIds(stored.recentIds);
-    setFavoriteIds(stored.favoriteIds);
+    storedRef.current = { recentIds: stored.recentIds, favoriteIds: stored.favoriteIds };
+    setStored(storedRef.current);
     setPersistenceAvailable(stored.persistenceAvailable);
   }, []);
 
@@ -69,31 +74,35 @@ export function EmojiPickerPage(): JSX.Element {
   const results = useMemo(() => filterEmoji(sourceRecords, { query, group }), [sourceRecords, query, group]);
   const displayed = results.slice(0, visibleLimit);
 
-  const persist = (nextRecentIds: string[], nextFavoriteIds: string[]): void => {
-    if (!saveEmojiState({ recentIds: nextRecentIds, favoriteIds: nextFavoriteIds })) setPersistenceAvailable(false);
+  const updateStored = (update: (current: EmojiStoredValues) => EmojiStoredValues): void => {
+    const next = update(storedRef.current);
+    storedRef.current = next;
+    setStored(next);
+    if (!saveEmojiState(next)) setPersistenceAvailable(false);
   };
 
-  const copyValue = async (value: string, successMessage: string, recentRecord?: EmojiRecord): Promise<void> => {
-    setError("");
+  const copyValue = async (value: string, successMessage: string, recentRecord?: EmojiRecord, inDialog = false): Promise<void> => {
+    const clearEpoch = recentClearEpoch.current;
+    const activeDialogEpoch = dialogEpoch.current;
+    if (inDialog) setDialogError("");
+    else setError("");
     try {
       if (!navigator.clipboard?.writeText) throw new Error("Clipboard unavailable");
       await navigator.clipboard.writeText(value);
-      setMessage(successMessage);
-      if (recentRecord) {
-        const nextRecentIds = addRecentEmoji(recentIds, recentRecord.id);
-        setRecentIds(nextRecentIds);
-        persist(nextRecentIds, favoriteIds);
-      }
+      if (inDialog && activeDialogEpoch !== dialogEpoch.current) return;
+      if (inDialog) setDialogMessage(successMessage);
+      else setMessage(successMessage);
+      if (recentRecord && clearEpoch === recentClearEpoch.current)
+        updateStored((current) => ({ ...current, recentIds: addRecentEmoji(current.recentIds, recentRecord.id) }));
     } catch {
-      setMessage("");
-      setError(t("emoji.clipboardError"));
+      if (inDialog && activeDialogEpoch !== dialogEpoch.current) return;
+      if (inDialog) { setDialogMessage(""); setDialogError(t("emoji.clipboardError")); }
+      else { setMessage(""); setError(t("emoji.clipboardError")); }
     }
   };
 
   const toggleFavorite = (record: EmojiRecord): void => {
-    const nextFavoriteIds = toggleFavoriteEmoji(favoriteIds, record.id);
-    setFavoriteIds(nextFavoriteIds);
-    persist(recentIds, nextFavoriteIds);
+    updateStored((current) => ({ ...current, favoriteIds: toggleFavoriteEmoji(current.favoriteIds, record.id) }));
   };
 
   const emptyKey = view === "recent" && sourceRecords.length === 0 ? "emoji.empty.recent"
@@ -150,12 +159,12 @@ export function EmojiPickerPage(): JSX.Element {
                   locale={locale}
                   t={t}
                   onCopy={(record) => void copyValue(record.emoji, t("emoji.copied", { emoji: record.emoji }), record)}
-                  onInfo={(record, trigger) => { setDetailsTrigger(trigger); setSelected(record); }}
+                  onInfo={(record, trigger) => { dialogEpoch.current += 1; setDialogMessage(""); setDialogError(""); setDetailsTrigger(trigger); setSelected(record); }}
                   onToggleFavorite={toggleFavorite}
                 />
                 <div className="emoji-picker__footer-actions">
                   {displayed.length < results.length ? <button type="button" className="secondary" onClick={() => setVisibleLimit((value) => value + DISPLAY_STEP)}>{t("emoji.more")}</button> : null}
-                  {view === "recent" && recentIds.length > 0 ? <button type="button" className="secondary" onClick={() => { setRecentIds([]); persist([], favoriteIds); }}>{t("emoji.recent.clear")}</button> : null}
+                  {view === "recent" && recentIds.length > 0 ? <button type="button" className="secondary" onClick={() => { recentClearEpoch.current += 1; updateStored((current) => ({ ...current, recentIds: [] })); }}>{t("emoji.recent.clear")}</button> : null}
                 </div>
               </>
             ) : (
@@ -172,8 +181,10 @@ export function EmojiPickerPage(): JSX.Element {
               locale={locale}
               returnFocus={detailsTrigger}
               t={t}
-              onClose={() => setSelected(null)}
-              onCopyField={(value, label) => void copyValue(value, t("emoji.copiedField", { name: label }))}
+              message={dialogMessage}
+              error={dialogError}
+              onClose={() => { dialogEpoch.current += 1; setSelected(null); setDialogMessage(""); setDialogError(""); }}
+              onCopyField={(value, label) => void copyValue(value, t("emoji.copiedField", { name: label }), undefined, true)}
             />
           ) : null}
           </>

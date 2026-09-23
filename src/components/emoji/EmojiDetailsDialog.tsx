@@ -7,11 +7,13 @@ interface EmojiDetailsDialogProps {
   locale: "zh-TW" | "en";
   returnFocus: HTMLButtonElement | null;
   t: (key: string, params?: Record<string, string | number>) => string;
+  message: string;
+  error: string;
   onClose: () => void;
   onCopyField: (value: string, label: string) => void;
 }
 
-export function EmojiDetailsDialog({ record, locale, returnFocus, t, onClose, onCopyField }: EmojiDetailsDialogProps): JSX.Element {
+export function EmojiDetailsDialog({ record, locale, returnFocus, t, message, error, onClose, onCopyField }: EmojiDetailsDialogProps): JSX.Element {
   const dialogRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
   const name = locale === "en" ? record.nameEn : record.nameZhHant;
@@ -63,6 +65,8 @@ export function EmojiDetailsDialog({ record, locale, returnFocus, t, onClose, on
           <h2 id="emoji-dialog-title"><span>{record.emoji}</span> {name}</h2>
           <button ref={closeRef} type="button" className="secondary emoji-dialog__close" aria-label={t("emoji.dialog.close")} onClick={onClose}>×</button>
         </div>
+        {message ? <p className="emoji-dialog__feedback" role="status" aria-live="polite">{message}</p> : null}
+        {error ? <p className="emoji-dialog__feedback error" role="alert">{error}</p> : null}
         <dl className="emoji-dialog__identity">
           <div><dt>{t("emoji.dialog.chineseName")}</dt><dd>{record.nameZhHant}</dd></div>
           <div><dt>{t("emoji.dialog.englishName")}</dt><dd>{record.nameEn}</dd></div>
