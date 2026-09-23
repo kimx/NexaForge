@@ -74,6 +74,7 @@ export const TOOL_VISUALS: Readonly<Partial<Record<string, ToolVisual>>> = {
   "list-cleanup": { label: "LIST", tone: "sky", sidebarIcon: "text" },
   "hash": { label: "HASH", tone: "sky", sidebarIcon: "text" },
   "uuid": { label: "UUID", tone: "sky", sidebarIcon: "text" },
+  "emoji-picker": { label: "😀", tone: "sky", sidebarIcon: "text" },
   "word-counter": { label: "WORDS", tone: "sky", sidebarIcon: "text" },
   "case-converter": { label: "Aa", tone: "sky", sidebarIcon: "text" },
   "remove-duplicate-lines": { label: "≡", tone: "sky", sidebarIcon: "text" },

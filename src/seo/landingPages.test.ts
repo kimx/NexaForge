@@ -53,6 +53,7 @@ describe("SEO search page catalog", () => {
       "/data/json-diff",
       "/data/jsonpath-tester",
       "/data/yaml-json",
+      "/tools/emoji-picker",
     ]);
     expect(new Set(SEO_SEARCH_PAGES.map(({ path }) => path)).size).toBe(
       SEO_SEARCH_PAGES.length

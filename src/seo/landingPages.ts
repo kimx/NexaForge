@@ -1117,6 +1117,61 @@ const BARCODE_READER_LANDING: SeoLandingDefinition = {
   },
 };
 
+const EMOJI_PICKER_LANDING: SeoLandingDefinition = {
+  path: "/tools/emoji-picker",
+  toolId: "emoji-picker",
+  isAlias: false,
+  preset: {},
+  content: {
+    "zh-TW": {
+      title: "Emoji 搜尋與複製工具｜Unicode 編碼查詢 | NexaForge",
+      description: "免費搜尋、收藏與複製 Emoji，並查詢完整 Unicode 碼位、UTF-8、HTML Entity 與 JavaScript escape；所有操作都在瀏覽器本機完成。",
+      h1: "Emoji 搜尋與複製工具",
+      intro: "用英文或繁體中文快速找到 Emoji、複製完整字串，並查看複合 Emoji 的每一個 Unicode 碼位與常用開發格式。",
+      sections: [
+        { heading: "搜尋完整 Emoji 資料", body: "依名稱、關鍵字與九大 Unicode 分類即時篩選，包含旗幟、膚色、Keycap 與 ZWJ 組合序列。" },
+        { heading: "一次看懂編碼", body: "資訊面板列出完整 Unicode code points、UTF-8 bytes、HTML entity 與 JavaScript Unicode escape，並可分別複製。" },
+      ],
+      steps: ["輸入英文、繁體中文名稱或關鍵字。", "選擇分類，再按 Emoji 主按鈕複製完整字串。", "開啟資訊面板查看或複製各種 Unicode 編碼。"],
+      privacy: "搜尋、複製、最近使用與收藏都只在你的瀏覽器中處理；內容不會上傳，也不會送進分析服務。",
+      faq: [
+        { q: "如何複製 Emoji？", a: "按下 Emoji 主按鈕即可複製完整字串。只有瀏覽器確認複製成功後，它才會加入最近使用。" },
+        { q: "為什麼 Emoji 外觀會不同？", a: "Emoji 使用系統字型顯示，因此外觀與新字形支援度會依作業系統、瀏覽器和字型版本而異。" },
+        { q: "為什麼一個 Emoji 有多個 Unicode 碼位？", a: "旗幟、膚色、文字變體、Keycap 與 ZWJ 組合會由多個碼位共同構成一個完整 Emoji。" },
+      ],
+      related: [
+        { path: "/text/html-encoder", label: "HTML Encoder" },
+        { path: "/developer/base64", label: "Base64" },
+        { path: "/developer/url-encode-decode", label: "URL Encoder / Decoder" },
+        { path: "/text/word-counter", label: "Word Counter" },
+      ],
+    },
+    en: {
+      title: "Emoji Picker & Unicode Tool | NexaForge",
+      description: "Search, favorite, and copy emoji for free, then inspect complete Unicode code points, UTF-8, HTML entities, and JavaScript escapes entirely in your browser.",
+      h1: "Emoji Picker & Unicode Tool",
+      intro: "Find emoji by English or Traditional Chinese name, copy the complete string, and inspect every code point and common developer encoding for compound emoji.",
+      sections: [
+        { heading: "Search complete emoji data", body: "Filter instantly by name, keyword, and nine Unicode groups, including flags, skin tones, keycaps, and ZWJ sequences." },
+        { heading: "Inspect every encoding", body: "The details panel lists complete Unicode code points, UTF-8 bytes, HTML entities, and JavaScript Unicode escapes, each with its own copy action." },
+      ],
+      steps: ["Search by an English or Traditional Chinese name or keyword.", "Choose a category, then press an emoji's main button to copy its complete string.", "Open the details panel to inspect or copy each Unicode encoding."],
+      privacy: "Searches, copies, recent items, and favorites are handled only in your browser. They are not uploaded or sent to analytics.",
+      faq: [
+        { q: "How do I copy an emoji?", a: "Press the emoji's main button to copy its complete string. It enters Recently used only after the browser confirms a successful copy." },
+        { q: "Why does an emoji look different on another device?", a: "Emoji use system fonts, so their appearance and support for newer glyphs depend on the operating system, browser, and font version." },
+        { q: "Why can one emoji contain multiple Unicode code points?", a: "Flags, skin tones, text variants, keycaps, and ZWJ combinations use multiple code points to form one complete emoji." },
+      ],
+      related: [
+        { path: "/text/html-encoder", label: "HTML Encoder" },
+        { path: "/developer/base64", label: "Base64" },
+        { path: "/developer/url-encode-decode", label: "URL Encoder / Decoder" },
+        { path: "/text/word-counter", label: "Word Counter" },
+      ],
+    },
+  },
+};
+
 export const SEO_SEARCH_PAGES: readonly SeoLandingDefinition[] = [
   ...ALIAS_PAGE_SEEDS.map(definePage),
   ...EXISTING_PAGE_SEEDS.map(definePage).map((entry) =>
@@ -1128,6 +1183,7 @@ export const SEO_SEARCH_PAGES: readonly SeoLandingDefinition[] = [
   JSON_DIFF_LANDING,
   JSONPATH_TESTER_LANDING,
   YAML_JSON_LANDING,
+  EMOJI_PICKER_LANDING,
 ];
 
 export const SEO_ALIAS_PAGES = SEO_SEARCH_PAGES.filter(({ isAlias }) => isAlias);
