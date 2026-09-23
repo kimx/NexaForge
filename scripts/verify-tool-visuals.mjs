@@ -5,7 +5,7 @@ import { resolve } from "node:path";
 import { chromium } from "playwright";
 
 const base = process.env.AUDIT_BASE_URL || "http://127.0.0.1:4187";
-const out = resolve("artifacts/issue-98");
+const out = resolve(process.env.AUDIT_OUTPUT_DIR || "artifacts/issue-98");
 await mkdir(out, { recursive: true });
 const browser = await chromium.launch({ headless: true });
 const results = [];
@@ -18,7 +18,8 @@ try {
     page.on("pageerror", error => errors.push(error.message));
     await page.goto(base + (english ? "/en" : "/"), { waitUntil: "networkidle" });
     await page.getByRole("button", { name: english ? "All" : "全部", exact: true }).click();
-    assert.equal(await page.locator("#featured-tools .home-tool-card").count(), 64);
+    const toolCount = await page.locator("#featured-tools .home-tool-card").count();
+    assert.ok(toolCount > 0, "All-tools view must render at least one tool card");
     const labels = await page.locator("#featured-tools .home-tool-card__icon").allTextContents();
     assert.ok(labels.every(label => label.trim() && label !== "FILE"));
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
@@ -31,15 +32,24 @@ try {
     const toggles = page.locator(".tool-sidebar__category-toggle");
     const categories = await toggles.locator(".tool-sidebar__label").allTextContents();
     assert.deepEqual(categories.map(text => text.replace(/ tools$| 工具$/i, "")), filters);
+    const sidebarToolPaths = [];
     for (let i = 0; i < 6; i++) {
       const toggle = toggles.nth(i);
       await toggle.click();
       const id = await toggle.getAttribute("aria-controls");
       const svg = await toggle.locator(".tool-sidebar__icon svg").innerHTML();
-      const icons = await page.locator(`[id="${id}"] li svg`).evaluateAll(nodes => nodes.map(node => node.innerHTML));
+      const categoryLinks = page.locator(`[id="${id}"] li a`);
+      const icons = await categoryLinks.locator("svg").evaluateAll(nodes => nodes.map(node => node.innerHTML));
       assert.ok(icons.length && icons.every(icon => icon === svg));
+      sidebarToolPaths.push(...await categoryLinks.evaluateAll(links =>
+        links.map(link => new URL(link.href).pathname)));
       await toggle.click();
     }
+    assert.equal(
+      new Set(sidebarToolPaths).size,
+      toolCount,
+      "Homepage and sidebar must expose the same registered tools"
+    );
     await toggles.nth(3).click();
     await page.locator("#tool-sidebar").screenshot({ path: resolve(out, `${name}-sidebar.png`) });
     if (width === 390) await page.keyboard.press("Escape");
@@ -51,7 +61,7 @@ try {
     await page.keyboard.press("Enter");
     await page.waitForURL(url => url.pathname !== (english ? "/en" : "/"));
     assert.deepEqual(errors, []);
-    results.push({ name, toolCount: labels.length, categories: filters, clippedTitles: clipped, errors });
+    results.push({ name, toolCount, categories: filters, clippedTitles: clipped, errors });
     console.log("PASS", name);
     await context.close();
   }

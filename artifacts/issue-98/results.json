@@ -3,7 +3,7 @@
   "results": [
     {
       "name": "en-1440",
-      "toolCount": 64,
+      "toolCount": 65,
       "categories": [
         "Image",
         "PDF",
@@ -17,7 +17,7 @@
     },
     {
       "name": "en-390",
-      "toolCount": 64,
+      "toolCount": 65,
       "categories": [
         "Image",
         "PDF",
@@ -31,7 +31,7 @@
     },
     {
       "name": "zh-1440",
-      "toolCount": 64,
+      "toolCount": 65,
       "categories": [
         "影像",
         "PDF",
@@ -45,7 +45,7 @@
     },
     {
       "name": "zh-390",
-      "toolCount": 64,
+      "toolCount": 65,
       "categories": [
         "影像",
         "PDF",
