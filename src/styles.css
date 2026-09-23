@@ -3947,6 +3947,51 @@ section,
   color: var(--brand-primary);
 }
 
+.markdown-preview--pdf-export {
+  box-sizing: border-box;
+  width: 186mm;
+  max-height: none;
+  margin: 0;
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: #fff;
+  color: #172033;
+  font-family: Inter, "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", Arial, sans-serif;
+}
+
+.markdown-preview--pdf-export h1,
+.markdown-preview--pdf-export h2,
+.markdown-preview--pdf-export h3,
+.markdown-preview--pdf-export h4,
+.markdown-preview--pdf-export h5,
+.markdown-preview--pdf-export h6,
+.markdown-preview--pdf-export blockquote,
+.markdown-preview--pdf-export pre,
+.markdown-preview--pdf-export table,
+.markdown-preview--pdf-export tr,
+.markdown-preview--pdf-export li {
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+.markdown-preview--pdf-export table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.markdown-preview--pdf-export th,
+.markdown-preview--pdf-export td {
+  border: 1px solid #c7cedb;
+  padding: 6px 8px;
+  text-align: left;
+}
+
+.markdown-preview--pdf-export pre {
+  max-height: none;
+  overflow: visible;
+}
+
 .file-dropzone-label {
   display: inline-flex;
   flex-direction: column;
