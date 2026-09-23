@@ -181,6 +181,9 @@ const HtmlEncoderPage = lazy(() =>
 const MarkdownPreviewPage = lazy(() =>
   import("./pages/text/MarkdownPreviewPage").then((module) => ({ default: module.MarkdownPreviewPage }))
 );
+const EmojiPickerPage = lazy(() =>
+  import("./pages/text/EmojiPickerPage").then((module) => ({ default: module.EmojiPickerPage }))
+);
 const TextDiffPage = lazy(() =>
   import("./pages/text/TextDiffPage").then((module) => ({ default: module.TextDiffPage }))
 );
@@ -279,6 +282,7 @@ const APP_ROUTES: AppRoute[] = [
   { path: "/text/diff", element: <TextDiffPage /> },
   { path: "/text/html-encoder", element: <HtmlEncoderPage /> },
   { path: "/text/markdown", element: <MarkdownPreviewPage /> },
+  { path: "/tools/emoji-picker", element: <EmojiPickerPage /> },
   { path: "/developer/base64", element: <Base64Page /> },
   { path: "/developer/jwt-key", element: <JwtKeyGeneratorPage /> },
   { path: "/developer/jwt-decoder", element: <JwtDecoderPage /> },

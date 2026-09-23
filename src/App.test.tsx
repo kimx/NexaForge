@@ -127,6 +127,27 @@ describe("App routes", () => {
     expect(INDEXABLE_ROUTES).toContain("/en/developer/regex-tester");
   });
 
+  it("renders the English Emoji Picker route as a working tool", async () => {
+    render(
+      <MemoryRouter
+        initialEntries={["/en/tools/emoji-picker"]}
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+      >
+        <LanguageProvider initialLocale="en">
+          <App />
+        </LanguageProvider>
+      </MemoryRouter>
+    );
+
+    expect(
+      await screen.findByRole("heading", {
+        level: 1,
+        name: "Emoji Picker & Unicode Tool",
+      }, { timeout: 5_000 })
+    ).toBeVisible();
+    expect(screen.getByRole("searchbox", { name: "Search emoji" })).toBeVisible();
+  });
+
   it("publishes every QR and barcode route in both locales", () => {
     const paths = [
       "/qr-code/reader",

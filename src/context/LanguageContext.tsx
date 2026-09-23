@@ -17,6 +17,7 @@ import { PDF_WATERMARK_EN_MESSAGES, PDF_WATERMARK_ZH_MESSAGES } from "../i18n/pd
 import { WATERMARK_EN_MESSAGES, WATERMARK_ZH_MESSAGES } from "../i18n/watermarkMessages";
 import { QR_DESIGNER_EN_MESSAGES, QR_DESIGNER_ZH_MESSAGES } from "../i18n/qrDesignerMessages";
 import { TEXT_WORKFLOW_EN_MESSAGES, TEXT_WORKFLOW_ZH_MESSAGES } from "../i18n/textWorkflowMessages";
+import { EMOJI_EN_MESSAGES, EMOJI_ZH_MESSAGES } from "../i18n/emojiMessages";
 
 export type Locale = "zh-TW" | "en";
 
@@ -75,6 +76,7 @@ function persistLocaleState(locale: Locale): void {
 const zhMessages: Record<string, string> = {
   ...listCleanupToolMessages["zh-TW"],
   ...TEXT_WORKFLOW_ZH_MESSAGES,
+  ...EMOJI_ZH_MESSAGES,
   ...ISSUE_23_ZH_MESSAGES,
   ...ISSUE_26_ZH_MESSAGES,
   ...PDF_CONVERSION_ZH_MESSAGES,
@@ -360,6 +362,9 @@ const zhMessages: Record<string, string> = {
   "tool.markdown-previewer.label.noOutput": "尚未輸入 Markdown。",
   "tool.markdown-previewer.button.copy": "複製原文",
   "tool.markdown-previewer.button.clear": "清空",
+  "tool.markdown-previewer.button.exportPdf": "匯出 PDF",
+  "tool.markdown-previewer.button.exportingPdf": "正在建立 PDF…",
+  "tool.markdown-previewer.error.exportPdf": "無法匯出 PDF，請再試一次。",
   "tool.markdown-previewer.how.0": "在左側輸入 Markdown。",
   "tool.markdown-previewer.how.1": "預覽區會即時渲染最終結果。",
   "tool.markdown-previewer.how.2": "需要時可複製原始內容。",
@@ -1023,6 +1028,7 @@ const zhMessages: Record<string, string> = {
 const enMessages: Record<string, string> = {
   ...listCleanupToolMessages.en,
   ...TEXT_WORKFLOW_EN_MESSAGES,
+  ...EMOJI_EN_MESSAGES,
   ...ISSUE_23_EN_MESSAGES,
   ...ISSUE_26_EN_MESSAGES,
   ...PDF_CONVERSION_EN_MESSAGES,
@@ -1289,6 +1295,9 @@ const enMessages: Record<string, string> = {
   "tool.markdown-previewer.label.noOutput": "No markdown input yet.",
   "tool.markdown-previewer.button.copy": "Copy source",
   "tool.markdown-previewer.button.clear": "Clear",
+  "tool.markdown-previewer.button.exportPdf": "Export PDF",
+  "tool.markdown-previewer.button.exportingPdf": "Creating PDF…",
+  "tool.markdown-previewer.error.exportPdf": "Unable to export the PDF. Please try again.",
   "tool.markdown-previewer.how.0": "Type Markdown in the source panel.",
   "tool.markdown-previewer.how.1": "Rendered output updates instantly.",
   "tool.markdown-previewer.how.2": "Copy the source markdown when needed.",
