@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { createContext, lazy, Suspense, useCallback, useContext, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from "react";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { Footer } from "./components/Footer";
 import { Header } from "./components/Header";
@@ -355,24 +355,80 @@ function RouteLoading(): JSX.Element {
   );
 }
 
-function ToolFrame({ children }: { children: JSX.Element }): JSX.Element {
-  const { pathname } = useLocation();
-  const { t } = useLanguage();
-  const basePath = stripLocalePrefix(pathname);
-  const isHome = basePath === "/";
+interface MobileToolsState {
+  subscribe: (listener: () => void) => () => void;
+  getSnapshot: () => boolean;
+  setOpen: (open: boolean) => void;
+}
+
+function createMobileToolsState(): MobileToolsState {
+  let isOpen = false;
+  const listeners = new Set<() => void>();
+
+  return {
+    subscribe(listener) {
+      listeners.add(listener);
+      return () => listeners.delete(listener);
+    },
+    getSnapshot: () => isOpen,
+    setOpen(open) {
+      if (isOpen === open) {
+        return;
+      }
+      isOpen = open;
+      listeners.forEach((listener) => listener());
+    },
+  };
+}
+
+const MobileToolsStateContext = createContext<MobileToolsState | null>(null);
+
+function useMobileToolsState(): [boolean, (open: boolean) => void] {
+  const state = useContext(MobileToolsStateContext);
+  if (!state) {
+    throw new Error("useMobileToolsState must be used inside ToolFrame");
+  }
+
+  const isOpen = useSyncExternalStore(
+    state.subscribe,
+    state.getSnapshot,
+    () => false
+  );
+  return [isOpen, state.setOpen];
+}
+
+function ResponsiveHeader(): JSX.Element {
   const isNarrowViewport = useMediaQuery("(max-width: 900px)");
-  const [isToolsOpen, setToolsOpen] = useState(false);
-  const toolsButtonRef = useRef<HTMLButtonElement>(null);
+  const [isToolsOpen, setToolsOpen] = useMobileToolsState();
+
+  return (
+    <Header
+      showBrand
+      showToolsButton={isNarrowViewport}
+      toolsOpen={isToolsOpen}
+      onOpenTools={() => setToolsOpen(true)}
+    />
+  );
+}
+
+function ResponsiveSidebar({ isHome }: { isHome: boolean }): JSX.Element {
+  const { pathname } = useLocation();
+  const isNarrowViewport = useMediaQuery("(max-width: 900px)");
+  const [isToolsOpen, setToolsOpen] = useMobileToolsState();
   const closeButtonRef = useRef<HTMLButtonElement>(null);
 
   const closeTools = useCallback(() => {
     setToolsOpen(false);
-    window.setTimeout(() => toolsButtonRef.current?.focus(), 0);
-  }, []);
+    window.setTimeout(() => {
+      document
+        .querySelector<HTMLButtonElement>('[aria-controls="tool-sidebar"]')
+        ?.focus();
+    }, 0);
+  }, [setToolsOpen]);
 
   useEffect(() => {
     setToolsOpen(false);
-  }, [pathname]);
+  }, [pathname, setToolsOpen]);
 
   useEffect(() => {
     if (!isNarrowViewport || !isToolsOpen) {
@@ -390,37 +446,15 @@ function ToolFrame({ children }: { children: JSX.Element }): JSX.Element {
   }, [isNarrowViewport, isToolsOpen]);
 
   return (
-    <div className="site-shell">
-      <ScrollToTop />
-      <a className="skip-link" href="#main-content">
-        {t("skip.toMain")}
-      </a>
-      <Header
-        showBrand
-        showToolsButton={isNarrowViewport}
-        toolsOpen={isToolsOpen}
-        onOpenTools={() => setToolsOpen(true)}
-        toolsButtonRef={toolsButtonRef}
+    <>
+      <ToolSidebar
+        isMobile={isNarrowViewport}
+        isOpen={!isNarrowViewport || isToolsOpen}
+        showDesktopBrand={false}
+        showSearch={!isHome || isNarrowViewport}
+        onClose={closeTools}
+        closeButtonRef={closeButtonRef}
       />
-      <div className={isHome ? "home-dashboard" : "site-content"}>
-        <ToolSidebar
-          isMobile={isNarrowViewport}
-          isOpen={!isNarrowViewport || isToolsOpen}
-          showDesktopBrand={false}
-          showSearch={!isHome || isNarrowViewport}
-          onClose={closeTools}
-          closeButtonRef={closeButtonRef}
-        />
-        <main
-          id="main-content"
-          className={isHome ? "home-workspace" : "content-shell"}
-          tabIndex={-1}
-        >
-          <Suspense fallback={<RouteLoading />}>
-            {isHome ? children : <div className="tool-page-shell">{children}</div>}
-          </Suspense>
-        </main>
-      </div>
       {isNarrowViewport && isToolsOpen ? (
         <button
           type="button"
@@ -430,8 +464,43 @@ function ToolFrame({ children }: { children: JSX.Element }): JSX.Element {
           onClick={closeTools}
         />
       ) : null}
-      <Footer />
-    </div>
+    </>
+  );
+}
+
+export function ToolFrame({ children }: { children: JSX.Element }): JSX.Element {
+  const { pathname } = useLocation();
+  const { t } = useLanguage();
+  const isHome = stripLocalePrefix(pathname) === "/";
+  const [mobileToolsState] = useState(createMobileToolsState);
+
+  return (
+    <MobileToolsStateContext.Provider value={mobileToolsState}>
+      <div className="site-shell">
+        <ScrollToTop />
+        <a className="skip-link" href="#main-content">
+          {t("skip.toMain")}
+        </a>
+        <Suspense fallback={null}>
+          <ResponsiveHeader />
+        </Suspense>
+        <div className={isHome ? "home-dashboard" : "site-content"}>
+          <Suspense fallback={null}>
+            <ResponsiveSidebar isHome={isHome} />
+          </Suspense>
+          <main
+            id="main-content"
+            className={isHome ? "home-workspace" : "content-shell"}
+            tabIndex={-1}
+          >
+            <Suspense fallback={<RouteLoading />}>
+              {isHome ? children : <div className="tool-page-shell">{children}</div>}
+            </Suspense>
+          </main>
+        </div>
+        <Footer />
+      </div>
+    </MobileToolsStateContext.Provider>
   );
 }
 

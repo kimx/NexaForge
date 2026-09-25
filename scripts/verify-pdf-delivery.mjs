@@ -92,9 +92,7 @@ try {
       console.log(`PASS ${name}`);
     }
     assert.ok(uploads.every(req => !req.containsFile && new URL(req.url).origin === 'https://pagead2.googlesyndication.com' && new URL(req.url).pathname === '/pagead/ping'), 'Only unrelated ad pings may POST; no processing uploads');
-    // Existing mobile SSR can recover to client rendering (React 421). Record it
-    // explicitly; it must not hide unrelated runtime errors or output failures.
-    assert.ok(errors.every(message => message.startsWith('Minified React error #421;')), 'No unexpected runtime errors');
+    assert.deepEqual(errors, [], 'No browser runtime errors');
     results.push({ viewport: mobile ? 'mobile' : 'desktop', outgoingWrites: uploads, runtimeErrors: errors });
     await context.close();
   }
