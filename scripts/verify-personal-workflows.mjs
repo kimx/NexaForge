@@ -91,7 +91,9 @@ try {
     await page.locator('.personal-settings').getByRole('button', { name: english ? 'Clear pinned tools' : '清除釘選工具', exact: true }).click();
     assert.equal(await page.getByTestId('pinned-tools').count(), 0);
     assert.ok(await page.evaluate(() => localStorage.getItem('nexaforge-list-templates-v1')?.includes('Weekly roster')));
-    assert.ok(errors.every(message => message.startsWith('Minified React error #421;')), 'No unexpected runtime errors');
+    await goto('/pdf/add-page-numbers');
+    await goto('/pdf/watermark');
+    assert.deepEqual(errors, [], 'No browser runtime errors');
     results.push({ name, recent, savedQuality, errors });
     console.log(`PASS ${name}`);
     await context.close();
