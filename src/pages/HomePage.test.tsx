@@ -27,17 +27,10 @@ describe("HomePage task-first hierarchy", () => {
     expect(screen.queryByRole("link", { name: /all json tools/i })).not.toBeInTheDocument();
   });
 
-  it("links directly to the main tool groups from the homepage", () => {
+  it("offers task shortcuts below the homepage search", () => {
     renderWithProviders(<HomePage />);
-
-    expect(screen.getByRole("link", { name: "Image & PDF tools" })).toHaveAttribute(
-      "href",
-      "/en/image/resize"
-    );
-    expect(screen.getByRole("link", { name: "Developer tools" })).toHaveAttribute(
-      "href",
-      "/en/developer/regex-tester"
-    );
+    expect(within(screen.getByTestId("task-entries")).getByRole("link", { name: "Open JSON Formatter" })).toHaveAttribute("href", "/en/data/json-formatter");
+    expect(screen.queryByRole("navigation", { name: "Explore main tool groups" })).not.toBeInTheDocument();
   });
 
   it("keeps one consolidated introduction in the hero without a redundant workspace heading", () => {
@@ -51,15 +44,13 @@ describe("HomePage task-first hierarchy", () => {
     expect(screen.queryByText("TOOL WORKSPACE")).not.toBeInTheDocument();
   });
 
-  it("shows a concise featured collection with its matching active filter by default", () => {
+  it("shows the complete tool list with All selected by default", () => {
     renderWithProviders(<HomePage />);
 
     const featured = screen.getByTestId("featured-tools");
-    expect(within(featured).getByRole("heading", { level: 2, name: "Featured Tools" })).toBeVisible();
-    expect(within(featured).getAllByRole("article")).toHaveLength(8);
-    expect(within(featured).queryByRole("heading", { name: "SVG Optimizer" })).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Featured" })).toHaveAttribute("aria-pressed", "true");
-    expect(screen.getByRole("button", { name: "All" })).toHaveAttribute("aria-pressed", "false");
+    expect(within(featured).getByRole("heading", { level: 2, name: "All Tools" })).toBeVisible();
+    expect(within(featured).getAllByRole("article")).toHaveLength(FILE_TOOLS.length);
+    expect(screen.getByRole("button", { name: "All" })).toHaveAttribute("aria-pressed", "true");
   });
 
   it("shows every registered tool when the All filter is active", () => {
@@ -94,16 +85,16 @@ describe("HomePage task-first hierarchy", () => {
     );
   });
 
-  it("keeps the homepage focused on recent and featured tools without a repeated category grid", () => {
+  it("keeps recent tools and the full list without a repeated category grid", () => {
     renderWithProviders(<HomePage />);
 
     expect(screen.getByRole("heading", { level: 2, name: "Recent Tools" })).toBeVisible();
-    expect(screen.getByRole("heading", { level: 2, name: "Featured Tools" })).toBeVisible();
+    expect(screen.getByRole("heading", { level: 2, name: "All Tools" })).toBeVisible();
     expect(screen.queryByRole("heading", { level: 2, name: "Browse by Category" })).not.toBeInTheDocument();
     expect(screen.queryByTestId("category-browser")).not.toBeInTheDocument();
   });
 
-  it("deduplicates pinned, recent, and featured tools in priority order", () => {
+  it("shows pinned and recent shortcuts ahead of the full list", () => {
     window.localStorage.setItem(
       "nexaforge-recent-tools",
       JSON.stringify(["image-resize", "pdf-merge", "uuid", "json-diff"])
@@ -122,9 +113,7 @@ describe("HomePage task-first hierarchy", () => {
     expect(within(pinned).getByRole("heading", { name: "Image Compress" })).toBeInTheDocument();
     expect(within(recent).queryByRole("heading", { name: "Image Resize" })).not.toBeInTheDocument();
     expect(within(recent).getAllByRole("article")).toHaveLength(3);
-    expect(within(featured).queryByRole("heading", { name: "Image Resize" })).not.toBeInTheDocument();
-    expect(within(featured).queryByRole("heading", { name: "Image Compress" })).not.toBeInTheDocument();
-    expect(within(featured).queryByRole("heading", { name: "PDF Merge" })).not.toBeInTheDocument();
+    expect(within(featured).getByRole("heading", { name: "Image Resize" })).toBeInTheDocument();
   });
 
   it("offers QR and barcode discovery in the single category filter row", () => {
@@ -138,12 +127,10 @@ describe("HomePage task-first hierarchy", () => {
     expect(screen.queryByRole("heading", { name: "Image Resize" })).not.toBeInTheDocument();
   });
 
-  it("offers task entries that explain the result and open registered tools", () => {
+  it("offers compact task shortcuts to registered tools", () => {
     renderWithProviders(<HomePage />);
 
     const taskEntries = screen.getByTestId("task-entries");
-    expect(within(taskEntries).getByRole("heading", { name: "Deliver a document or image" })).toBeVisible();
-    expect(within(taskEntries).getByText("Turn multiple images into one PDF ready to share or deliver.")).toBeVisible();
     expect(within(taskEntries).getByRole("link", { name: "Open Image to PDF" })).toHaveAttribute(
       "href",
       "/en/image/to-pdf"
@@ -180,7 +167,7 @@ describe("HomePage task-first hierarchy", () => {
     window.addEventListener("browser-file-tools:event", listener);
 
     renderWithProviders(<HomePage />);
-    fireEvent.click(screen.getByRole("link", { name: "Open List Cleanup" }));
+    fireEvent.click(within(screen.getByTestId("task-entries")).getByRole("link", { name: "Open List Cleanup" }));
 
     window.removeEventListener("browser-file-tools:event", listener);
     const taskEvent = events.find((event) => event.detail.name === "task_launch");
@@ -237,7 +224,7 @@ describe("HomePage task-first hierarchy", () => {
     fireEvent.change(search, { target: { value: "json" } });
     fireEvent.keyDown(window, { key: "Escape" });
     expect(search).toHaveValue("");
-    expect(screen.getByRole("button", { name: "Featured" })).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByRole("button", { name: "All" })).toHaveAttribute("aria-pressed", "true");
   });
 
   it("reports privacy-safe search usage without the typed query", () => {
@@ -258,7 +245,7 @@ describe("HomePage task-first hierarchy", () => {
     vi.useRealTimers();
     const searchEvent = events.find((event) => event.detail.name === "tool_search");
     expect(searchEvent?.detail.payload).toEqual({
-      category: "Featured",
+      category: "All",
       queryLength: 23,
       resultCount: 0,
     });

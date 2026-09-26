@@ -578,7 +578,13 @@ export function QrPage({ initialContentType = "url", toolId = "qr-code" }: QrPag
                   <option value="H">H</option>
                 </select>
               </label>
-              <label>
+            </fieldset>
+
+            <details className="tool-advanced-settings">
+              <summary>{t("tool.qr-code.advancedStyle")}</summary>
+              <fieldset className="qr-designer__section">
+                <legend>{t("tool.qr-code.margin")}</legend>
+                <label>
                 {t("tool.qr-code.margin")}
                 <input
                   type="range"
@@ -588,8 +594,8 @@ export function QrPage({ initialContentType = "url", toolId = "qr-code" }: QrPag
                   onChange={(event) => updateSetting("margin", Number(event.target.value))}
                 />
                 <output>{t("tool.qr-code.marginPixel", { margin: settings.margin })}</output>
-              </label>
-            </fieldset>
+                </label>
+              </fieldset>
 
             <fieldset className="qr-designer__section">
               <legend>{t("tool.qr-code.style")}</legend>
@@ -753,6 +759,8 @@ export function QrPage({ initialContentType = "url", toolId = "qr-code" }: QrPag
                 ))}
               </div>
             </fieldset>
+
+            </details>
 
             {warnings.length ? (
               <ul className="qr-designer__warnings" aria-live="polite">

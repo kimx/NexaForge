@@ -18,22 +18,7 @@ import { usePersonalizationCopy } from "../i18n/personalization";
 import { PinToolButton } from "../components/PinToolButton";
 import { PersonalSettings } from "../components/PersonalSettings";
 
-type HomeFilter = "Featured" | "All" | ToolDefinition["category"];
-
-const FEATURED_TOOL_IDS = [
-  "image-resize",
-  "image-compress",
-  "image-convert",
-  "pdf-merge",
-  "pdf-split",
-  "csv-viewer",
-  "word-counter",
-  "qr-code",
-] as const;
-
-const FEATURED_TOOLS = FEATURED_TOOL_IDS
-  .map((id) => FILE_TOOLS.find((tool) => tool.id === id))
-  .filter((tool): tool is ToolDefinition => Boolean(tool));
+type HomeFilter = "All" | ToolDefinition["category"];
 
 const TASK_ENTRY_DEFINITIONS = [
   {
@@ -106,7 +91,7 @@ export function HomePage(): JSX.Element {
   const { t, locale } = useLanguage();
   const toolMeta = useLocalizedToolMeta();
   const [keyword, setKeyword] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState<HomeFilter>("Featured");
+  const [categoryFilter, setCategoryFilter] = useState<HomeFilter>("All");
   const { recent: recentToolIds, pinned: pinnedToolIds } = usePersonalization();
   const personalCopy = usePersonalizationCopy();
   const searchRef = useRef<HTMLInputElement>(null);
@@ -124,7 +109,7 @@ export function HomePage(): JSX.Element {
       const target = event.target as HTMLElement | null;
       if (event.key === "Escape") {
         setKeyword("");
-        setCategoryFilter("Featured");
+        setCategoryFilter("All");
         return;
       }
       if (event.key === "/" && !event.metaKey && !event.ctrlKey && !event.altKey && target?.tagName !== "INPUT" && target?.tagName !== "TEXTAREA" && !target?.isContentEditable) {
@@ -175,7 +160,7 @@ export function HomePage(): JSX.Element {
       };
     })
       .filter(({ tool, score }) =>
-        (categoryFilter === "Featured" || categoryFilter === "All" || tool.category === categoryFilter) && score > 0
+        (categoryFilter === "All" || tool.category === categoryFilter) && score > 0
       )
       .sort((left, right) => right.score - left.score || left.index - right.index)
       .map(({ tool }) => tool);
@@ -214,14 +199,8 @@ export function HomePage(): JSX.Element {
   );
 
   const keywordActive = keyword.trim().length > 0;
-  const isDefaultView = !keywordActive && categoryFilter === "Featured";
-  const personalizedToolIdSet = useMemo(
-    () => new Set([...pinnedTools, ...recentTools].map((tool) => tool.id)),
-    [pinnedTools, recentTools]
-  );
-  const displayedTools = isDefaultView
-    ? FEATURED_TOOLS.filter((tool) => !personalizedToolIdSet.has(tool.id))
-    : filteredTools;
+  const isDefaultView = !keywordActive && categoryFilter === "All";
+  const displayedTools = filteredTools;
 
   return (
     <div className={`home-page${keywordActive ? " home-page--searching" : ""}`}>
@@ -260,6 +239,15 @@ export function HomePage(): JSX.Element {
                 </div>
               </div>
               {!keywordActive ? (
+                <nav className="home-quick-actions" data-testid="task-entries" aria-label={t("home.taskEntries")}>
+                  <span>{t("home.taskEntries")}</span>
+                  {TASK_ENTRY_DEFINITIONS.map((task) => {
+                    const tool = FILE_TOOLS.find((candidate) => candidate.id === task.toolId);
+                    return tool ? <Link key={task.id} to={localizePath(tool.path, locale)} aria-label={t("home.openNamed", { tool: toolMeta(tool.id, "title") })} onClick={() => launchTaskEntry(task.id, tool.id)}>{t(task.titleKey)}</Link> : null;
+                  })}
+                </nav>
+              ) : null}
+              {!keywordActive ? (
                 <div className="home-hero__proof" aria-label={t("home.proofLabel")}>
                   <span>{t("home.proof.local")}</span>
                   <span>{t("home.proof.formats")}</span>
@@ -268,72 +256,6 @@ export function HomePage(): JSX.Element {
               ) : null}
             </div>
           </section>
-
-          {!keywordActive ? (
-            <nav className="home-discovery" aria-label={t("home.discoveryLabel")}>
-              <span className="home-discovery__label">{t("home.discoveryLabel")}</span>
-              <div className="home-discovery__links">
-                <Link to={localizePath("/image/resize", locale)}>{t("home.imagePdfTools")}</Link>
-                <Link to={localizePath("/data/json-formatter", locale)}>{t("home.dataTools")}</Link>
-                <Link to={localizePath("/developer/regex-tester", locale)}>{t("home.developerTools")}</Link>
-              </div>
-            </nav>
-          ) : null}
-
-          {!keywordActive ? (
-            <section className="home-task-entries" data-testid="task-entries" aria-labelledby="home-task-entries-title">
-              <div className="home-task-entries__heading">
-                <h2 id="home-task-entries-title">{t("home.taskEntries")}</h2>
-                <p>{t("home.taskEntriesSubtitle")}</p>
-              </div>
-              <div className="home-task-entries__grid">
-                {TASK_ENTRY_DEFINITIONS.map((task) => {
-                  const tool = FILE_TOOLS.find((candidate) => candidate.id === task.toolId);
-                  if (!tool) {
-                    return null;
-                  }
-
-                  const localizedTitle = toolMeta(tool.id, "title");
-                  return (
-                    <article className="home-task-entry" key={task.id}>
-                      <div>
-                        <h3>{t(task.titleKey)}</h3>
-                        <p>{t(task.descriptionKey)}</p>
-                      </div>
-                      <Link
-                        to={localizePath(tool.path, locale)}
-                        className="home-task-entry__link"
-                        aria-label={t("home.openNamed", { tool: localizedTitle })}
-                        onClick={() => launchTaskEntry(task.id, tool.id)}
-                      >
-                        {t("home.open")}
-                        <span aria-hidden="true">→</span>
-                      </Link>
-                    </article>
-                  );
-                })}
-              </div>
-            </section>
-          ) : null}
-
-          <div className="finder-filters" aria-label={t("home.categoryFilterLabel")}>
-            <span className="finder-filters__label">{t("home.filterBy")}</span>
-            {(["Featured", "All", ...TOOL_CATEGORY_ORDER] as const).map((category) => (
-              <button
-                type="button"
-                key={category}
-                className={`finder-filter${categoryFilter === category ? " finder-filter--active" : ""}`}
-                onClick={() => setCategoryFilter(category)}
-                aria-pressed={categoryFilter === category}
-              >
-                {category === "Featured"
-                  ? t("home.categories.featured")
-                  : category === "All"
-                    ? t("home.categories.all")
-                    : localizedCategoryLabel(category, t)}
-              </button>
-            ))}
-          </div>
 
           {isDefaultView && pinnedTools.length > 0 ? (
             <section className="workspace-section" data-testid="pinned-tools" aria-labelledby="pinned-tools-title">
@@ -361,13 +283,24 @@ export function HomePage(): JSX.Element {
             </div>
           ) : null}
 
+          <div className="finder-filters" aria-label={t("home.categoryFilterLabel")}>
+            <span className="finder-filters__label">{t("home.filterBy")}</span>
+            {(["All", ...TOOL_CATEGORY_ORDER] as const).map((category) => (
+              <button type="button" key={category}
+                className={`finder-filter${categoryFilter === category ? " finder-filter--active" : ""}`}
+                onClick={() => setCategoryFilter(category)} aria-pressed={categoryFilter === category}>
+                {category === "All" ? t("home.categories.all") : localizedCategoryLabel(category, t)}
+              </button>
+            ))}
+          </div>
+
           <div
             className="workspace-section"
             id="featured-tools"
             data-testid={isDefaultView ? "featured-tools" : undefined}
           >
             <div className="workspace-section__heading">
-              <h2>{t(keywordActive ? "home.searchResults" : isDefaultView ? "home.featured" : "home.allTools")}</h2>
+              <h2>{t(keywordActive ? "home.searchResults" : "home.allTools")}</h2>
               <span>{t("sidebar.resultCount", { count: displayedTools.length })}</span>
             </div>
             {displayedTools.length > 0 ? (
@@ -378,7 +311,7 @@ export function HomePage(): JSX.Element {
               <div className="finder-empty" role="status">
                 <strong>{t("home.noResults")}</strong>
                 <p>{t("home.noResultsHint")}</p>
-                <button type="button" className="btn secondary" onClick={() => { setKeyword(""); setCategoryFilter("Featured"); }}>
+                <button type="button" className="btn secondary" onClick={() => { setKeyword(""); setCategoryFilter("All"); }}>
                   {t("home.clearFilters")}
                 </button>
               </div>

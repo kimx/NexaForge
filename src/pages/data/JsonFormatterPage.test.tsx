@@ -51,9 +51,16 @@ describe("JsonFormatterPage", () => {
       .closest("section");
 
     expect(workspace).not.toBeNull();
-    expect(within(workspace as HTMLElement).getByRole("combobox", { name: "Mode" })).toBeInTheDocument();
+    expect(within(workspace as HTMLElement).getByRole("button", { name: "Minify JSON" })).toBeInTheDocument();
     expect(within(workspace as HTMLElement).getByRole("button", { name: "Format JSON" })).toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "Options" })).not.toBeInTheDocument();
+  });
+
+  it("validates pasted JSON and announces success", () => {
+    renderWithProviders(<JsonFormatterPage />, { route: "/data/json-formatter" });
+    fireEvent.change(screen.getByRole("textbox", { name: "JSON input" }), { target: { value: '{"ready":true}' } });
+    fireEvent.click(screen.getByRole("button", { name: "Validate" }));
+    expect(screen.getByText("Valid JSON")).toHaveAttribute("role", "status");
   });
 
   it("explains how to create a result before processing", () => {
@@ -180,9 +187,6 @@ describe("JsonFormatterPage", () => {
     });
     fireEvent.change(screen.getByRole("combobox", { name: "Input source" }), {
       target: { value: "file" },
-    });
-    fireEvent.change(screen.getByRole("combobox", { name: "Mode" }), {
-      target: { value: "minify" },
     });
     const input = container.querySelector('input[type="file"]') as HTMLInputElement;
     fireEvent.change(input, {
