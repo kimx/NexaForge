@@ -30,6 +30,13 @@ const designResult = {
 };
 
 describe("QrPage", () => {
+  it("keeps styling controls collapsed until requested", () => {
+    renderWithProviders(<QrPage />);
+    const advanced = screen.getByText("Advanced style").closest("details");
+    expect(advanced).not.toHaveAttribute("open");
+    fireEvent.click(screen.getByText("Advanced style"));
+    expect(advanced).toHaveAttribute("open");
+  });
   beforeEach(() => {
     window.localStorage.clear();
     window.history.replaceState({}, "", "/");

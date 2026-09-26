@@ -133,10 +133,9 @@ export function ToolPageTemplate({
 
         <div className="tool-page__title-row">
           <h1 className="tool-page__title">{displayTitle}</h1>
-          <PinToolButton toolId={tool.id} />
-          <PrivacyNotice inline contentOnly={tool.category === "QR & Barcode"} />
         </div>
         <p className="short-description tool-page__description">{displayDescription}</p>
+        <span className="tool-page__trust-badge">{t("toolPage.browserOnly")}</span>
         <JsonWorkspaceNav />
 
         <div className={`tool-page__workbench tool-page__workbench--${layout}`}>
@@ -183,6 +182,11 @@ export function ToolPageTemplate({
               ) : null}
             </section>
           ) : null}
+        </div>
+
+        <div className="tool-page__secondary-actions">
+          <PinToolButton toolId={tool.id} />
+          <PrivacyNotice inline contentOnly={tool.category === "QR & Barcode"} />
         </div>
 
         {seoContent ? (

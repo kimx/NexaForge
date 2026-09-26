@@ -77,6 +77,7 @@ export function JsonFormatterPage(): JSX.Element {
   const [jsonTree, setJsonTree] = useState<JsonValue>(JSON_FORMATTER_SAMPLE);
   const [treeError, setTreeError] = useState<string | null>(null);
   const [validationError, setValidationError] = useState<ParseError | null>(null);
+  const [validationSuccess, setValidationSuccess] = useState(false);
   const [mode, setMode] = useState<"format" | "minify">("format");
   const [processing, setProcessing] = useState<ProcessingState>("idle");
   const [result, setResult] = useState<FileProcessResult | null>(null);
@@ -169,6 +170,7 @@ export function JsonFormatterPage(): JSX.Element {
 
   const handleJsonInputChange = (next: string) => {
     setJsonInput(next);
+    setValidationSuccess(false);
     resetOutput();
   };
 
@@ -236,7 +238,7 @@ export function JsonFormatterPage(): JSX.Element {
     setEditorMode(next);
   };
 
-  const handleProcess = async () => {
+  const handleProcess = async (requestedMode: "format" | "minify" = mode) => {
     if (!canProcess || processing === "processing") {
       return;
     }
@@ -275,7 +277,7 @@ export function JsonFormatterPage(): JSX.Element {
         fileName = source.name;
       }
 
-      const output = mode === "format" ? formatJson(sourceText) : minifyJson(sourceText);
+      const output = requestedMode === "format" ? formatJson(sourceText) : minifyJson(sourceText);
       const outputFileName = fileName.endsWith(".json") ? fileName : `${fileName}.json`;
       const blob = new Blob([output], { type: "application/json" });
       setResult({
@@ -319,58 +321,6 @@ export function JsonFormatterPage(): JSX.Element {
   const workspaceNode = useMemo(
     () => (
       <div className="tool-form json-formatter-workspace">
-        <div className="json-formatter-workspace__controls">
-          <label>
-            {t("label.inputSource")}
-            <select
-              value={inputSource}
-              onChange={(event) => handleInputSourceChange(event.target.value as "text" | "file")}
-            >
-              <option value="text">{t("tool.json-formatter.label.inputSourceText")}</option>
-              <option value="file">{t("tool.json-formatter.label.inputSourceFile")}</option>
-            </select>
-          </label>
-
-          {inputSource === "text" ? (
-            <label>
-              {t("label.editorMode")}
-              <select
-                value={editorMode}
-                onChange={(event) =>
-                  handleEditorModeChange(event.target.value as "text" | "tree")
-                }
-              >
-                <option value="text">{t("tool.json-formatter.label.editorText")}</option>
-                <option value="tree">{t("tool.json-formatter.label.editorTree")}</option>
-              </select>
-            </label>
-          ) : null}
-
-          <label>
-            {t("label.mode")}
-            <select
-              value={mode}
-              onChange={(event) => setMode(event.target.value as "format" | "minify")}
-            >
-              <option value="format">{t("tool.json-formatter.mode.format")}</option>
-              <option value="minify">{t("tool.json-formatter.mode.minify")}</option>
-            </select>
-          </label>
-
-          <button
-            type="button"
-            className="btn primary json-formatter-workspace__process"
-            onClick={handleProcess}
-            disabled={!canProcess || processing === "processing"}
-          >
-            {processing === "processing"
-              ? t("button.processing")
-              : mode === "format"
-                ? t("tool.json-formatter.action.format")
-                : t("tool.json-formatter.action.minify")}
-          </button>
-        </div>
-
         {inputSource === "text" ? (
           <>
             {editorMode === "text" ? (
@@ -459,6 +409,51 @@ export function JsonFormatterPage(): JSX.Element {
             <FileInfo files={files} mode="single" compact={files.length > 0} />
           </>
         )}
+        <details className="tool-advanced-settings json-formatter-workspace__advanced">
+          <summary>{t("toolPage.advancedSettings")}</summary>
+          <div className="json-formatter-workspace__controls">
+          <label>
+            {t("label.inputSource")}
+            <select
+              value={inputSource}
+              onChange={(event) => handleInputSourceChange(event.target.value as "text" | "file")}
+            >
+              <option value="text">{t("tool.json-formatter.label.inputSourceText")}</option>
+              <option value="file">{t("tool.json-formatter.label.inputSourceFile")}</option>
+            </select>
+          </label>
+
+          {inputSource === "text" ? (
+            <label>
+              {t("label.editorMode")}
+              <select
+                value={editorMode}
+                onChange={(event) =>
+                  handleEditorModeChange(event.target.value as "text" | "tree")
+                }
+              >
+                <option value="text">{t("tool.json-formatter.label.editorText")}</option>
+                <option value="tree">{t("tool.json-formatter.label.editorTree")}</option>
+              </select>
+            </label>
+          ) : null}
+
+          </div>
+        </details>
+        <div className="json-formatter-workspace__actions">
+          <button
+            type="button"
+            className="btn primary json-formatter-workspace__process"
+            onClick={() => { setMode("format"); void handleProcess("format"); }}
+            disabled={!canProcess || processing === "processing"}
+          >
+            {processing === "processing" && mode === "format" ? t("button.processing") : t("tool.json-formatter.action.format")}
+          </button>
+          <button type="button" className="btn secondary" onClick={() => { setMode("minify"); void handleProcess("minify"); }} disabled={!canProcess || processing === "processing"}>{t("tool.json-formatter.action.minify")}</button>
+          <button type="button" className="btn secondary" onClick={() => { try { JSON.parse(jsonInput); setValidationError(null); setValidationSuccess(true); } catch (failure) { setValidationError(extractParseError(jsonInput, getParseMessageFromError(failure))); setValidationSuccess(false); } }} disabled={inputSource !== "text" || !jsonInput.trim()}>{t("tool.json-formatter.action.validate")}</button>
+        </div>
+        {validationSuccess ? <p role="status">{t("tool.json-formatter.validation.valid")}</p> : null}
+
       </div>
     ),
     [
@@ -476,6 +471,7 @@ export function JsonFormatterPage(): JSX.Element {
       t,
       treeError,
       validationError,
+      validationSuccess,
       validationErrorId,
     ]
   );
