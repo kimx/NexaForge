@@ -1,4 +1,7 @@
-import { act, fireEvent, screen, within } from "@testing-library/react";
+import { act, fireEvent, render, screen, within } from "@testing-library/react";
+import { MemoryRouter, Route, Routes, useNavigate } from "react-router-dom";
+import { LanguageProvider } from "../context/LanguageContext";
+import { TextWorkflowProvider } from "../context/TextWorkflowContext";
 import { FILE_TOOLS } from "../data/tools";
 import { renderWithProviders } from "../test/renderWithProviders";
 import { HomePage } from "./HomePage";
@@ -143,6 +146,51 @@ describe("HomePage task-first hierarchy", () => {
       "href",
       "/en/text/list-cleanup"
     );
+    expect(within(taskEntries).getByRole("link", { name: "Open Image Compress" })).toHaveAttribute(
+      "href",
+      "/en/image/compress"
+    );
+  });
+
+  it("labels search matches by category and announces the updated result count", () => {
+    renderWithProviders(<HomePage />);
+    fireEvent.change(screen.getByRole("textbox", { name: "Search Tools" }), {
+      target: { value: "compress" },
+    });
+
+    const imageCard = screen.getByRole("heading", { name: "Image Compress" }).closest("article");
+    expect(imageCard).not.toBeNull();
+    expect(within(imageCard as HTMLElement).getByText("Image")).toBeVisible();
+    expect(screen.getByRole("status", { name: "Search result count" })).toHaveTextContent(/results?/i);
+  });
+
+  it("restores a search and category after returning from a tool without putting the query in the URL", () => {
+    function ToolRoute(): JSX.Element {
+      const navigate = useNavigate();
+      return <button onClick={() => navigate(-1)}>Back to tools</button>;
+    }
+
+    render(
+      <MemoryRouter initialEntries={["/en"]} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+        <LanguageProvider initialLocale="en">
+          <TextWorkflowProvider>
+            <Routes>
+              <Route path="/en" element={<HomePage />} />
+              <Route path="/en/image/compress" element={<ToolRoute />} />
+            </Routes>
+          </TextWorkflowProvider>
+        </LanguageProvider>
+      </MemoryRouter>
+    );
+
+    fireEvent.change(screen.getByRole("textbox", { name: "Search Tools" }), { target: { value: "compress" } });
+    fireEvent.click(screen.getByRole("button", { name: "Image" }));
+    fireEvent.click(screen.getByRole("link", { name: "Open Image Compress" }));
+    fireEvent.click(screen.getByRole("button", { name: "Back to tools" }));
+
+    expect(screen.getByRole("textbox", { name: "Search Tools" })).toHaveValue("compress");
+    expect(screen.getByRole("button", { name: "Image" })).toHaveAttribute("aria-pressed", "true");
+    expect(window.location.href).not.toContain("compress");
   });
 
   it.each([
@@ -222,9 +270,22 @@ describe("HomePage task-first hierarchy", () => {
     expect(search).toHaveFocus();
 
     fireEvent.change(search, { target: { value: "json" } });
-    fireEvent.keyDown(window, { key: "Escape" });
+    fireEvent.keyDown(search, { key: "Escape" });
     expect(search).toHaveValue("");
     expect(screen.getByRole("button", { name: "All" })).toHaveAttribute("aria-pressed", "true");
+  });
+
+  it("does not clear search or filters when Escape is used outside the search input", () => {
+    renderWithProviders(<HomePage />);
+    const search = screen.getByRole("textbox", { name: "Search Tools" });
+    fireEvent.change(search, { target: { value: "json" } });
+    const dataFilter = screen.getByRole("button", { name: "Data" });
+    fireEvent.click(dataFilter);
+    dataFilter.focus();
+    fireEvent.keyDown(dataFilter, { key: "Escape" });
+
+    expect(search).toHaveValue("json");
+    expect(dataFilter).toHaveAttribute("aria-pressed", "true");
   });
 
   it("reports privacy-safe search usage without the typed query", () => {
