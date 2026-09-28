@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { FILE_TOOLS } from "../data/tools";
 import { TOOL_CATEGORY_ORDER, getToolVisual } from "../data/toolVisuals";
 import type { ToolDefinition, ToolMeta } from "../types/tool";
@@ -34,6 +34,12 @@ const TASK_ENTRY_DEFINITIONS = [
     descriptionKey: "home.task.developerData.description",
   },
   {
+    id: "image-compression",
+    toolId: "image-compress",
+    titleKey: "home.task.imageCompression.title",
+    descriptionKey: "home.task.imageCompression.description",
+  },
+  {
     id: "list-cleanup",
     toolId: "list-cleanup",
     titleKey: "home.task.listCleanup.title",
@@ -51,7 +57,7 @@ function searchMatchScore(values: string[], query: string): number {
   }, 0);
 }
 
-function ToolCard({ tool, onOpen, className = "" }: { tool: ToolDefinition; onOpen?: (toolId: string) => void; className?: string }): JSX.Element {
+function ToolCard({ tool, onOpen, className = "", showCategory = false }: { tool: ToolDefinition; onOpen?: (toolId: string) => void; className?: string; showCategory?: boolean }): JSX.Element {
   const { t, locale } = useLanguage();
   const localToolMeta = useLocalizedToolMeta();
   const visual = getToolVisual(tool);
@@ -68,6 +74,7 @@ function ToolCard({ tool, onOpen, className = "" }: { tool: ToolDefinition; onOp
         </span>
         <div>
           <h3>{localizedTitle}</h3>
+          {showCategory ? <span className="home-tool-card__category">{localizedCategoryLabel(tool.category, t)}</span> : null}
           <p>{localToolMeta(tool.id, "description")}</p>
         </div>
       </div>
@@ -90,8 +97,15 @@ function ToolCard({ tool, onOpen, className = "" }: { tool: ToolDefinition; onOp
 export function HomePage(): JSX.Element {
   const { t, locale } = useLanguage();
   const toolMeta = useLocalizedToolMeta();
-  const [keyword, setKeyword] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState<HomeFilter>("All");
+  const location = useLocation();
+  const navigate = useNavigate();
+  const savedSearch = (location.state as { homeSearch?: { keyword?: unknown; categoryFilter?: unknown } } | null)?.homeSearch;
+  const [keyword, setKeyword] = useState(() => typeof savedSearch?.keyword === "string" ? savedSearch.keyword : "");
+  const [categoryFilter, setCategoryFilter] = useState<HomeFilter>(() =>
+    savedSearch?.categoryFilter === "All" || TOOL_CATEGORY_ORDER.some((category) => category === savedSearch?.categoryFilter)
+      ? savedSearch?.categoryFilter as HomeFilter
+      : "All"
+  );
   const { recent: recentToolIds, pinned: pinnedToolIds } = usePersonalization();
   const personalCopy = usePersonalizationCopy();
   const searchRef = useRef<HTMLInputElement>(null);
@@ -104,14 +118,18 @@ export function HomePage(): JSX.Element {
   };
   useSeo(homeMeta);
 
+  const updateSearch = (nextKeyword: string, nextCategory: HomeFilter) => {
+    setKeyword(nextKeyword);
+    setCategoryFilter(nextCategory);
+    navigate(`${location.pathname}${location.search}`, {
+      replace: true,
+      state: { ...(location.state && typeof location.state === "object" ? location.state : {}), homeSearch: { keyword: nextKeyword, categoryFilter: nextCategory } },
+    });
+  };
+
   useEffect(() => {
     const handleShortcut = (event: KeyboardEvent) => {
       const target = event.target as HTMLElement | null;
-      if (event.key === "Escape") {
-        setKeyword("");
-        setCategoryFilter("All");
-        return;
-      }
       if (event.key === "/" && !event.metaKey && !event.ctrlKey && !event.altKey && target?.tagName !== "INPUT" && target?.tagName !== "TEXTAREA" && !target?.isContentEditable) {
         event.preventDefault();
         searchRef.current?.focus();
@@ -215,7 +233,6 @@ export function HomePage(): JSX.Element {
               {!keywordActive ? (
                 <>
                   <p>{t("home.subtitle")}</p>
-                  <p className="home-hero__positioning">{t("home.positioning")}</p>
                 </>
               ) : null}
               <div className="home-hero__search">
@@ -228,11 +245,12 @@ export function HomePage(): JSX.Element {
                       ref={searchRef}
                       value={keyword}
                       placeholder={t("home.searchPlaceholder")}
-                      onChange={(event) => setKeyword(event.target.value)}
+                      onChange={(event) => updateSearch(event.target.value, categoryFilter)}
+                      onKeyDown={(event) => { if (event.key === "Escape" && keyword) { event.stopPropagation(); updateSearch("", categoryFilter); } }}
                     />
                   </label>
                   {keyword ? (
-                    <button type="button" className="workspace-search__clear" onClick={() => setKeyword("")} aria-label={t("home.clearSearch")}>
+                    <button type="button" className="workspace-search__clear" onClick={() => { updateSearch("", categoryFilter); searchRef.current?.focus(); }} aria-label={t("home.clearSearch")}>
                       ×
                     </button>
                   ) : null}
@@ -247,6 +265,7 @@ export function HomePage(): JSX.Element {
                   })}
                 </nav>
               ) : null}
+              {!keywordActive ? <p className="home-hero__positioning">{t("home.positioning")}</p> : null}
               {!keywordActive ? (
                 <div className="home-hero__proof" aria-label={t("home.proofLabel")}>
                   <span>{t("home.proof.local")}</span>
@@ -288,7 +307,7 @@ export function HomePage(): JSX.Element {
             {(["All", ...TOOL_CATEGORY_ORDER] as const).map((category) => (
               <button type="button" key={category}
                 className={`finder-filter${categoryFilter === category ? " finder-filter--active" : ""}`}
-                onClick={() => setCategoryFilter(category)} aria-pressed={categoryFilter === category}>
+                onClick={() => updateSearch(keyword, category)} aria-pressed={categoryFilter === category}>
                 {category === "All" ? t("home.categories.all") : localizedCategoryLabel(category, t)}
               </button>
             ))}
@@ -301,17 +320,17 @@ export function HomePage(): JSX.Element {
           >
             <div className="workspace-section__heading">
               <h2>{t(keywordActive ? "home.searchResults" : "home.allTools")}</h2>
-              <span>{t("sidebar.resultCount", { count: displayedTools.length })}</span>
+              <span role={!isDefaultView ? "status" : undefined} aria-label={!isDefaultView ? t("home.searchResultCount") : undefined} aria-live={!isDefaultView ? "polite" : undefined} aria-atomic={!isDefaultView ? "true" : undefined}>{t("sidebar.resultCount", { count: displayedTools.length })}</span>
             </div>
             {displayedTools.length > 0 ? (
               <div className="tool-grid home-tool-grid">
-                {displayedTools.map((tool) => <ToolCard key={tool.id} tool={tool} onOpen={rememberTool} />)}
+                {displayedTools.map((tool) => <ToolCard key={tool.id} tool={tool} onOpen={rememberTool} showCategory={!isDefaultView} />)}
               </div>
             ) : (
               <div className="finder-empty" role="status">
                 <strong>{t("home.noResults")}</strong>
                 <p>{t("home.noResultsHint")}</p>
-                <button type="button" className="btn secondary" onClick={() => { setKeyword(""); setCategoryFilter("All"); }}>
+                <button type="button" className="btn secondary" onClick={() => { updateSearch("", "All"); searchRef.current?.focus(); }}>
                   {t("home.clearFilters")}
                 </button>
               </div>

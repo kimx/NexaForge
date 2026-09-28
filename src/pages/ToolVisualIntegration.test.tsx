@@ -24,7 +24,7 @@ it("shares category order and actual SVGs between category and tool navigation",
   renderWithProviders(<><HomePage /><ToolSidebar /></>);
   const toggles = Array.from(document.querySelectorAll<HTMLButtonElement>(".tool-sidebar__category-toggle"));
   expect(toggles.map(button => button.getAttribute("aria-controls")?.replace("tool-sidebar-category-", ""))).toEqual([...TOOL_CATEGORY_ORDER]);
-  expect(Array.from(document.querySelectorAll(".finder-filter")).slice(2).map(button => button.textContent)).toEqual([...TOOL_CATEGORY_ORDER]);
+  expect(Array.from(document.querySelectorAll(".finder-filter")).slice(1).map(button => button.textContent)).toEqual([...TOOL_CATEGORY_ORDER]);
   for (const button of toggles) {
     fireEvent.click(button);
     const list = document.getElementById(button.getAttribute("aria-controls")!)!;

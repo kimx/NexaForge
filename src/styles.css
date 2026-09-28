@@ -8813,6 +8813,45 @@ button.tool-sidebar__category-toggle .tool-sidebar__icon .tool-sidebar__svg {
 }
 .home-quick-actions a:hover, .home-quick-actions a:focus-visible { opacity: 0.75; }
 
+.home-tool-card__category {
+  display: inline-block;
+  margin-top: 0.35rem;
+  color: var(--text-secondary);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+@media (max-width: 650px) {
+  .home-hero__content > p:not(.home-hero__positioning) { display: none; }
+  .home-quick-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+  }
+  .home-quick-actions > span { grid-column: 1 / -1; }
+  .home-quick-actions a {
+    display: flex;
+    min-height: var(--touch-target-min);
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-sm);
+    background: var(--bg-surface);
+    color: var(--text-primary);
+    font-size: 0.76rem;
+    font-weight: 700;
+    text-align: center;
+  }
+  .home-hero__positioning { margin-top: 0.75rem !important; }
+  .home-hero__proof { display: flex; flex-wrap: wrap; }
+}
+
+@media (max-width: 360px) {
+  .top-banner__github { display: none; }
+  .header-tools-button { flex-shrink: 0; white-space: nowrap; }
+}
+
 .tool-page__trust-badge {
   display: inline-block;
   margin: 0 0 1rem;
