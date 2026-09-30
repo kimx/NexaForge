@@ -587,6 +587,36 @@ export const FILE_TOOLS: ToolDefinition[] = [
     aliases: ["markdown", "md preview", "render markdown"],
     keywords: ["markdown", "preview", "md", "renderer"],
   },
+  {
+    id: "pdf-compress", title: "PDF Compress", description: "Reduce PDF attachment sizes locally, with text-preserving and image-based options.",
+    path: "/pdf/compress", category: "PDF",
+    aliases: ["compress pdf", "pdf too large", "PDF 壓縮", "壓縮 PDF", "履歷太大", "附件太大"],
+    keywords: ["pdf", "compress", "attachment", "size", "履歷", "附件", "大小"],
+  },
+  {
+    id: "image-collage", title: "Image Collage & Long Image", description: "Combine ordered photos and screenshots into grids, strips or long images.",
+    path: "/image/collage", category: "Image",
+    aliases: ["collage", "stitch images", "long screenshot", "圖片拼貼", "合成長圖", "拼圖", "截圖合併"],
+    keywords: ["image", "photo", "collage", "grid", "long image", "照片", "截圖"],
+  },
+  {
+    id: "image-ocr", title: "Image to Text (OCR)", description: "Recognize Traditional Chinese and English text in images without uploading them.",
+    path: "/image/ocr", category: "Image",
+    aliases: ["ocr", "image to text", "extract text", "圖片轉文字", "文字辨識", "截圖文字", "繁中文字辨識"],
+    keywords: ["image", "ocr", "text", "chinese", "english", "掃描", "辨識"],
+  },
+  {
+    id: "document-scan", title: "Document Scanner", description: "Straighten photographed documents with four-corner correction and export JPG or PDF.",
+    path: "/image/document-scan", category: "Image",
+    aliases: ["document scanner", "scan document", "perspective correction", "手機掃描", "文件掃描", "校正歪斜"],
+    keywords: ["image", "document", "scan", "camera", "pdf", "裁切", "四角", "文件"],
+  },
+  {
+    id: "batch-rename", title: "Batch File Rename", description: "Preview naming rules and download renamed file copies in a ZIP. Originals stay untouched.",
+    path: "/tools/batch-rename", category: "Text",
+    aliases: ["batch rename", "rename files", "批次重新命名", "批次改名", "檔案改名"],
+    keywords: ["file", "rename", "zip", "sequence", "附件", "命名", "序號"],
+  },
 ];
 
 export const TOOL_RELATIONSHIPS: Record<string, string[]> = {

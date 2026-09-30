@@ -19,6 +19,7 @@ import { PinToolButton } from "../components/PinToolButton";
 import { PersonalSettings } from "../components/PersonalSettings";
 
 type HomeFilter = "All" | ToolDefinition["category"];
+const EVERYDAY_TOOL_IDS = new Set(["pdf-compress", "image-collage", "image-ocr", "document-scan", "batch-rename"]);
 
 const TASK_ENTRY_DEFINITIONS = [
   {
@@ -218,7 +219,9 @@ export function HomePage(): JSX.Element {
 
   const keywordActive = keyword.trim().length > 0;
   const isDefaultView = !keywordActive && categoryFilter === "All";
-  const displayedTools = filteredTools;
+  const displayedTools = isDefaultView
+    ? [...filteredTools].sort((left, right) => Number(EVERYDAY_TOOL_IDS.has(right.id)) - Number(EVERYDAY_TOOL_IDS.has(left.id)))
+    : filteredTools;
 
   return (
     <div className={`home-page${keywordActive ? " home-page--searching" : ""}`}>

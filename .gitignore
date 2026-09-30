@@ -36,3 +36,5 @@ desktop.ini
 # Vite
 vite.config.ts.*.timestamp-*
 .vs/**
+public/ocr/
+.codex/everyday-tools-check/

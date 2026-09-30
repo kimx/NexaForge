@@ -25,6 +25,11 @@ export const CATEGORY_VISUALS: Readonly<Record<ToolCategory, ToolVisual>> = {
 
 // Coverage is enforced against FILE_TOOLS in toolVisuals.test.ts.
 export const TOOL_VISUALS: Readonly<Partial<Record<string, ToolVisual>>> = {
+  "pdf-compress": { label: "SIZE", tone: "red", sidebarIcon: "pdf" },
+  "image-collage": { label: "GRID", tone: "blue", sidebarIcon: "image" },
+  "image-ocr": { label: "OCR", tone: "blue", sidebarIcon: "image" },
+  "document-scan": { label: "SCAN", tone: "blue", sidebarIcon: "image" },
+  "batch-rename": { label: "NAME", tone: "sky", sidebarIcon: "text" },
   "image-to-pdf": { label: "I→P", tone: "blue", sidebarIcon: "image" },
   "image-watermark": { label: "WM", tone: "blue", sidebarIcon: "image" },
   "image-resize": { label: "RES", tone: "blue", sidebarIcon: "image" },
