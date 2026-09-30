@@ -94,6 +94,11 @@ const JwtKeyGeneratorPage = lazy(() =>
 const ImageCompressPage = lazy(() =>
   import("./pages/image/CompressPage").then((module) => ({ default: module.ImageCompressPage }))
 );
+const PdfCompressPage = lazy(() => import("./pages/pdf/CompressPage").then(module => ({ default: module.PdfCompressPage })));
+const CollagePage = lazy(() => import("./pages/image/CollagePage").then(module => ({ default: module.CollagePage })));
+const OcrPage = lazy(() => import("./pages/image/OcrPage").then(module => ({ default: module.OcrPage })));
+const DocumentScanPage = lazy(() => import("./pages/image/DocumentScanPage").then(module => ({ default: module.DocumentScanPage })));
+const BatchRenamePage = lazy(() => import("./pages/file/BatchRenamePage").then(module => ({ default: module.BatchRenamePage })));
 const ImageConvertPage = lazy(() =>
   import("./pages/image/ConvertPage").then((module) => ({ default: module.ImageConvertPage }))
 );
@@ -237,6 +242,11 @@ const SEO_ALIAS_ROUTES: AppRoute[] = SEO_ALIAS_PAGES.map(({ path, toolId }) => {
 
 const APP_ROUTES: AppRoute[] = [
   { path: "/", element: <HomePage /> },
+  { path: "/pdf/compress", element: <PdfCompressPage /> },
+  { path: "/image/collage", element: <CollagePage /> },
+  { path: "/image/ocr", element: <OcrPage /> },
+  { path: "/image/document-scan", element: <DocumentScanPage /> },
+  { path: "/tools/batch-rename", element: <BatchRenamePage /> },
   { path: "/json", element: <JsonHubPage /> },
   { path: "/image/resize", element: <ImageResizePage /> },
   { path: "/image/crop", element: <ImageCropPage /> },

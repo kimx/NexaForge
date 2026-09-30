@@ -1,0 +1,18 @@
+.document-scan-editor { display: grid; gap: 1rem; }
+.document-scan-editor__surface { position: relative; margin: 1rem; line-height: 0; }
+.document-scan-editor__surface > img { display: block; width: 100%; height: auto; max-height: none; }
+.document-scan-editor__outline { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
+.document-scan-editor__outline polygon { fill: rgba(37, 99, 235, .12); stroke: #2563eb; stroke-width: 3; vector-effect: non-scaling-stroke; }
+.document-scan-editor__corner { position: absolute; width: 36px; height: 36px; transform: translate(-50%, -50%); border: 2px solid #fff; border-radius: 50%; background: #1d4ed8; color: #fff; box-shadow: 0 0 0 1px #1d4ed8; cursor: grab; touch-action: none; font: inherit; font-weight: 700; }
+.document-scan-editor__corner:focus-visible { outline: 3px solid #111827; outline-offset: 3px; }
+.document-scan-editor__corner:disabled { cursor: default; opacity: .7; }
+.document-scan-editor__coordinates { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; padding: 1rem; border: 1px solid var(--border-color, #d1d5db); border-radius: .5rem; min-width: 0; }
+.document-scan-editor__coordinates legend { font-size: .875rem; padding: 0 .25rem; }
+.document-scan-editor__coordinate { display: grid; gap: .5rem; min-width: 0; }
+.document-scan-editor__coordinate label { display: flex; align-items: center; gap: .5rem; }
+.document-scan-editor__coordinate input { width: 100%; min-width: 0; padding: .5rem; }
+.document-scan-page__actions { display: flex; align-items: end; flex-wrap: wrap; gap: .75rem; margin-top: 1rem; }
+.document-scan-page__actions label { display: grid; gap: .5rem; }
+.document-scan-page__result { display: grid; gap: .75rem; }
+.document-scan-page__result .preview-image { max-height: 640px; object-fit: contain; width: 100%; }
+@media (max-width: 480px) { .document-scan-editor__coordinates { padding: .75rem; gap: .75rem; } .document-scan-editor__coordinate label { display: grid; gap: .25rem; } }

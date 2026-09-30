@@ -23,6 +23,7 @@ it("tracks real direct, related, sidebar, language-switch and home launches with
   await screen.findByTestId("recent-tools");
   expect(within(screen.getByTestId("recent-tools")).getAllByRole("article")).toHaveLength(4);
   fireEvent.click(screen.getByRole("link", { name: "Open Word Counter" }));
-  await screen.findByRole("heading", { level: 1, name: "Word Counter" });
+  // This navigation cold-loads the combined text-tool module in the complete suite.
+  await screen.findByRole("heading", { level: 1, name: "Word Counter" }, { timeout: 10_000 });
   expect(JSON.parse(localStorage.getItem("nexaforge-recent-tools") ?? "[]")).toEqual(["word-counter", "image-convert", "image-resize", "image-compress"]);
 }, 20_000);

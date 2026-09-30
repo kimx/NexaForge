@@ -1,4 +1,5 @@
 import { listCleanupToolMessages } from "../pages/text/listCleanupMessages";
+import { EVERYDAY_EN_MESSAGES, EVERYDAY_ZH_MESSAGES } from "../i18n/everydayMessages";
 import {
   createContext,
   type PropsWithChildren,
@@ -74,6 +75,7 @@ function persistLocaleState(locale: Locale): void {
 }
 
 const zhMessages: Record<string, string> = {
+  ...EVERYDAY_ZH_MESSAGES,
   ...listCleanupToolMessages["zh-TW"],
   ...TEXT_WORKFLOW_ZH_MESSAGES,
   ...EMOJI_ZH_MESSAGES,
@@ -801,7 +803,7 @@ const zhMessages: Record<string, string> = {
   "tool.image-compress.how.2": "指定大小會先調整品質；仍超過上限時，確認後才會等比例縮小尺寸。",
   "tool.image-compress.how.3": "下載壓縮後檔案。",
   "tool.image-compress.faq.0.question": "一定能在原尺寸達到指定大小嗎？",
-  "tool.image-compress.faq.0.answer": "不一定。PNG 的品質參數可能沒有作用；工具會以實際 Blob bytes 判定，必要時提示縮小尺寸。",
+  "tool.image-compress.faq.0.answer": "不一定。PNG 的品質參數可能沒有作用；工具會檢查下載檔案的實際大小，必要時提示縮小尺寸。",
   "tool.image-compress.faq.1.question": "檔案會上傳嗎？",
   "tool.image-compress.faq.1.answer": "不會。所有處理都在本機完成。",
   "tool.image-convert.how.0": "上傳支援格式的圖片。",
@@ -1034,6 +1036,7 @@ const zhMessages: Record<string, string> = {
 };
 
 const enMessages: Record<string, string> = {
+  ...EVERYDAY_EN_MESSAGES,
   ...listCleanupToolMessages.en,
   ...TEXT_WORKFLOW_EN_MESSAGES,
   ...EMOJI_EN_MESSAGES,
@@ -1742,7 +1745,7 @@ const enMessages: Record<string, string> = {
   "tool.image-compress.how.2": "Target mode adjusts quality first; it asks before proportionally reducing dimensions.",
   "tool.image-compress.how.3": "Download the compressed output.",
   "tool.image-compress.faq.0.question": "Can every image meet the target at its original dimensions?",
-  "tool.image-compress.faq.0.answer": "No. PNG quality controls may have no effect; the tool checks actual Blob bytes and asks before reducing dimensions when needed.",
+  "tool.image-compress.faq.0.answer": "No. PNG quality controls may have no effect; the tool checks the actual output file size and asks before reducing dimensions when needed.",
   "tool.image-compress.faq.1.question": "Are files uploaded?",
   "tool.image-compress.faq.1.answer": "No. All processing is local.",
   "tool.image-convert.how.0": "Upload a supported image.",

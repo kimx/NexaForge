@@ -12,9 +12,10 @@ it("shows registered visuals and complete action names for every card", () => {
   fireEvent.click(screen.getByRole("button", { name: "All" }));
   const cards = document.querySelectorAll("#featured-tools article");
   expect(cards).toHaveLength(FILE_TOOLS.length);
-  FILE_TOOLS.forEach((tool, index) => {
-    expect(cards[index].querySelector(".home-tool-card__icon")).toHaveTextContent(getToolVisual(tool).label);
-    const card = within(cards[index] as HTMLElement);
+  FILE_TOOLS.forEach((tool) => {
+    const element = Array.from(cards).find(card => card.querySelector("a")?.getAttribute("href") === `/en${tool.path}`)!;
+    expect(element.querySelector(".home-tool-card__icon")).toHaveTextContent(getToolVisual(tool).label);
+    const card = within(element as HTMLElement);
     const title = card.getByRole("heading", { level: 3 }).textContent;
     expect(card.getByRole("link", { name: `Open ${title}` })).toHaveAttribute("href", `/en${tool.path}`);
   });

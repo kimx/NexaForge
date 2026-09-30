@@ -65,7 +65,7 @@ describe("FileDropzone", () => {
         message: "Unsupported file type: text/plain",
       },
     ]);
-    expect(screen.getByRole("alert")).toHaveTextContent("data.txt: invalid mime");
+    expect(screen.getByRole("alert")).toHaveTextContent("data.txt: Unsupported format");
   });
 
   it("turns a compact single-file dropzone into a replace action", () => {
@@ -77,6 +77,14 @@ describe("FileDropzone", () => {
 
     expect(screen.getByLabelText("Replace file or click to select")).toBeInTheDocument();
     expect(screen.queryByText("Drag and drop or click to choose files.")).not.toBeInTheDocument();
+  });
+
+  it("supports phone camera capture and explains the actual size limit", () => {
+    const { container } = render(<LanguageProvider initialLocale="en"><FileDropzone label="Select photo" accept="image/jpeg,image/png" capture="environment" maxSize={10} onFiles={vi.fn()} /></LanguageProvider>);
+    expect(container.querySelector('input[type="file"]')).toHaveAttribute("capture", "environment");
+    fireEvent.change(container.querySelector('input[type="file"]')!, { target: { files: [new File(["too many bytes"], "photo.jpg", { type: "image/jpeg" })] } });
+    expect(screen.getByRole("alert")).toHaveTextContent("File exceeds 10 B");
+    expect(screen.getByRole("alert")).toHaveTextContent("choose a smaller version");
   });
 
   it("turns a compact multi-file dropzone into an add-files action", () => {

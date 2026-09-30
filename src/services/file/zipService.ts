@@ -41,7 +41,7 @@ export async function createZip(
   }
   const zipDependency = dependencies ?? (await import("fflate"));
   const used = new Set<string>();
-  const input: ZipInput = {};
+  const input: ZipInput = Object.create(null) as ZipInput;
   for (const result of results) {
     input[uniqueArchiveName(result.fileName, used)] = new Uint8Array(await result.blob.arrayBuffer());
   }
