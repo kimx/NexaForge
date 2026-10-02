@@ -47,8 +47,9 @@ export function FileDropzone({
     ? t("fileDropzone.addMoreFiles")
     : t("fileDropzone.replaceFile");
   const actionLabel = compact ? (compactLabel ?? compactActionLabel) : label;
-  const formats = accept.split(",").map(value => value.trim().replace(/^image\//, "").replace(/^application\//, "").replace(/^text\//, "")).filter(Boolean).join(", ").toUpperCase();
+  const formats = [...new Set(accept.split(",").map(value => value.trim().replace(/^(image|application|text)\//, "").replace(/^\./, "").toUpperCase().replace(/^JPEG$/, "JPG")).filter(Boolean))].join(", ");
   const hintLimit = maxSize ?? (accept.includes("application/pdf") ? FILE_LIMITS.pdf : accept.includes("text/csv") ? FILE_LIMITS.csv : accept.includes("image/") ? FILE_LIMITS.image : undefined);
+  const showHints = !compact && (accept !== "*/*" || hintLimit !== undefined);
 
   useEffect(() => {
     setInputRef?.(inputRef.current);
@@ -183,7 +184,7 @@ export function FileDropzone({
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
       aria-label={t("fileDropzone.aria")}
-      aria-describedby={compact ? undefined : `${inputId}-help`}
+      aria-describedby={showHints ? `${inputId}-help` : undefined}
       aria-disabled={disabled || undefined}
     >
       <input
@@ -199,13 +200,18 @@ export function FileDropzone({
         onChange={handleChange}
       />
       <label htmlFor={inputId} className="file-dropzone-label">
+        {!compact ? (
+          <svg className="file-dropzone__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M12 16V4m-4 4 4-4 4 4M4 15v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4" />
+          </svg>
+        ) : null}
         <strong>{actionLabel}</strong>
         <span>{t("fileDropzone.orSelect")}</span>
       </label>
-      {compact ? null : <p id={`${inputId}-help`}>{t("fileDropzone.help")}
+      {showHints ? <p id={`${inputId}-help`}>
         {accept !== "*/*" ? <span className="file-dropzone__hint">{t("fileDropzone.formats", { formats })}</span> : null}
         {hintLimit !== undefined ? <span className="file-dropzone__hint">{t("fileDropzone.maxSize", { size: formatFileSize(hintLimit) })}</span> : null}
-      </p>}
+      </p> : null}
       {rejections.length > 0 ? (
         <ul className="file-dropzone__rejections" role="alert">
           {rejections.map((rejection) => (

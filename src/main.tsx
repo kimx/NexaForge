@@ -6,6 +6,7 @@ import "./styles.css";
 import "./styles/issue23-tools.css";
 import "./styles/issue26-tools.css";
 import "./styles/everyday-tools.css";
+import "./styles/tool-workspace.css";
 import { LanguageProvider } from "./context/LanguageContext";
 import { canHydratePrerenderedRoot } from "./routing/hydration";
 
