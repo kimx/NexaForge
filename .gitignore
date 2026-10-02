@@ -36,3 +36,4 @@ desktop.ini
 # Vite
 vite.config.ts.*.timestamp-*
 .vs/**
+/.codegraph
