@@ -7,7 +7,7 @@ import { FILE_TOOLS } from "./data/tools";
 import { SEO_ALIAS_PAGES } from "./seo/landingPages";
 
 const ROUTE_HEADINGS: Record<string, string> = {
-  "/": "NexaForge",
+  "/": "Everyday file tasks. Simply handled.",
   "/json": "JSON Workspace",
   "/image/resize": "Free Online Image Resizer",
   "/image/crop": "Free Online Image Cropper",
@@ -234,6 +234,7 @@ describe("App routes", () => {
 
   it.each(Object.entries(ROUTE_HEADINGS))("renders %s and updates page metadata", async (path, heading) => {
     const localizedPath = path === "/" ? "/en" : `/en${path}`;
+    const metadataTitle = path === "/" ? "NexaForge" : heading;
     render(
       <MemoryRouter
         initialEntries={[localizedPath]}
@@ -260,10 +261,10 @@ describe("App routes", () => {
       "#main-content"
     );
     await waitFor(() => {
-      expect(document.title).toContain(heading);
+      expect(document.title).toContain(metadataTitle);
     });
-    expect(document.querySelector('meta[property="og:title"]')).toHaveAttribute("content", expect.stringContaining(heading));
-    expect(document.querySelector('script[data-nexaforge-seo]')).toHaveTextContent(heading);
+    expect(document.querySelector('meta[property="og:title"]')).toHaveAttribute("content", expect.stringContaining(metadataTitle));
+    expect(document.querySelector('script[data-nexaforge-seo]')).toHaveTextContent(metadataTitle);
 
     expect(document.querySelector("link[rel='canonical']")).toBeTruthy();
   }, 15_000);
@@ -280,7 +281,7 @@ describe("App routes", () => {
       </MemoryRouter>
     );
 
-    await screen.findByRole("heading", { name: "NexaForge", level: 1 });
+    await screen.findByRole("heading", { name: "日常檔案工作， 在這裡輕鬆完成。", level: 1 });
     expect(screen.queryAllByRole("link", { name: "首頁" })).toHaveLength(0);
 
     const header = screen.getByRole("banner");
@@ -404,7 +405,7 @@ describe("App routes", () => {
       </MemoryRouter>
     );
 
-    await screen.findByRole("heading", { name: "NexaForge", level: 1 });
+    await screen.findByRole("heading", { name: "Everyday file tasks. Simply handled.", level: 1 });
     vi.mocked(window.scrollTo).mockClear();
     fireEvent.change(screen.getByRole("textbox", { name: "Search Tools" }), {
       target: { value: "PDF Merge" },

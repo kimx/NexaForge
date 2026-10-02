@@ -3,7 +3,8 @@ import { Link, useLocation } from "react-router-dom";
 import { PrivacyNotice } from "./PrivacyNotice";
 import { AdSlot } from "./AdSlot";
 import type { ToolMeta, ToolDefinition, ToolWorkflow } from "../types/tool";
-import { useLanguage, useLocalizedToolMeta } from "../context/LanguageContext";
+import { localizedCategoryLabel, useLanguage, useLocalizedToolMeta } from "../context/LanguageContext";
+import { getToolVisual } from "../data/toolVisuals";
 import { trackEvent } from "../utils/analytics";
 import { ProcessingStatus } from "./ProcessingStatus";
 import { JsonWorkspaceNav } from "./JsonWorkspaceNav";
@@ -54,6 +55,7 @@ export function ToolPageTemplate({
   const seoContent = getSeoLandingContent(pathname, locale);
   const displayTitle = seoContent?.h1 ?? toolTitle;
   const displayDescription = seoContent?.description ?? toolDescription;
+  const visual = getToolVisual(tool);
   const relatedTools = children.relatedTools.slice(0, 4);
   const derivedNextActions = !children.nextActions && ["Image", "PDF", "Data"].includes(tool.category)
     ? relatedTools
@@ -115,7 +117,7 @@ export function ToolPageTemplate({
   const showResultSection = layout === "split" || !workflow || workflow.state !== "idle" || showIdleResult;
 
   return (
-    <div className={`tool-page tool-page--${tool.id} tool-page--layout-${layout}`}>
+    <div className={`tool-page tool-page--${tool.id} tool-page--layout-${layout} tool-page--tone-${visual.tone}`}>
       <div className="tool-container">
         <nav className="breadcrumb tool-page__breadcrumb" aria-label={t("breadcrumb.aria")}>
           <ol>
@@ -131,11 +133,20 @@ export function ToolPageTemplate({
           </ol>
         </nav>
 
-        <div className="tool-page__title-row">
-          <h1 className="tool-page__title">{displayTitle}</h1>
+        <div className="tool-page__intro">
+          <div className="tool-page__title-row">
+            <div className="tool-page__identity">
+              <span className="tool-page__icon" aria-hidden="true">{visual.label}</span>
+              <div>
+                <span className="tool-page__category">{localizedCategoryLabel(tool.category, t)}</span>
+                <h1 className="tool-page__title">{displayTitle}</h1>
+              </div>
+            </div>
+            <PinToolButton toolId={tool.id} />
+          </div>
+          <p className="short-description tool-page__description">{displayDescription}</p>
+          <span className="tool-page__trust-badge">{t("toolPage.browserOnly")}</span>
         </div>
-        <p className="short-description tool-page__description">{displayDescription}</p>
-        <span className="tool-page__trust-badge">{t("toolPage.browserOnly")}</span>
         <JsonWorkspaceNav />
 
         <div className={`tool-page__workbench tool-page__workbench--${layout}`}>
@@ -185,7 +196,6 @@ export function ToolPageTemplate({
         </div>
 
         <div className="tool-page__secondary-actions">
-          <PinToolButton toolId={tool.id} />
           <PrivacyNotice inline contentOnly={tool.category === "QR & Barcode"} />
         </div>
 

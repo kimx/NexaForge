@@ -255,7 +255,7 @@ describe("HomePage task-first hierarchy", () => {
 
     fireEvent.change(search, { target: { value: "json" } });
 
-    expect(screen.getByRole("heading", { name: "NexaForge", level: 1 })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Everyday file tasks. Simply handled.", level: 1 })).toBeInTheDocument();
     expect(screen.queryByText(/Resize, convert, format, and split/i)).not.toBeInTheDocument();
     expect(screen.queryByText("All-in-One File Tools")).not.toBeInTheDocument();
     expect(screen.queryByLabelText("How NexaForge works")).not.toBeInTheDocument();

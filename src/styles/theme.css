@@ -1,0 +1,111 @@
+/* Native color-scheme also themes form controls and follows live OS changes. */
+:root {
+  color-scheme: light dark;
+  --bg-page: light-dark(#f6f8fb, #101827);
+  --bg-surface: light-dark(#ffffff, #192435);
+  --bg-subtle: light-dark(#eef3fb, #233249);
+  --text-primary: light-dark(#172b46, #e6eef8);
+  --text-secondary: light-dark(#435570, #b4c5dc);
+  --text-muted: light-dark(#5e6e84, #9aafc9);
+  --border-subtle: light-dark(#e1e7ef, #34465f);
+  --border-strong: light-dark(#aabbd1, #627d9e);
+  --brand-primary: light-dark(#1d4ed8, #93c5fd);
+  --brand-primary-hover: light-dark(#1e40af, #bfdbfe);
+  --brand-primary-active: light-dark(#1e3a8a, #60a5fa);
+  --brand-on-primary: light-dark(#ffffff, #102443);
+  --accent-secondary: light-dark(#0369a1, #7dd3fc);
+  --accent-secondary-hover: light-dark(#075985, #bae6fd);
+  --accent-violet: light-dark(#7040b5, #c4b5fd);
+  --semantic-success: light-dark(#16734f, #6ee7b7);
+  --semantic-warning: light-dark(#925b0b, #fcd34d);
+  --semantic-danger: light-dark(#b42336, #fda4af);
+  --bg-success: light-dark(#edf8f2, #17382e);
+  --bg-warning: light-dark(#fff5df, #3b3120);
+  --bg-danger: light-dark(#fff0f2, #3c252e);
+  --bg-violet: light-dark(#f2edfc, #302945);
+  --bg-accent: light-dark(#eaf2ff, #1c3253);
+  --shadow-card: 0 3px 14px light-dark(#183d5010, #00000024);
+  --shadow-soft: 0 6px 20px light-dark(#183d5018, #00000038);
+  --shadow-subtle: 0 1px 3px light-dark(#183d5010, #00000024);
+  --shadow-1: var(--shadow-subtle);
+  --shadow-2: var(--shadow-card);
+  --shadow-3: var(--shadow-soft);
+  --focus-ring: 0 0 0 3px color-mix(in srgb, var(--brand-primary) 28%, transparent);
+  --line: var(--border-subtle);
+  --line-subtle: var(--border-subtle);
+  --line-strong: var(--border-strong);
+  --page: var(--bg-page);
+  --page-soft: var(--bg-subtle);
+  --surface: var(--bg-surface);
+  --surface-soft: var(--bg-subtle);
+  --surface-strong: var(--bg-surface);
+  --text-main: var(--text-primary);
+  --text-dim: var(--text-secondary);
+  --accent: var(--brand-primary);
+  --border: var(--border-subtle);
+  --border-color: var(--border-subtle);
+  --color-primary: var(--brand-primary);
+  --color-text-secondary: var(--text-secondary);
+}
+
+:root[data-theme="light"] { color-scheme: light; }
+:root[data-theme="dark"] { color-scheme: dark; }
+
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 44px;
+  min-height: 44px;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+.theme-toggle:hover { border-color: var(--border-strong); background: var(--bg-subtle); color: var(--brand-primary); }
+.theme-toggle:focus-visible { outline: 2px solid var(--brand-primary); outline-offset: 3px; }
+.top-banner { flex-wrap: wrap; }
+
+.home-hero { background: linear-gradient(120deg, var(--bg-surface), var(--bg-accent)); }
+.home-hero::before {
+  background: linear-gradient(100deg, var(--bg-surface) 8%, color-mix(in srgb, var(--bg-surface) 96%, transparent) 48%, color-mix(in srgb, var(--bg-accent) 80%, transparent));
+}
+.top-banner__brand-logo,
+.top-banner__brand-mark { filter: var(--brand-logo-filter, none); }
+:root[data-theme="dark"] { --brand-logo-filter: brightness(0) invert(1); }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --brand-logo-filter: brightness(0) invert(1); }
+}
+.tool-sidebar__request { color: var(--brand-on-primary); }
+.pdf-page-editor__badge { color: var(--bg-page); }
+.home-tool-card:hover,
+.home-quick-actions a:hover { border-color: var(--brand-primary); }
+.tool-page__intro { border-top: 3px solid var(--tool-accent); }
+.tool-page--tone-red { --tool-accent: var(--semantic-danger); }
+.tool-page--tone-mint { --tool-accent: var(--semantic-success); }
+.tool-page--tone-violet { --tool-accent: var(--accent-violet); }
+.tool-page--tone-sky { --tool-accent: var(--accent-secondary); }
+.tool-page--tone-amber { --tool-accent: var(--semantic-warning); }
+
+/* Exported documents retain paper colors independently of the interface. */
+.markdown-preview--pdf-export {
+  color-scheme: light;
+  --bg-surface: #fff;
+  --bg-subtle: #eef3f8;
+  --text-primary: #172033;
+  --text-secondary: #435570;
+  --text-muted: #5e6e84;
+  --brand-primary: #1d4ed8;
+  --border-subtle: #dce5e9;
+}
+
+@media (max-width: 650px) {
+  .top-banner__github { display: none; }
+  .header-tools-button { width: 44px; min-height: 44px; padding: 8px; justify-content: center; }
+  .header-tools-button > span:last-child { display: none; }
+}

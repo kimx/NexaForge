@@ -3,6 +3,16 @@ import { FileDropzone } from "./FileDropzone";
 import { LanguageProvider } from "../context/LanguageContext";
 
 describe("FileDropzone", () => {
+  it("deduplicates format hints without changing accepted file types", () => {
+    const accept = "image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp";
+    render(<LanguageProvider initialLocale="en"><FileDropzone label="Drop images" accept={accept} maxSize={1024} onFiles={vi.fn()} /></LanguageProvider>);
+
+    expect(screen.getByText("Supported: JPG, PNG, WEBP")).toBeInTheDocument();
+    expect(screen.getByText("Maximum per file: 1.00 KB")).toBeInTheDocument();
+    expect(screen.queryByText("Drag and drop or click to choose files.")).not.toBeInTheDocument();
+    expect(screen.getByLabelText("Drop images or click to select")).toHaveAttribute("accept", accept);
+  });
+
   it("uses the native file input as its only keyboard stop", () => {
     const { container } = render(
       <LanguageProvider initialLocale="en">
