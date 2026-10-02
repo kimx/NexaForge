@@ -2,6 +2,7 @@ import type { RefObject } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useLanguage, type Locale } from "../context/LanguageContext";
 import { localizePath } from "../routing/localePaths";
+import { ThemeSelect } from "./ThemeSelect";
 
 interface HeaderProps {
   showBrand?: boolean;
@@ -91,6 +92,7 @@ export function Header({
             />
           </svg>
         </a>
+        <ThemeSelect />
         <div className="language-switch" role="group" aria-label={t("top.languageSwitcherLabel")}>
           <button
             type="button"

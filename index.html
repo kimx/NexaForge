@@ -7,6 +7,15 @@
       content="width=device-width, initial-scale=1.0"
     />
     <meta name="theme-color" content="#1d4ed8" />
+    <script>
+      // Apply the saved appearance before the first paint, including prerendered routes.
+      try {
+        const theme = localStorage.getItem("nexaforge-theme");
+        if (theme === "light" || theme === "dark") {
+          document.documentElement.dataset.theme = theme;
+        }
+      } catch { /* System appearance works without storage. */ }
+    </script>
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
