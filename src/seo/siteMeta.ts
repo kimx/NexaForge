@@ -1,6 +1,7 @@
 import type { Locale } from "../context/LanguageContext";
 import { translate } from "../context/LanguageContext";
 import { FILE_TOOLS } from "../data/tools";
+import { FILE_WORKFLOWS } from "../data/workflows";
 import { localizePath, stripLocalePrefix } from "../routing/localePaths";
 import { isJsonTool } from "../utils/toolPaths";
 import { findSeoLanding, getSeoLandingContent } from "./landingPages";
@@ -75,6 +76,7 @@ export function buildPageSeo(path: string, locale: Locale): PageSeo {
   const tool = FILE_TOOLS.find((candidate) => candidate.path === basePath)
     ?? FILE_TOOLS.find((candidate) => candidate.id === landing?.toolId);
   const siteName = "NexaForge";
+  const workflow = FILE_WORKFLOWS.find(item => item.path === basePath);
   const localSuffix = translate(locale, "seo.localSuffix");
 
   let pageName: string;
@@ -93,6 +95,10 @@ export function buildPageSeo(path: string, locale: Locale): PageSeo {
     pageName = translate(locale, "jsonHub.title");
     title = `${pageName} | ${siteName}`;
     baseDescription = translate(locale, "jsonHub.description");
+  } else if (workflow) {
+    pageName = workflow[locale].title;
+    title = `${pageName} | ${siteName}`;
+    baseDescription = workflow[locale].description;
   } else if (tool) {
     pageName = translate(locale, `tool.${tool.id}.title`);
     title = `${pageName} | ${siteName}`;

@@ -38,4 +38,5 @@ vite.config.ts.*.timestamp-*
 .vs/**
 public/ocr/
 .codex/everyday-tools-check/
+.codex/file-workflows-qa-*/
 /.codegraph

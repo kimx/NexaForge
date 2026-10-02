@@ -1,4 +1,5 @@
 import { FILE_TOOLS } from "../data/tools";
+import { FILE_WORKFLOWS } from "../data/workflows";
 import { SEO_SEARCH_PAGES } from "../seo/landingPages";
 import { localizePath } from "./localePaths";
 
@@ -7,6 +8,7 @@ export const BASE_INDEXABLE_ROUTES = Array.from(
     "/",
     "/json",
     ...FILE_TOOLS.map((tool) => tool.path),
+    ...FILE_WORKFLOWS.map((workflow) => workflow.path),
     ...SEO_SEARCH_PAGES.map(({ path }) => path),
   ])
 ).sort((left, right) => {
