@@ -230,8 +230,8 @@ export function HomePage(): JSX.Element {
             <div className="home-hero__content">
               {!keywordActive ? <span className="home-hero__eyebrow">{t("home.eyebrow")}</span> : null}
               <h1>
-                <span>Nexa</span>
-                <span className="home-hero__title-accent">Forge</span>
+                <span>{t("home.headline")}</span>{" "}
+                <span className="home-hero__title-accent">{t("home.headlineAccent")}</span>
               </h1>
               {!keywordActive ? (
                 <>
@@ -241,7 +241,10 @@ export function HomePage(): JSX.Element {
               <div className="home-hero__search">
                 <div className="workspace-search workspace-search--hero">
                   <label htmlFor="search-tools">
-                    <span className="workspace-search__icon" aria-hidden="true">⌕</span>
+                    <svg className="workspace-search__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+                      <circle cx="10.5" cy="10.5" r="6.5" />
+                      <path d="m16 16 4.5 4.5" />
+                    </svg>
                     <span className="sr-only">{t("home.searchLabel")}</span>
                     <input
                       id="search-tools"
@@ -256,18 +259,9 @@ export function HomePage(): JSX.Element {
                     <button type="button" className="workspace-search__clear" onClick={() => { updateSearch("", categoryFilter); searchRef.current?.focus(); }} aria-label={t("home.clearSearch")}>
                       ×
                     </button>
-                  ) : null}
+                  ) : <kbd className="workspace-search__shortcut" aria-hidden="true">/</kbd>}
                 </div>
               </div>
-              {!keywordActive ? (
-                <nav className="home-quick-actions" data-testid="task-entries" aria-label={t("home.taskEntries")}>
-                  <span>{t("home.taskEntries")}</span>
-                  {TASK_ENTRY_DEFINITIONS.map((task) => {
-                    const tool = FILE_TOOLS.find((candidate) => candidate.id === task.toolId);
-                    return tool ? <Link key={task.id} to={localizePath(tool.path, locale)} aria-label={t("home.openNamed", { tool: toolMeta(tool.id, "title") })} onClick={() => launchTaskEntry(task.id, tool.id)}>{t(task.titleKey)}</Link> : null;
-                  })}
-                </nav>
-              ) : null}
               {!keywordActive ? <p className="home-hero__positioning">{t("home.positioning")}</p> : null}
               {!keywordActive ? (
                 <div className="home-hero__proof" aria-label={t("home.proofLabel")}>
@@ -278,6 +272,24 @@ export function HomePage(): JSX.Element {
               ) : null}
             </div>
           </section>
+            {!keywordActive ? (
+              <nav className="home-quick-actions" data-testid="task-entries" aria-label={t("home.taskEntries")}>
+                <span className="home-quick-actions__heading">{t("home.taskEntries")}</span>
+                {TASK_ENTRY_DEFINITIONS.map((task) => {
+                  const tool = FILE_TOOLS.find((candidate) => candidate.id === task.toolId);
+                  if (!tool) return null;
+                  const visual = getToolVisual(tool);
+                  return (
+                    <Link key={task.id} to={localizePath(tool.path, locale)} aria-label={t("home.openNamed", { tool: toolMeta(tool.id, "title") })} onClick={() => launchTaskEntry(task.id, tool.id)}>
+                      <span className={`home-tool-card__icon home-tool-card__icon--${visual.tone}`} aria-hidden="true">{visual.label}</span>
+                      <strong>{t(task.titleKey)}</strong>
+                      <small>{t(task.descriptionKey)}</small>
+                      <span className="home-quick-actions__arrow" aria-hidden="true">↗</span>
+                    </Link>
+                  );
+                })}
+              </nav>
+            ) : null}
 
           {isDefaultView && pinnedTools.length > 0 ? (
             <section className="workspace-section" data-testid="pinned-tools" aria-labelledby="pinned-tools-title">
