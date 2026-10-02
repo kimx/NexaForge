@@ -3,6 +3,9 @@ import type { ChangeEvent, DragEvent } from "react";
 import type { FileRejection } from "../types/tool";
 import { validateFileSize, validateMime } from "../utils/validation";
 import { useLanguage } from "../context/LanguageContext";
+import { FILE_LIMITS } from "../config/fileLimits";
+import { detectCategory } from "../utils/mime";
+import { formatFileSize } from "../utils/fileSize";
 
 export interface FileDropzoneProps {
   label: string;
@@ -16,6 +19,7 @@ export interface FileDropzoneProps {
   compact?: boolean;
   compactLabel?: string;
   disabled?: boolean;
+  capture?: "user" | "environment";
 }
 
 export function FileDropzone({
@@ -30,9 +34,11 @@ export function FileDropzone({
   compact = false,
   compactLabel,
   disabled = false,
+  capture,
 }: FileDropzoneProps): JSX.Element {
   const [isDragging, setDragging] = useState(false);
   const [rejections, setRejections] = useState<FileRejection[]>([]);
+  const [rejectionLimits, setRejectionLimits] = useState<Record<string, number>>({});
   const inputId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
   const dragDepth = useRef(0);
@@ -41,6 +47,8 @@ export function FileDropzone({
     ? t("fileDropzone.addMoreFiles")
     : t("fileDropzone.replaceFile");
   const actionLabel = compact ? (compactLabel ?? compactActionLabel) : label;
+  const formats = accept.split(",").map(value => value.trim().replace(/^image\//, "").replace(/^application\//, "").replace(/^text\//, "")).filter(Boolean).join(", ").toUpperCase();
+  const hintLimit = maxSize ?? (accept.includes("application/pdf") ? FILE_LIMITS.pdf : accept.includes("text/csv") ? FILE_LIMITS.csv : accept.includes("image/") ? FILE_LIMITS.image : undefined);
 
   useEffect(() => {
     setInputRef?.(inputRef.current);
@@ -88,6 +96,7 @@ export function FileDropzone({
         onRejectedFiles(rejected);
       }
       setRejections(rejected);
+      setRejectionLimits(Object.fromEntries(list.map(file => [file.name, maxSize ?? FILE_LIMITS[detectCategory(file)] ?? FILE_LIMITS.other])));
       if (accepted.length > 0) {
         onFiles(accepted);
       }
@@ -184,6 +193,7 @@ export function FileDropzone({
         type="file"
         disabled={disabled}
         accept={accept}
+        capture={capture}
         multiple={multiple}
         aria-label={`${actionLabel} ${t("fileDropzone.orSelect")}`}
         onChange={handleChange}
@@ -192,12 +202,17 @@ export function FileDropzone({
         <strong>{actionLabel}</strong>
         <span>{t("fileDropzone.orSelect")}</span>
       </label>
-      {compact ? null : <p id={`${inputId}-help`}>{t("fileDropzone.help")}</p>}
+      {compact ? null : <p id={`${inputId}-help`}>{t("fileDropzone.help")}
+        {accept !== "*/*" ? <span className="file-dropzone__hint">{t("fileDropzone.formats", { formats })}</span> : null}
+        {hintLimit !== undefined ? <span className="file-dropzone__hint">{t("fileDropzone.maxSize", { size: formatFileSize(hintLimit) })}</span> : null}
+      </p>}
       {rejections.length > 0 ? (
         <ul className="file-dropzone__rejections" role="alert">
           {rejections.map((rejection) => (
             <li key={`${rejection.fileName}-${rejection.reason}`}>
-              <strong>{rejection.fileName}</strong>: {rejection.reason}
+              <strong>{rejection.fileName}</strong>: {rejection.reason === "size exceeds"
+                ? t("fileDropzone.sizeError", { size: formatFileSize(rejectionLimits[rejection.fileName] ?? hintLimit ?? FILE_LIMITS.other) })
+                : t("fileDropzone.unsupported", { formats })}
             </li>
           ))}
         </ul>

@@ -1,6 +1,16 @@
 import type { ToolDefinition } from "../types/tool";
+import { TOOL_CATEGORY_ORDER } from "./toolVisuals";
 
 export const FILE_TOOLS: ToolDefinition[] = [
+  {
+    id: "list-cleanup",
+    title: "List Cleanup",
+    description: "Clean, deduplicate, and sort lists with reusable local templates.",
+    path: "/text/list-cleanup",
+    category: "Text",
+    aliases: ["clean list", "list template", "清單清理", "清單範本"],
+    keywords: ["list", "clean", "deduplicate", "sort", "template", "清理", "去重", "排序"],
+  },
   {
     id: "image-to-pdf",
     title: "Image to PDF",
@@ -25,7 +35,7 @@ export const FILE_TOOLS: ToolDefinition[] = [
     description: "Batch resize JPG, PNG, or WebP directly in the browser.",
     path: "/image/resize",
     category: "Image",
-    aliases: ["resize image", "scale image", "change size"],
+    aliases: ["resize image", "scale image", "change size", "照片縮小", "圖片縮小", "圖片變小"],
     keywords: ["photo", "image", "jpeg", "png", "webp"],
   },
   {
@@ -43,7 +53,7 @@ export const FILE_TOOLS: ToolDefinition[] = [
     description: "Batch compress images with quality control and compare file sizes.",
     path: "/image/compress",
     category: "Image",
-    aliases: ["compress image", "reduce image size", "optimize photo"],
+    aliases: ["compress image", "reduce image size", "optimize photo", "圖片變小", "照片壓縮", "縮小圖片"],
     keywords: ["photo", "jpeg", "png", "webp", "quality"],
   },
   {
@@ -133,7 +143,7 @@ export const FILE_TOOLS: ToolDefinition[] = [
     description: "Merge many PDF files and download a single file.",
     path: "/pdf/merge",
     category: "PDF",
-    aliases: ["combine pdf", "merge pdf", "append pdf"],
+    aliases: ["combine pdf", "merge pdf", "append pdf", "PDF 合在一起", "PDF合在一起"],
     keywords: ["document", "pdf", "combine", "stitch"],
   },
   {
@@ -299,6 +309,15 @@ export const FILE_TOOLS: ToolDefinition[] = [
     keywords: ["uuid", "v4", "v7", "guid", "identifier", "random", "rfc 9562"],
   },
   {
+    id: "emoji-picker",
+    title: "Emoji Picker & Unicode Tool",
+    description: "Search, copy, and inspect emoji with complete Unicode encoding details.",
+    path: "/tools/emoji-picker",
+    category: "Text",
+    aliases: ["emoji picker", "emoji copy", "emoji search", "unicode emoji", "表情符號", "emoji 搜尋", "emoji 複製"],
+    keywords: ["emoji", "unicode", "utf-8", "html entity", "javascript escape", "copy", "favorite"],
+  },
+  {
     id: "word-counter",
     title: "Word Counter",
     description: "Count words, characters, and lines from pasted text.",
@@ -322,7 +341,7 @@ export const FILE_TOOLS: ToolDefinition[] = [
     description: "Keep the first copy of each line and remove repeats.",
     path: "/text/remove-duplicate-lines",
     category: "Text",
-    aliases: ["dedupe lines", "unique lines", "remove repeated lines"],
+    aliases: ["dedupe lines", "unique lines", "remove repeated lines", "名單去重", "名單重複移除", "dedupe list"],
     keywords: ["text", "lines", "dedupe", "cleanup"],
   },
   {
@@ -461,6 +480,15 @@ export const FILE_TOOLS: ToolDefinition[] = [
     keywords: ["developer", "timestamp", "epoch", "date", "time"],
   },
   {
+    id: "local-time-converter",
+    title: "Local Time Converter",
+    description: "Convert ISO 8601 and UTC times to your browser's local time.",
+    path: "/developer/local-time",
+    category: "Developer",
+    aliases: ["local time", "timezone converter", "utc to local", "iso time converter"],
+    keywords: ["developer", "time", "timezone", "utc", "iso 8601", "offset"],
+  },
+  {
     id: "json-yaml",
     title: "YAML ↔ JSON Converter",
     description: "Convert common JSON and YAML data locally.",
@@ -559,6 +587,36 @@ export const FILE_TOOLS: ToolDefinition[] = [
     aliases: ["markdown", "md preview", "render markdown"],
     keywords: ["markdown", "preview", "md", "renderer"],
   },
+  {
+    id: "pdf-compress", title: "PDF Compress", description: "Reduce PDF attachment sizes locally, with text-preserving and image-based options.",
+    path: "/pdf/compress", category: "PDF",
+    aliases: ["compress pdf", "pdf too large", "PDF 壓縮", "壓縮 PDF", "履歷太大", "附件太大"],
+    keywords: ["pdf", "compress", "attachment", "size", "履歷", "附件", "大小"],
+  },
+  {
+    id: "image-collage", title: "Image Collage & Long Image", description: "Combine ordered photos and screenshots into grids, strips or long images.",
+    path: "/image/collage", category: "Image",
+    aliases: ["collage", "stitch images", "long screenshot", "圖片拼貼", "合成長圖", "拼圖", "截圖合併"],
+    keywords: ["image", "photo", "collage", "grid", "long image", "照片", "截圖"],
+  },
+  {
+    id: "image-ocr", title: "Image to Text (OCR)", description: "Recognize Traditional Chinese and English text in images without uploading them.",
+    path: "/image/ocr", category: "Image",
+    aliases: ["ocr", "image to text", "extract text", "圖片轉文字", "文字辨識", "截圖文字", "繁中文字辨識"],
+    keywords: ["image", "ocr", "text", "chinese", "english", "掃描", "辨識"],
+  },
+  {
+    id: "document-scan", title: "Document Scanner", description: "Straighten photographed documents with four-corner correction and export JPG or PDF.",
+    path: "/image/document-scan", category: "Image",
+    aliases: ["document scanner", "scan document", "perspective correction", "手機掃描", "文件掃描", "校正歪斜"],
+    keywords: ["image", "document", "scan", "camera", "pdf", "裁切", "四角", "文件"],
+  },
+  {
+    id: "batch-rename", title: "Batch File Rename", description: "Preview naming rules and download renamed file copies in a ZIP. Originals stay untouched.",
+    path: "/tools/batch-rename", category: "Text",
+    aliases: ["batch rename", "rename files", "批次重新命名", "批次改名", "檔案改名"],
+    keywords: ["file", "rename", "zip", "sequence", "附件", "命名", "序號"],
+  },
 ];
 
 export const TOOL_RELATIONSHIPS: Record<string, string[]> = {
@@ -597,6 +655,8 @@ export const TOOL_RELATIONSHIPS: Record<string, string[]> = {
   "base64": ["json-formatter", "url-encoder", "hash", "uuid"],
   "url-encoder": ["base64", "url-parser", "unix-timestamp", "json-formatter"],
   "unix-timestamp": ["uuid", "url-encoder", "json-formatter", "hash"],
+  "local-time-converter": ["unix-timestamp", "cron-builder", "url-encoder", "uuid"],
+  "emoji-picker": ["html-encoder", "base64", "url-encoder", "word-counter"],
 };
 
 export const TOOLS_BY_CATEGORY = FILE_TOOLS.reduce(
@@ -608,5 +668,5 @@ export const TOOLS_BY_CATEGORY = FILE_TOOLS.reduce(
     acc[key].push(tool);
     return acc;
   },
-  {} as Record<ToolDefinition["category"], ToolDefinition[]>
+  Object.fromEntries(TOOL_CATEGORY_ORDER.map(category => [category, [] as ToolDefinition[]])) as Record<ToolDefinition["category"], ToolDefinition[]>
 );

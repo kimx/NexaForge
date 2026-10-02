@@ -21,6 +21,9 @@ describe("FindReplacePage", () => {
     renderWithProviders(<FindReplacePage />, { locale: "zh-TW" });
 
     expect(screen.getByRole("heading", { level: 3, name: "搜尋條件" })).toBeVisible();
+    expect(screen.getByLabelText("文字")).toBeVisible();
+    expect(screen.getByLabelText("尋找")).toBeVisible();
+    expect(screen.getByLabelText("取代為")).toBeVisible();
     expect(screen.queryByRole("heading", { level: 3, name: "正規表達式" })).not.toBeInTheDocument();
     fireEvent.click(screen.getByLabelText("使用正規表達式"));
     expect(screen.getByRole("heading", { level: 3, name: "正規表達式" })).toBeVisible();

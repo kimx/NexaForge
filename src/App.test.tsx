@@ -42,6 +42,7 @@ const ROUTE_HEADINGS: Record<string, string> = {
   "/developer/sql-formatter": "SQL Formatter",
   "/developer/cron-builder": "Cron Expression Builder",
   "/developer/unix-timestamp": "Unix Timestamp Converter",
+  "/developer/local-time": "Local Time Converter",
   "/developer/url-parser": "URL Parser",
   "/developer/url-encode-decode": "URL Encoder / Decoder",
   "/developer/curl-to-code": "cURL to Code",
@@ -124,6 +125,27 @@ describe("App routes", () => {
   it("publishes canonical and English Regex Tester routes for indexing", () => {
     expect(BASE_INDEXABLE_ROUTES).toContain("/developer/regex-tester");
     expect(INDEXABLE_ROUTES).toContain("/en/developer/regex-tester");
+  });
+
+  it("renders the English Emoji Picker route as a working tool", async () => {
+    render(
+      <MemoryRouter
+        initialEntries={["/en/tools/emoji-picker"]}
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+      >
+        <LanguageProvider initialLocale="en">
+          <App />
+        </LanguageProvider>
+      </MemoryRouter>
+    );
+
+    expect(
+      await screen.findByRole("heading", {
+        level: 1,
+        name: "Emoji Picker & Unicode Tool",
+      }, { timeout: 5_000 })
+    ).toBeVisible();
+    expect(screen.getByRole("searchbox", { name: "Search emoji" })).toBeVisible();
   });
 
   it("publishes every QR and barcode route in both locales", () => {

@@ -1,0 +1,54 @@
+{
+  "base": "http://127.0.0.1:4187",
+  "checkedAt": "2026-09-12T07:41:10.784Z",
+  "results": [
+    {
+      "name": "en-desktop",
+      "recent": [
+        "uuid",
+        "hash",
+        "text-cleaner",
+        "image-compress"
+      ],
+      "savedQuality": "63",
+      "errors": []
+    },
+    {
+      "name": "en-mobile",
+      "recent": [
+        "uuid",
+        "hash",
+        "text-cleaner",
+        "image-compress"
+      ],
+      "savedQuality": "63",
+      "errors": [
+        "Minified React error #421; visit https://reactjs.org/docs/error-decoder.html?invariant=421 for the full message or use the non-minified dev environment for full errors and additional helpful warnings."
+      ]
+    },
+    {
+      "name": "zh-desktop",
+      "recent": [
+        "uuid",
+        "hash",
+        "text-cleaner",
+        "image-compress"
+      ],
+      "savedQuality": "63",
+      "errors": []
+    },
+    {
+      "name": "zh-mobile",
+      "recent": [
+        "uuid",
+        "hash",
+        "text-cleaner",
+        "image-compress"
+      ],
+      "savedQuality": "63",
+      "errors": [
+        "Minified React error #421; visit https://reactjs.org/docs/error-decoder.html?invariant=421 for the full message or use the non-minified dev environment for full errors and additional helpful warnings."
+      ]
+    }
+  ]
+}

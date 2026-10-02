@@ -25,6 +25,9 @@ NexaForge 將常見工具集中到一個站點，從圖片到 PDF、從 JSON 到
 ## 核心功能
 
 ### 圖片工具
+- **圖片拼貼與合成長圖**：將最多 20 張照片或截圖依指定順序拼成直向長圖、橫向排列或網格，支援背景、間距、比例保留與 JPG / PNG 下載
+- **圖片轉文字（OCR）**：在瀏覽器 worker 辨識繁中與英文，可複製或下載 UTF-8 文字；首次使用需下載語言模型，圖片不會上傳
+- **手機文件掃描**：手機拍照或選取文件照片，手動調整四角進行透視校正，支援彩色、灰階與黑白輸出及 JPG / PDF 下載
 - **Image Resize / Compress**：最多 20 張圖片批次調整尺寸或壓縮，支援單檔與 ZIP 下載
 - **Image Converter**：轉換 JPG / PNG / WebP / AVIF，另有 HEIC / HEIF → JPG / PNG
 - **Image Crop**：矩形、圓形、預設比例與自訂形狀裁切
@@ -38,6 +41,7 @@ NexaForge 將常見工具集中到一個站點，從圖片到 PDF、從 JSON 到
 - **Image Watermark**：批次加入文字或 Logo 浮水印，支援即時預覽、定位、單檔與 ZIP 下載
 
 ### PDF 工具
+- **PDF 壓縮**：保留文字重寫，或選擇 JPEG 頁面壓縮並調整品質與解析度；比較實際大小，未縮小時保留原檔。JPEG 模式不保留可搜尋文字、連結、表單與簽章
 - **PDF Merge**：合併多份 PDF
 - **PDF Split**：依頁碼切分 PDF
 - **PDF Rotate**：旋轉頁面方向
@@ -52,6 +56,8 @@ NexaForge 將常見工具集中到一個站點，從圖片到 PDF、從 JSON 到
 - **XML Formatter**：驗證、格式化與壓縮 XML
 
 ### 文字工具
+- **批次重新命名**：最多 200 個檔案，預覽前後綴、文字取代、序號與檔名衝突，下載內容不變的改名 ZIP 副本
+- **清單清理範本**：一次輸入名單，檢查清理 → 去重 → 排序規則後執行；逐步預覽結果，並將規則儲存為個人範本
 - **Word Counter**：統計文字、字元與行數
 - **Case Converter**：快速轉換大小寫樣式
 - **Remove Duplicate Lines**：移除重複行並保留首次出現
@@ -84,6 +90,12 @@ NexaForge 將常見工具集中到一個站點，從圖片到 PDF、從 JSON 到
 - 部署導向：可直接部署到 Vercel / Netlify / Azure Static Web Apps 等靜態平台
 - 設計原則：輕量、快速、低風險、可離線使用
 
+### 個人化工具入口
+
+首頁與工具頁可釘選常用工具；從側欄、相關工具或直接網址進入，也會更新最近使用的 4 項工具。圖片壓縮會記住格式與品質，文字清理會記住核取選項；各頁可重設選項，首頁「個人設定」可分別清除最近使用、釘選與已儲存選項。
+
+這些設定只保存在目前瀏覽器，不包含檔案或輸入內容。清單範本另保存名稱、步驟與規則，可在清單清理頁新增、重新命名或刪除；首頁清除個人設定不會刪除清單範本、QR 設定或語言偏好。
+
 ## 立即體驗
 
 ```bash
@@ -94,6 +106,7 @@ npm run dev
 - 本機預設網址：`http://localhost:5173`
 - 打包：`npm run build`
 - 測試：`npm run test`
+- OCR 引擎與 worker 資產會在 install、dev、build 時自動複製至 `public/ocr/`；首次辨識時從 `tessdata.projectnaptha.com` 下載所選語言模型。檔案內容不會送到該主機。此功能需要支援 worker、`createImageBitmap` 與 `OffscreenCanvas` 的新版瀏覽器。
 - 預覽建置結果：`npm run preview -- --host 127.0.0.1 --port 4173 --strictPort`
 
 ### SEO 靜態輸出

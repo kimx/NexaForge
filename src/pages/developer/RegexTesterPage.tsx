@@ -304,7 +304,7 @@ export function RegexTesterPage(): JSX.Element {
         ),
         howItWorks,
         faq,
-        nextActions: <TextWorkflowLinks tools={[{ label: "Find & Replace", path: "/text/find-replace" }]} />,
+        nextActions: <TextWorkflowLinks tools={[{ toolId: "find-replace" }]} />,
         relatedTools: getRelatedTools("regex-tester"),
       }}
     />

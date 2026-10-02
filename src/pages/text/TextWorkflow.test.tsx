@@ -55,6 +55,19 @@ beforeEach(() => {
 afterEach(() => { cleanup(); vi.restoreAllMocks(); });
 
 describe("Text workflow", () => {
+  it("opens list templates and explicitly imports the workflow original without putting content in the URL", async () => {
+    renderWorkflow();
+    await cleanEnglish();
+    fireEvent.click(within(screen.getByRole("main")).getByRole("link", { name: "List Cleanup" }));
+    expect(await screen.findByLabelText("Original list")).toHaveValue("");
+    fireEvent.click(screen.getByRole("button", { name: "Use original text from the current workflow" }));
+    expect(screen.getByLabelText("Original list")).toHaveValue(SOURCE);
+    expect(screen.queryByLabelText("Final list")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Run cleanup" }));
+    expect(screen.getByLabelText("Final list")).toHaveValue("apple\npear");
+    expect(screen.getByTestId("location")).toHaveTextContent(JSON.stringify({ path: "/en/text/list-cleanup", search: "", hash: "", state: null }));
+  });
+
   it.each(["en", "zh-TW"] as const)("completes cleanup, deduplication and sorting without persisting content (%s)", async (locale) => {
     const isEnglish = locale === "en";
     const localWrites = vi.spyOn(Storage.prototype, "setItem");
@@ -140,7 +153,7 @@ describe("Text workflow", () => {
     expect(screen.queryByRole("button", { name: "Download .txt" })).not.toBeInTheDocument();
   });
 
-  it("clears all steps, options, original input and a pending transfer", async () => {
+  it("clears all step content, original input and a pending transfer while keeping saved cleaner rules", async () => {
     renderWorkflow("/en/text/sort-lines");
     fireEvent.change(await screen.findByLabelText("Enter lines to sort"), { target: { value: "draft" } });
     fireEvent.change(screen.getByLabelText("Sort direction"), { target: { value: "desc" } });
@@ -160,7 +173,7 @@ describe("Text workflow", () => {
     expect(screen.getByLabelText("Sort direction")).toHaveValue("asc");
     fireEvent.click(screen.getByRole("button", { name: "Open text-cleaner" }));
     expect(await screen.findByLabelText("Input text")).toHaveValue("");
-    expect(screen.getByLabelText("Trim each line")).not.toBeChecked();
+    expect(screen.getByLabelText("Trim each line")).toBeChecked();
     expect(screen.queryByLabelText("Cleaned text")).not.toBeInTheDocument();
   });
 

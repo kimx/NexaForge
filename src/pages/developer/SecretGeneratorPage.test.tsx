@@ -4,8 +4,12 @@ import * as secretService from "../../services/security/secretService";
 import { renderWithProviders } from "../../test/renderWithProviders";
 import { SecretGeneratorPage } from "./SecretGeneratorPage";
 
-const { trackEvent } = vi.hoisted(() => ({ trackEvent: vi.fn() }));
-vi.mock("../../utils/analytics", () => ({ trackEvent }));
+const { isAnalyticsEnabled, setAnalyticsEnabled, trackEvent } = vi.hoisted(() => ({
+  isAnalyticsEnabled: vi.fn(() => true),
+  setAnalyticsEnabled: vi.fn(),
+  trackEvent: vi.fn(),
+}));
+vi.mock("../../utils/analytics", () => ({ isAnalyticsEnabled, setAnalyticsEnabled, trackEvent }));
 
 afterEach(() => {
   vi.restoreAllMocks();

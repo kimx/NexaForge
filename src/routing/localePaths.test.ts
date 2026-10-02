@@ -40,5 +40,11 @@ describe("locale path helpers", () => {
     );
     expect(localizePath("/", "en")).toBe("/en");
     expect(localizePath("/", "zh-TW")).toBe("/");
+    expect(localizePath("/tools/emoji-picker", "en")).toBe(
+      "/en/tools/emoji-picker"
+    );
+    expect(localizePath("/en/tools/emoji-picker", "zh-TW")).toBe(
+      "/tools/emoji-picker"
+    );
   });
 });

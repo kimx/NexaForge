@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { FILE_TOOLS } from "../data/tools";
+import { TOOL_CATEGORY_ORDER, getToolVisual } from "../data/toolVisuals";
 import type { ToolDefinition, ToolMeta } from "../types/tool";
 import { useSeo } from "../hooks/useSeo";
 import {
@@ -11,60 +12,41 @@ import {
 import { AdSlot } from "../components/AdSlot";
 import { localizePath } from "../routing/localePaths";
 import { trackEvent } from "../utils/analytics";
+import { usePersonalization } from "../hooks/usePersonalization";
+import { clearRecentTools, rememberTool } from "../services/personalization";
+import { usePersonalizationCopy } from "../i18n/personalization";
+import { PinToolButton } from "../components/PinToolButton";
+import { PersonalSettings } from "../components/PersonalSettings";
 
-const categoryOrder: ToolDefinition["category"][] = [
-  "Image",
-  "PDF",
-  "Data",
-  "Developer",
-  "Text",
-  "QR & Barcode",
-];
+type HomeFilter = "All" | ToolDefinition["category"];
+const EVERYDAY_TOOL_IDS = new Set(["pdf-compress", "image-collage", "image-ocr", "document-scan", "batch-rename"]);
 
-const FEATURED_TOOL_IDS = [
-  "image-resize",
-  "image-compress",
-  "image-convert",
-  "pdf-merge",
-  "pdf-split",
-  "csv-viewer",
-  "word-counter",
-  "qr-code",
+const TASK_ENTRY_DEFINITIONS = [
+  {
+    id: "document-delivery",
+    toolId: "image-to-pdf",
+    titleKey: "home.task.documentDelivery.title",
+    descriptionKey: "home.task.documentDelivery.description",
+  },
+  {
+    id: "developer-data",
+    toolId: "json-formatter",
+    titleKey: "home.task.developerData.title",
+    descriptionKey: "home.task.developerData.description",
+  },
+  {
+    id: "image-compression",
+    toolId: "image-compress",
+    titleKey: "home.task.imageCompression.title",
+    descriptionKey: "home.task.imageCompression.description",
+  },
+  {
+    id: "list-cleanup",
+    toolId: "list-cleanup",
+    titleKey: "home.task.listCleanup.title",
+    descriptionKey: "home.task.listCleanup.description",
+  },
 ] as const;
-
-const FEATURED_TOOLS = FEATURED_TOOL_IDS
-  .map((id) => FILE_TOOLS.find((tool) => tool.id === id))
-  .filter((tool): tool is ToolDefinition => Boolean(tool));
-
-const TOOL_VISUALS: Record<string, { label: string; tone: string }> = {
-  "image-resize": { label: "IMG", tone: "blue" },
-  "image-compress": { label: "↘", tone: "mint" },
-  "image-convert": { label: "IMG", tone: "sky" },
-  "image-exif-viewer": { label: "EXIF", tone: "amber" },
-  "image-remove-exif": { label: "META", tone: "violet" },
-  "pdf-merge": { label: "PDF", tone: "red" },
-  "pdf-split": { label: "✂", tone: "violet" },
-  "pdf-rotate": { label: "PDF", tone: "red" },
-  "json-formatter": { label: "{}", tone: "blue" },
-  "csv-viewer": { label: "CSV", tone: "mint" },
-  "csv-to-json": { label: "CSV", tone: "mint" },
-  "json-to-csv": { label: "{}", tone: "blue" },
-  base64: { label: "64", tone: "amber" },
-  "word-counter": { label: "TXT", tone: "mint" },
-  "case-converter": { label: "Aa", tone: "amber" },
-  "remove-duplicate-lines": { label: "≡", tone: "violet" },
-  "sort-lines": { label: "AZ", tone: "sky" },
-  "markdown-previewer": { label: "MD", tone: "sky" },
-  hash: { label: "#", tone: "violet" },
-  uuid: { label: "ID", tone: "sky" },
-  "jwt-key": { label: "KEY", tone: "violet" },
-  "jwt-decoder": { label: "JWT", tone: "blue" },
-  "url-encoder": { label: "URL", tone: "sky" },
-  "unix-timestamp": { label: "TIME", tone: "mint" },
-  "json-yaml": { label: "YAML", tone: "amber" },
-  "json-diff": { label: "DIFF", tone: "violet" },
-  "qr-code": { label: "QR", tone: "blue" },
-};
 
 function searchMatchScore(values: string[], query: string): number {
   return values.reduce((best, value) => {
@@ -76,10 +58,10 @@ function searchMatchScore(values: string[], query: string): number {
   }, 0);
 }
 
-function ToolCard({ tool, onOpen, className = "" }: { tool: ToolDefinition; onOpen?: (toolId: string) => void; className?: string }): JSX.Element {
+function ToolCard({ tool, onOpen, className = "", showCategory = false }: { tool: ToolDefinition; onOpen?: (toolId: string) => void; className?: string; showCategory?: boolean }): JSX.Element {
   const { t, locale } = useLanguage();
   const localToolMeta = useLocalizedToolMeta();
-  const visual = TOOL_VISUALS[tool.id] ?? { label: "FILE", tone: "blue" };
+  const visual = getToolVisual(tool);
   const localizedTitle = localToolMeta(tool.id, "title");
 
   return (
@@ -93,9 +75,11 @@ function ToolCard({ tool, onOpen, className = "" }: { tool: ToolDefinition; onOp
         </span>
         <div>
           <h3>{localizedTitle}</h3>
+          {showCategory ? <span className="home-tool-card__category">{localizedCategoryLabel(tool.category, t)}</span> : null}
           <p>{localToolMeta(tool.id, "description")}</p>
         </div>
       </div>
+      <div className="home-tool-card__actions">
       <Link
         to={localizePath(tool.path, locale)}
         className="btn secondary home-tool-card__action"
@@ -105,6 +89,8 @@ function ToolCard({ tool, onOpen, className = "" }: { tool: ToolDefinition; onOp
         {t("home.open")}
         <span aria-hidden="true">→</span>
       </Link>
+      <PinToolButton toolId={tool.id} />
+      </div>
     </article>
   );
 }
@@ -112,10 +98,17 @@ function ToolCard({ tool, onOpen, className = "" }: { tool: ToolDefinition; onOp
 export function HomePage(): JSX.Element {
   const { t, locale } = useLanguage();
   const toolMeta = useLocalizedToolMeta();
-  const [keyword, setKeyword] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState<"All" | ToolDefinition["category"]>("All");
-  const [recentToolIds, setRecentToolIds] = useState<string[]>([]);
-  const [recentToolsLoaded, setRecentToolsLoaded] = useState(false);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const savedSearch = (location.state as { homeSearch?: { keyword?: unknown; categoryFilter?: unknown } } | null)?.homeSearch;
+  const [keyword, setKeyword] = useState(() => typeof savedSearch?.keyword === "string" ? savedSearch.keyword : "");
+  const [categoryFilter, setCategoryFilter] = useState<HomeFilter>(() =>
+    savedSearch?.categoryFilter === "All" || TOOL_CATEGORY_ORDER.some((category) => category === savedSearch?.categoryFilter)
+      ? savedSearch?.categoryFilter as HomeFilter
+      : "All"
+  );
+  const { recent: recentToolIds, pinned: pinnedToolIds } = usePersonalization();
+  const personalCopy = usePersonalizationCopy();
   const searchRef = useRef<HTMLInputElement>(null);
   const homeAdSlotId = import.meta.env.VITE_ADSENSE_SLOT_HOME;
   const homeMeta: ToolMeta = {
@@ -126,41 +119,18 @@ export function HomePage(): JSX.Element {
   };
   useSeo(homeMeta);
 
-  useEffect(() => {
-    try {
-      const stored = window.localStorage.getItem("nexaforge-recent-tools");
-      const parsed = stored ? JSON.parse(stored) : [];
-      setRecentToolIds(
-        Array.isArray(parsed)
-          ? parsed.filter((id): id is string => typeof id === "string").slice(0, 4)
-          : []
-      );
-    } catch {
-      setRecentToolIds([]);
-    } finally {
-      setRecentToolsLoaded(true);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!recentToolsLoaded) {
-      return;
-    }
-    try {
-      window.localStorage.setItem("nexaforge-recent-tools", JSON.stringify(recentToolIds));
-    } catch {
-      // Recent tools are best-effort when storage is unavailable.
-    }
-  }, [recentToolIds, recentToolsLoaded]);
+  const updateSearch = (nextKeyword: string, nextCategory: HomeFilter) => {
+    setKeyword(nextKeyword);
+    setCategoryFilter(nextCategory);
+    navigate(`${location.pathname}${location.search}`, {
+      replace: true,
+      state: { ...(location.state && typeof location.state === "object" ? location.state : {}), homeSearch: { keyword: nextKeyword, categoryFilter: nextCategory } },
+    });
+  };
 
   useEffect(() => {
     const handleShortcut = (event: KeyboardEvent) => {
       const target = event.target as HTMLElement | null;
-      if (event.key === "Escape") {
-        setKeyword("");
-        setCategoryFilter("All");
-        return;
-      }
       if (event.key === "/" && !event.metaKey && !event.ctrlKey && !event.altKey && target?.tagName !== "INPUT" && target?.tagName !== "TEXTAREA" && !target?.isContentEditable) {
         event.preventDefault();
         searchRef.current?.focus();
@@ -170,8 +140,13 @@ export function HomePage(): JSX.Element {
     return () => window.removeEventListener("keydown", handleShortcut);
   }, []);
 
-  const rememberTool = (toolId: string) => {
-    setRecentToolIds((current) => [toolId, ...current.filter((id) => id !== toolId)].slice(0, 4));
+  const launchTaskEntry = (taskId: string, toolId: string) => {
+    rememberTool(toolId);
+    trackEvent("task_launch", {
+      taskId,
+      tool: toolId,
+      action: "open",
+    });
   };
 
   const filteredTools = useMemo(() => {
@@ -227,17 +202,26 @@ export function HomePage(): JSX.Element {
     return () => window.clearTimeout(timer);
   }, [categoryFilter, filteredTools.length, keyword]);
 
+  const pinnedTools = useMemo(
+    () => pinnedToolIds
+      .map((id) => FILE_TOOLS.find((tool) => tool.id === id))
+      .filter((tool): tool is ToolDefinition => Boolean(tool)),
+    [pinnedToolIds]
+  );
+  const pinnedToolIdSet = useMemo(() => new Set(pinnedTools.map((tool) => tool.id)), [pinnedTools]);
   const recentTools = useMemo(
-    () => recentToolIds.slice(0, 4).map((id) => FILE_TOOLS.find((tool) => tool.id === id)).filter((tool): tool is ToolDefinition => Boolean(tool)),
-    [recentToolIds]
+    () => recentToolIds
+      .slice(0, 4)
+      .map((id) => FILE_TOOLS.find((tool) => tool.id === id))
+      .filter((tool): tool is ToolDefinition => tool !== undefined && !pinnedToolIdSet.has(tool.id)),
+    [pinnedToolIdSet, recentToolIds]
   );
 
   const keywordActive = keyword.trim().length > 0;
-  const isFilterActive = keyword.trim().length > 0 || categoryFilter !== "All";
-  const recentToolIdSet = useMemo(() => new Set(recentTools.map((tool) => tool.id)), [recentTools]);
-  const displayedTools = isFilterActive
-    ? filteredTools
-    : FEATURED_TOOLS.filter((tool) => !recentToolIdSet.has(tool.id));
+  const isDefaultView = !keywordActive && categoryFilter === "All";
+  const displayedTools = isDefaultView
+    ? [...filteredTools].sort((left, right) => Number(EVERYDAY_TOOL_IDS.has(right.id)) - Number(EVERYDAY_TOOL_IDS.has(left.id)))
+    : filteredTools;
 
   return (
     <div className={`home-page${keywordActive ? " home-page--searching" : ""}`}>
@@ -252,7 +236,6 @@ export function HomePage(): JSX.Element {
               {!keywordActive ? (
                 <>
                   <p>{t("home.subtitle")}</p>
-                  <p className="home-hero__positioning">{t("home.positioning")}</p>
                 </>
               ) : null}
               <div className="home-hero__search">
@@ -265,16 +248,27 @@ export function HomePage(): JSX.Element {
                       ref={searchRef}
                       value={keyword}
                       placeholder={t("home.searchPlaceholder")}
-                      onChange={(event) => setKeyword(event.target.value)}
+                      onChange={(event) => updateSearch(event.target.value, categoryFilter)}
+                      onKeyDown={(event) => { if (event.key === "Escape" && keyword) { event.stopPropagation(); updateSearch("", categoryFilter); } }}
                     />
                   </label>
                   {keyword ? (
-                    <button type="button" className="workspace-search__clear" onClick={() => setKeyword("")} aria-label={t("home.clearSearch")}>
+                    <button type="button" className="workspace-search__clear" onClick={() => { updateSearch("", categoryFilter); searchRef.current?.focus(); }} aria-label={t("home.clearSearch")}>
                       ×
                     </button>
                   ) : null}
                 </div>
               </div>
+              {!keywordActive ? (
+                <nav className="home-quick-actions" data-testid="task-entries" aria-label={t("home.taskEntries")}>
+                  <span>{t("home.taskEntries")}</span>
+                  {TASK_ENTRY_DEFINITIONS.map((task) => {
+                    const tool = FILE_TOOLS.find((candidate) => candidate.id === task.toolId);
+                    return tool ? <Link key={task.id} to={localizePath(tool.path, locale)} aria-label={t("home.openNamed", { tool: toolMeta(tool.id, "title") })} onClick={() => launchTaskEntry(task.id, tool.id)}>{t(task.titleKey)}</Link> : null;
+                  })}
+                </nav>
+              ) : null}
+              {!keywordActive ? <p className="home-hero__positioning">{t("home.positioning")}</p> : null}
               {!keywordActive ? (
                 <div className="home-hero__proof" aria-label={t("home.proofLabel")}>
                   <span>{t("home.proof.local")}</span>
@@ -285,39 +279,22 @@ export function HomePage(): JSX.Element {
             </div>
           </section>
 
-          {!keywordActive ? (
-            <nav className="home-discovery" aria-label={t("home.discoveryLabel")}>
-              <span className="home-discovery__label">{t("home.discoveryLabel")}</span>
-              <div className="home-discovery__links">
-                <Link to={localizePath("/image/resize", locale)}>{t("home.imagePdfTools")}</Link>
-                <Link to={localizePath("/data/json-formatter", locale)}>{t("home.dataTools")}</Link>
-                <Link to={localizePath("/developer/regex-tester", locale)}>{t("home.developerTools")}</Link>
+          {isDefaultView && pinnedTools.length > 0 ? (
+            <section className="workspace-section" data-testid="pinned-tools" aria-labelledby="pinned-tools-title">
+              <div className="workspace-section__heading"><h2 id="pinned-tools-title">{personalCopy.pinned}</h2></div>
+              <div className="tool-grid home-tool-grid">
+                {pinnedTools.map((tool) => <ToolCard key={tool.id} tool={tool} onOpen={rememberTool} />)}
               </div>
-            </nav>
+            </section>
           ) : null}
 
-          <div className="finder-filters" aria-label={t("home.categoryFilterLabel")}>
-            <span className="finder-filters__label">{t("home.filterBy")}</span>
-            {(["All", ...categoryOrder] as const).map((category) => (
-              <button
-                type="button"
-                key={category}
-                className={`finder-filter${categoryFilter === category ? " finder-filter--active" : ""}`}
-                onClick={() => setCategoryFilter(category)}
-                aria-pressed={categoryFilter === category}
-              >
-                {category === "All" ? t("home.categories.all") : localizedCategoryLabel(category, t)}
-              </button>
-            ))}
-          </div>
-
-          {!isFilterActive && recentTools.length > 0 ? (
+          {isDefaultView && recentTools.length > 0 ? (
             <div className="workspace-section recent-tools-section" data-testid="recent-tools">
               <div className="workspace-section__heading">
                 <h2>{t("home.recentTools")}</h2>
                 <div className="recent-tools-section__meta">
                   <span>{t("home.recentToolsCount", { count: recentTools.length })}</span>
-                  <button type="button" className="text-button" onClick={() => setRecentToolIds([])}>
+                  <button type="button" className="text-button" onClick={clearRecentTools}>
                     {t("home.clearRecentTools")}
                   </button>
                 </div>
@@ -328,30 +305,42 @@ export function HomePage(): JSX.Element {
             </div>
           ) : null}
 
+          <div className="finder-filters" aria-label={t("home.categoryFilterLabel")}>
+            <span className="finder-filters__label">{t("home.filterBy")}</span>
+            {(["All", ...TOOL_CATEGORY_ORDER] as const).map((category) => (
+              <button type="button" key={category}
+                className={`finder-filter${categoryFilter === category ? " finder-filter--active" : ""}`}
+                onClick={() => updateSearch(keyword, category)} aria-pressed={categoryFilter === category}>
+                {category === "All" ? t("home.categories.all") : localizedCategoryLabel(category, t)}
+              </button>
+            ))}
+          </div>
+
           <div
             className="workspace-section"
-            id="popular-tools"
-            data-testid={!isFilterActive ? "featured-tools" : undefined}
+            id="featured-tools"
+            data-testid={isDefaultView ? "featured-tools" : undefined}
           >
             <div className="workspace-section__heading">
-              <h2>{t(isFilterActive ? "home.searchResults" : "home.popular")}</h2>
-              <span>{t("sidebar.resultCount", { count: displayedTools.length })}</span>
+              <h2>{t(keywordActive ? "home.searchResults" : "home.allTools")}</h2>
+              <span role={!isDefaultView ? "status" : undefined} aria-label={!isDefaultView ? t("home.searchResultCount") : undefined} aria-live={!isDefaultView ? "polite" : undefined} aria-atomic={!isDefaultView ? "true" : undefined}>{t("sidebar.resultCount", { count: displayedTools.length })}</span>
             </div>
             {displayedTools.length > 0 ? (
               <div className="tool-grid home-tool-grid">
-                {displayedTools.map((tool) => <ToolCard key={tool.id} tool={tool} onOpen={rememberTool} />)}
+                {displayedTools.map((tool) => <ToolCard key={tool.id} tool={tool} onOpen={rememberTool} showCategory={!isDefaultView} />)}
               </div>
             ) : (
               <div className="finder-empty" role="status">
                 <strong>{t("home.noResults")}</strong>
                 <p>{t("home.noResultsHint")}</p>
-                <button type="button" className="btn secondary" onClick={() => { setKeyword(""); setCategoryFilter("All"); }}>
+                <button type="button" className="btn secondary" onClick={() => { updateSearch("", "All"); searchRef.current?.focus(); }}>
                   {t("home.clearFilters")}
                 </button>
               </div>
             )}
           </div>
 
+      <PersonalSettings />
       <AdSlot position="home" adSlotId={homeAdSlotId} />
     </div>
   );

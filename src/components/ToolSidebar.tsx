@@ -9,73 +9,13 @@ import {
 } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { FILE_TOOLS } from "../data/tools";
+import { CATEGORY_VISUALS, TOOL_CATEGORY_ORDER, getToolVisual, type ToolSidebarVisualIcon } from "../data/toolVisuals";
 import type { ToolDefinition } from "../types/tool";
 import { localizedCategoryLabel, useLanguage, useLocalizedToolMeta } from "../context/LanguageContext";
 import { localizePath, stripLocalePrefix } from "../routing/localePaths";
 import { findSeoLanding } from "../seo/landingPages";
 
-const categoryOrder: ToolDefinition["category"][] = [
-  "Data",
-  "Developer",
-  "Image",
-  "PDF",
-  "QR & Barcode",
-  "Text",
-];
-
-type SidebarIconName =
-  | "chevron"
-  | "close"
-  | "data"
-  | "developer"
-  | "github"
-  | "home"
-  | "image"
-  | "pdf"
-  | "qr"
-  | "search"
-  | "text";
-
-const CATEGORY_ICONS: Record<ToolDefinition["category"], SidebarIconName> = {
-  Image: "image",
-  PDF: "pdf",
-  Data: "data",
-  Text: "text",
-  Developer: "developer",
-  "QR & Barcode": "qr",
-};
-
-function getToolIcon(toolId: string): SidebarIconName {
-  if (toolId === "home") {
-    return "home";
-  }
-
-  if (toolId.startsWith("image-") || ["heic-converter", "svg-optimizer", "favicon-generator", "social-resizer"].includes(toolId)) {
-    return "image";
-  }
-
-  if (toolId.startsWith("pdf-")) {
-    return "pdf";
-  }
-
-  if (toolId.startsWith("json") || toolId.startsWith("csv")) {
-    return "data";
-  }
-
-  if (toolId === "base64" || toolId === "hash" || toolId === "uuid" || toolId === "text-diff" || toolId === "markdown-previewer" || toolId === "word-counter" || toolId === "case-converter" || toolId === "remove-duplicate-lines" || toolId === "sort-lines") {
-    return "text";
-  }
-
-  if (toolId.startsWith("qr-") || toolId === "barcode-generator" || toolId === "vcard-qr" || toolId === "wifi-qr") {
-    return "qr";
-  }
-
-  if (toolId.startsWith("jwt-")) {
-    return "developer";
-  }
-
-  return "data";
-}
+type SidebarIconName = ToolSidebarVisualIcon | "chevron" | "close" | "github" | "home" | "search";
 
 function SidebarIcon({ name }: { name: SidebarIconName }): JSX.Element {
   const paths: Record<SidebarIconName, JSX.Element> = {
@@ -235,7 +175,7 @@ export function ToolSidebar({
   }, [keywordNormalized, localToolMeta]);
 
   const groupedFilteredTools = useMemo(() => {
-    return categoryOrder.reduce(
+    return TOOL_CATEGORY_ORDER.reduce(
       (acc, category) => {
         const tools = filteredTools.filter((tool) => tool.category === category);
         if (tools.length > 0) {
@@ -380,7 +320,7 @@ export function ToolSidebar({
         {!keywordNormalized && (
           <nav className="tool-sidebar__categories" aria-label={t("sidebar.navigation")}>
             <p className="tool-sidebar__section-title">{t("sidebar.categories")}</p>
-            {categoryOrder.map((category) => (
+            {TOOL_CATEGORY_ORDER.map((category) => (
               <div className="tool-sidebar__category" key={category}>
                 <button
                   type="button"
@@ -389,7 +329,7 @@ export function ToolSidebar({
                   aria-controls={`tool-sidebar-category-${category}`}
                   onClick={() => toggleCategory(category)}
                 >
-                  <span className="tool-sidebar__icon" aria-hidden="true"><SidebarIcon name={CATEGORY_ICONS[category]} /></span>
+                  <span className="tool-sidebar__icon" aria-hidden="true"><SidebarIcon name={CATEGORY_VISUALS[category].sidebarIcon} /></span>
                   <span className="tool-sidebar__label">{localizedCategoryLabel(category, t)} {t("sidebar.toolsSuffix")}</span>
                   <span className="tool-sidebar__category-chevron" aria-hidden="true">
                     <SidebarIcon name="chevron" />
@@ -405,7 +345,7 @@ export function ToolSidebar({
                           className={({ isActive }) => `tool-sidebar__link ${isActive || tool.id === activeTool?.id ? "is-active" : ""}`}
                           onClick={isMobile ? onClose : undefined}
                         >
-                          <span className="tool-sidebar__icon" aria-hidden="true"><SidebarIcon name={getToolIcon(tool.id)} /></span>
+                          <span className="tool-sidebar__icon" aria-hidden="true"><SidebarIcon name={getToolVisual(tool).sidebarIcon} /></span>
                           <span className="tool-sidebar__label">{localToolMeta(tool.id, "title")}</span>
                         </NavLink>
                       </li>
@@ -422,7 +362,7 @@ export function ToolSidebar({
             <section className="tool-sidebar__section" key={category}>
               <h2 className="tool-sidebar__section-title">
                 <span className="tool-sidebar__category-icon" aria-hidden="true">
-                  <SidebarIcon name={CATEGORY_ICONS[category]} />
+                  <SidebarIcon name={CATEGORY_VISUALS[category].sidebarIcon} />
                 </span>
                 <span className="tool-sidebar__label">{localizedCategoryLabel(category, t)}</span>
               </h2>
@@ -436,7 +376,7 @@ export function ToolSidebar({
                       onClick={isMobile ? onClose : undefined}
                     >
                       <span className="tool-sidebar__icon" aria-hidden="true">
-                        <SidebarIcon name={getToolIcon(tool.id)} />
+                        <SidebarIcon name={getToolVisual(tool).sidebarIcon} />
                       </span>
                       <span className="tool-sidebar__label">{localToolMeta(tool.id, "title")}</span>
                     </NavLink>

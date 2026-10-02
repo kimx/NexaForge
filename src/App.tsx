@@ -1,11 +1,10 @@
-import { lazy, Suspense, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { createContext, lazy, Suspense, useCallback, useContext, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from "react";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { Footer } from "./components/Footer";
 import { Header } from "./components/Header";
 import { ToolSidebar } from "./components/ToolSidebar";
 import { useLanguage } from "./context/LanguageContext";
 import { TextWorkflowProvider } from "./context/TextWorkflowContext";
-import { FILE_TOOLS } from "./data/tools";
 import { useMediaQuery } from "./hooks/useMediaQuery";
 import { NotFoundPage } from "./pages/NotFoundPage";
 import {
@@ -65,6 +64,9 @@ const CronBuilderPage = lazy(() =>
 const UnixTimestampPage = lazy(() =>
   import("./pages/developer/UnixTimestampPage").then((module) => ({ default: module.UnixTimestampPage }))
 );
+const LocalTimeConverterPage = lazy(() =>
+  import("./pages/developer/LocalTimeConverterPage").then((module) => ({ default: module.LocalTimeConverterPage }))
+);
 const UrlParserPage = lazy(() =>
   import("./pages/developer/UrlParserPage").then((module) => ({ default: module.UrlParserPage }))
 );
@@ -92,6 +94,11 @@ const JwtKeyGeneratorPage = lazy(() =>
 const ImageCompressPage = lazy(() =>
   import("./pages/image/CompressPage").then((module) => ({ default: module.ImageCompressPage }))
 );
+const PdfCompressPage = lazy(() => import("./pages/pdf/CompressPage").then(module => ({ default: module.PdfCompressPage })));
+const CollagePage = lazy(() => import("./pages/image/CollagePage").then(module => ({ default: module.CollagePage })));
+const OcrPage = lazy(() => import("./pages/image/OcrPage").then(module => ({ default: module.OcrPage })));
+const DocumentScanPage = lazy(() => import("./pages/image/DocumentScanPage").then(module => ({ default: module.DocumentScanPage })));
+const BatchRenamePage = lazy(() => import("./pages/file/BatchRenamePage").then(module => ({ default: module.BatchRenamePage })));
 const ImageConvertPage = lazy(() =>
   import("./pages/image/ConvertPage").then((module) => ({ default: module.ImageConvertPage }))
 );
@@ -179,11 +186,17 @@ const HtmlEncoderPage = lazy(() =>
 const MarkdownPreviewPage = lazy(() =>
   import("./pages/text/MarkdownPreviewPage").then((module) => ({ default: module.MarkdownPreviewPage }))
 );
+const EmojiPickerPage = lazy(() =>
+  import("./pages/text/EmojiPickerPage").then((module) => ({ default: module.EmojiPickerPage }))
+);
 const TextDiffPage = lazy(() =>
   import("./pages/text/TextDiffPage").then((module) => ({ default: module.TextDiffPage }))
 );
 const TextCleanerPage = lazy(() =>
   import("./pages/text/TextCleanerPage").then((module) => ({ default: module.TextCleanerPage }))
+);
+const ListCleanupPage = lazy(() =>
+  import("./pages/text/ListCleanupPage").then((module) => ({ default: module.ListCleanupPage }))
 );
 const FindReplacePage = lazy(() =>
   import("./pages/text/FindReplacePage").then((module) => ({ default: module.FindReplacePage }))
@@ -229,6 +242,11 @@ const SEO_ALIAS_ROUTES: AppRoute[] = SEO_ALIAS_PAGES.map(({ path, toolId }) => {
 
 const APP_ROUTES: AppRoute[] = [
   { path: "/", element: <HomePage /> },
+  { path: "/pdf/compress", element: <PdfCompressPage /> },
+  { path: "/image/collage", element: <CollagePage /> },
+  { path: "/image/ocr", element: <OcrPage /> },
+  { path: "/image/document-scan", element: <DocumentScanPage /> },
+  { path: "/tools/batch-rename", element: <BatchRenamePage /> },
   { path: "/json", element: <JsonHubPage /> },
   { path: "/image/resize", element: <ImageResizePage /> },
   { path: "/image/crop", element: <ImageCropPage /> },
@@ -269,15 +287,18 @@ const APP_ROUTES: AppRoute[] = [
   { path: "/text/remove-duplicate-lines", element: <TextToolsPage kind="remove-duplicate-lines" /> },
   { path: "/text/sort-lines", element: <TextToolsPage kind="sort-lines" /> },
   { path: "/text/text-cleaner", element: <TextCleanerPage /> },
+  { path: "/text/list-cleanup", element: <ListCleanupPage /> },
   { path: "/text/find-replace", element: <FindReplacePage /> },
   { path: "/text/diff", element: <TextDiffPage /> },
   { path: "/text/html-encoder", element: <HtmlEncoderPage /> },
   { path: "/text/markdown", element: <MarkdownPreviewPage /> },
+  { path: "/tools/emoji-picker", element: <EmojiPickerPage /> },
   { path: "/developer/base64", element: <Base64Page /> },
   { path: "/developer/jwt-key", element: <JwtKeyGeneratorPage /> },
   { path: "/developer/jwt-decoder", element: <JwtDecoderPage /> },
   { path: "/developer/url-encoder", element: <DeveloperToolsPage kind="url-encoder" /> },
   { path: "/developer/unix-timestamp", element: <UnixTimestampPage /> },
+  { path: "/developer/local-time", element: <LocalTimeConverterPage /> },
   { path: "/developer/json-yaml", element: <LegacyYamlJsonRedirect /> },
   { path: "/developer/jsonpath-tester", element: <DeveloperJsonPathTesterPage /> },
   { path: "/developer/jsonpath", element: <DeveloperJsonPathTesterPage /> },
@@ -344,25 +365,80 @@ function RouteLoading(): JSX.Element {
   );
 }
 
-function ToolFrame({ children }: { children: JSX.Element }): JSX.Element {
-  const { pathname } = useLocation();
-  const { t } = useLanguage();
-  const basePath = stripLocalePrefix(pathname);
-  const isHome = basePath === "/";
-  const currentTool = FILE_TOOLS.find((tool) => tool.path === basePath);
+interface MobileToolsState {
+  subscribe: (listener: () => void) => () => void;
+  getSnapshot: () => boolean;
+  setOpen: (open: boolean) => void;
+}
+
+function createMobileToolsState(): MobileToolsState {
+  let isOpen = false;
+  const listeners = new Set<() => void>();
+
+  return {
+    subscribe(listener) {
+      listeners.add(listener);
+      return () => listeners.delete(listener);
+    },
+    getSnapshot: () => isOpen,
+    setOpen(open) {
+      if (isOpen === open) {
+        return;
+      }
+      isOpen = open;
+      listeners.forEach((listener) => listener());
+    },
+  };
+}
+
+const MobileToolsStateContext = createContext<MobileToolsState | null>(null);
+
+function useMobileToolsState(): [boolean, (open: boolean) => void] {
+  const state = useContext(MobileToolsStateContext);
+  if (!state) {
+    throw new Error("useMobileToolsState must be used inside ToolFrame");
+  }
+
+  const isOpen = useSyncExternalStore(
+    state.subscribe,
+    state.getSnapshot,
+    () => false
+  );
+  return [isOpen, state.setOpen];
+}
+
+function ResponsiveHeader(): JSX.Element {
   const isNarrowViewport = useMediaQuery("(max-width: 900px)");
-  const [isToolsOpen, setToolsOpen] = useState(false);
-  const toolsButtonRef = useRef<HTMLButtonElement>(null);
+  const [isToolsOpen, setToolsOpen] = useMobileToolsState();
+
+  return (
+    <Header
+      showBrand
+      showToolsButton={isNarrowViewport}
+      toolsOpen={isToolsOpen}
+      onOpenTools={() => setToolsOpen(true)}
+    />
+  );
+}
+
+function ResponsiveSidebar({ isHome }: { isHome: boolean }): JSX.Element {
+  const { pathname } = useLocation();
+  const isNarrowViewport = useMediaQuery("(max-width: 900px)");
+  const [isToolsOpen, setToolsOpen] = useMobileToolsState();
   const closeButtonRef = useRef<HTMLButtonElement>(null);
 
   const closeTools = useCallback(() => {
     setToolsOpen(false);
-    window.setTimeout(() => toolsButtonRef.current?.focus(), 0);
-  }, []);
+    window.setTimeout(() => {
+      document
+        .querySelector<HTMLButtonElement>('[aria-controls="tool-sidebar"]')
+        ?.focus();
+    }, 0);
+  }, [setToolsOpen]);
 
   useEffect(() => {
     setToolsOpen(false);
-  }, [pathname]);
+  }, [pathname, setToolsOpen]);
 
   useEffect(() => {
     if (!isNarrowViewport || !isToolsOpen) {
@@ -379,60 +455,16 @@ function ToolFrame({ children }: { children: JSX.Element }): JSX.Element {
     };
   }, [isNarrowViewport, isToolsOpen]);
 
-  useEffect(() => {
-    if (!currentTool || isHome) {
-      return;
-    }
-    try {
-      const stored = window.localStorage.getItem("nexaforge-recent-tools");
-      const previous = stored ? JSON.parse(stored) : [];
-      const recent = Array.isArray(previous)
-        ? previous.filter((id): id is string => typeof id === "string")
-        : [];
-      window.localStorage.setItem(
-        "nexaforge-recent-tools",
-        JSON.stringify([
-          currentTool.id,
-          ...recent.filter((id) => id !== currentTool.id),
-        ].slice(0, 6))
-      );
-    } catch {
-      // Recent tools are best-effort when storage is unavailable.
-    }
-  }, [currentTool, isHome]);
-
   return (
-    <div className="site-shell">
-      <ScrollToTop />
-      <a className="skip-link" href="#main-content">
-        {t("skip.toMain")}
-      </a>
-      <Header
-        showBrand
-        showToolsButton={isNarrowViewport}
-        toolsOpen={isToolsOpen}
-        onOpenTools={() => setToolsOpen(true)}
-        toolsButtonRef={toolsButtonRef}
+    <>
+      <ToolSidebar
+        isMobile={isNarrowViewport}
+        isOpen={!isNarrowViewport || isToolsOpen}
+        showDesktopBrand={false}
+        showSearch={!isHome || isNarrowViewport}
+        onClose={closeTools}
+        closeButtonRef={closeButtonRef}
       />
-      <div className={isHome ? "home-dashboard" : "site-content"}>
-        <ToolSidebar
-          isMobile={isNarrowViewport}
-          isOpen={!isNarrowViewport || isToolsOpen}
-          showDesktopBrand={false}
-          showSearch={!isHome || isNarrowViewport}
-          onClose={closeTools}
-          closeButtonRef={closeButtonRef}
-        />
-        <main
-          id="main-content"
-          className={isHome ? "home-workspace" : "content-shell"}
-          tabIndex={-1}
-        >
-          <Suspense fallback={<RouteLoading />}>
-            {isHome ? children : <div className="tool-page-shell">{children}</div>}
-          </Suspense>
-        </main>
-      </div>
       {isNarrowViewport && isToolsOpen ? (
         <button
           type="button"
@@ -442,8 +474,43 @@ function ToolFrame({ children }: { children: JSX.Element }): JSX.Element {
           onClick={closeTools}
         />
       ) : null}
-      <Footer />
-    </div>
+    </>
+  );
+}
+
+export function ToolFrame({ children }: { children: JSX.Element }): JSX.Element {
+  const { pathname } = useLocation();
+  const { t } = useLanguage();
+  const isHome = stripLocalePrefix(pathname) === "/";
+  const [mobileToolsState] = useState(createMobileToolsState);
+
+  return (
+    <MobileToolsStateContext.Provider value={mobileToolsState}>
+      <div className="site-shell">
+        <ScrollToTop />
+        <a className="skip-link" href="#main-content">
+          {t("skip.toMain")}
+        </a>
+        <Suspense fallback={null}>
+          <ResponsiveHeader />
+        </Suspense>
+        <div className={isHome ? "home-dashboard" : "site-content"}>
+          <Suspense fallback={null}>
+            <ResponsiveSidebar isHome={isHome} />
+          </Suspense>
+          <main
+            id="main-content"
+            className={isHome ? "home-workspace" : "content-shell"}
+            tabIndex={-1}
+          >
+            <Suspense fallback={<RouteLoading />}>
+              {isHome ? children : <div className="tool-page-shell">{children}</div>}
+            </Suspense>
+          </main>
+        </div>
+        <Footer />
+      </div>
+    </MobileToolsStateContext.Provider>
   );
 }
 

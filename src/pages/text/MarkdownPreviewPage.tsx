@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import type { ToolMeta } from "../../types/tool";
 import { FILE_TOOLS } from "../../data/tools";
@@ -6,11 +6,15 @@ import { ToolPageTemplate } from "../../components/ToolPageTemplate";
 import { getRelatedTools } from "../../utils/toolHelpers";
 import { useSeo } from "../../hooks/useSeo";
 import { useLanguage } from "../../context/LanguageContext";
+import { exportMarkdownPreviewToPdf } from "../../services/text/markdownPdfService";
 
 export function MarkdownPreviewPage(): JSX.Element {
   const { t } = useLanguage();
   const [markdown, setMarkdown] = useState(() => t("tool.markdown-previewer.sample"));
   const [copyError, setCopyError] = useState<string | null>(null);
+  const [exportError, setExportError] = useState<string | null>(null);
+  const [isExporting, setIsExporting] = useState(false);
+  const previewRef = useRef<HTMLElement>(null);
   const tool = FILE_TOOLS.find((item) => item.id === "markdown-previewer");
   const title = t("tool.markdown-previewer.title");
   const description = t("tool.markdown-previewer.description");
@@ -48,6 +52,23 @@ export function MarkdownPreviewPage(): JSX.Element {
   const handleClear = () => {
     setMarkdown("");
     setCopyError(null);
+    setExportError(null);
+  };
+
+  const handleExportPdf = async () => {
+    if (!markdown || !previewRef.current || isExporting) {
+      return;
+    }
+
+    setIsExporting(true);
+    setExportError(null);
+    try {
+      await exportMarkdownPreviewToPdf(previewRef.current);
+    } catch {
+      setExportError(t("tool.markdown-previewer.error.exportPdf"));
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   const handleCopy = async () => {
@@ -80,6 +101,7 @@ export function MarkdownPreviewPage(): JSX.Element {
                 onChange={(event) => {
                   setMarkdown(event.target.value);
                   setCopyError(null);
+                  setExportError(null);
                 }}
               />
             </label>
@@ -97,15 +119,26 @@ export function MarkdownPreviewPage(): JSX.Element {
         result: (
           <>
             {copyError && <p role="alert" className="error">{copyError}</p>}
+            {exportError && <p role="alert" className="error">{exportError}</p>}
             <h3 className="markdown-preview__title">{t("tool.markdown-previewer.label.preview")}</h3>
             {markdown ? (
-              <article className="markdown-preview">
+              <article ref={previewRef} className="markdown-preview">
                 <ReactMarkdown>{markdown}</ReactMarkdown>
               </article>
             ) : (
               <p>{t("tool.markdown-previewer.label.noOutput")}</p>
             )}
             <div className="tool-actions">
+              <button
+                type="button"
+                className="btn primary"
+                onClick={handleExportPdf}
+                disabled={!markdown || isExporting}
+              >
+                {isExporting
+                  ? t("tool.markdown-previewer.button.exportingPdf")
+                  : t("tool.markdown-previewer.button.exportPdf")}
+              </button>
               <button type="button" className="btn secondary" onClick={handleCopy}>
                 {t("tool.markdown-previewer.button.copy")}
               </button>

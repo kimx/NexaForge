@@ -1,0 +1,7 @@
+interface:
+  display_name: "Web Demo Recorder"
+  short_description: "Record website demos with synced editing assets"
+  default_prompt: "Use $web-demo-recorder to explore this website flow, record a clean Playwright demo, and generate synchronized narration and subtitles."
+
+policy:
+  allow_implicit_invocation: true

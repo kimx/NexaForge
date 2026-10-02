@@ -3,6 +3,25 @@ import { SEO_SEARCH_PAGES } from "./landingPages";
 import { buildPageSeo, SITE_ORIGIN } from "./siteMeta";
 
 describe("buildPageSeo", () => {
+  it("publishes bilingual Emoji Picker metadata and structured data", () => {
+    expect(BASE_INDEXABLE_ROUTES).toContain("/tools/emoji-picker");
+    expect(INDEXABLE_ROUTES).toContain("/en/tools/emoji-picker");
+
+    const zh = buildPageSeo("/tools/emoji-picker", "zh-TW");
+    const en = buildPageSeo("/en/tools/emoji-picker", "en");
+
+    expect(zh.title).toBe("Emoji 搜尋與複製工具｜Unicode 編碼查詢 | NexaForge");
+    expect(en.title).toBe("Emoji Picker & Unicode Tool | NexaForge");
+    expect(zh.canonical).toBe(`${SITE_ORIGIN}/tools/emoji-picker`);
+    expect(en.canonical).toBe(`${SITE_ORIGIN}/en/tools/emoji-picker`);
+    expect(en.alternates["zh-Hant"]).toBe(`${SITE_ORIGIN}/tools/emoji-picker`);
+    expect(en.openGraph.url).toBe(en.canonical);
+    expect(en.jsonLd).toEqual(expect.arrayContaining([
+      expect.objectContaining({ "@type": "BreadcrumbList" }),
+      expect.objectContaining({ "@type": "FAQPage" }),
+    ]));
+  });
+
   it("indexes bilingual search-intent routes with matching application and FAQ data", () => {
     expect(BASE_INDEXABLE_ROUTES).toEqual(expect.arrayContaining([
       "/image/jpg-to-webp",

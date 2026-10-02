@@ -45,11 +45,11 @@ describe("copy action placement", () => {
 
   it("places Text Diff actions below its result after comparison", () => {
     renderPage(<TextDiffPage />);
-    fireEvent.change(screen.getByLabelText("Original"), { target: { value: "before" } });
-    fireEvent.change(screen.getByLabelText("Changed"), { target: { value: "after" } });
+    fireEvent.change(screen.getByLabelText("Left text (old)"), { target: { value: "before" } });
+    fireEvent.change(screen.getByLabelText("Right text (new)"), { target: { value: "after" } });
     fireEvent.click(screen.getByRole("button", { name: "Compare" }));
 
-    expectCopyInResult("Copy result");
+    expectCopyInResult("Copy diff");
   });
 
   it("places text-tool copy directly below its result without a Next Actions group", () => {
