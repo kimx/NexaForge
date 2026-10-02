@@ -16,6 +16,10 @@ import { SEO_ALIAS_PAGES } from "./seo/landingPages";
 
 const useIsomorphicLayoutEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
 
+const ImageDeliveryPage = lazy(() => import("./pages/workflows/ImageDeliveryPage").then(module => ({ default: module.ImageDeliveryPage })));
+const DocumentTextPage = lazy(() => import("./pages/workflows/DocumentTextPage").then(module => ({ default: module.DocumentTextPage })));
+const PdfDeliveryPage = lazy(() => import("./pages/workflows/PdfDeliveryPage").then(module => ({ default: module.PdfDeliveryPage })));
+
 const HomePage = lazy(() =>
   import("./pages/HomePage").then((module) => ({ default: module.HomePage }))
 );
@@ -243,6 +247,9 @@ const SEO_ALIAS_ROUTES: AppRoute[] = SEO_ALIAS_PAGES.map(({ path, toolId }) => {
 const APP_ROUTES: AppRoute[] = [
   { path: "/", element: <HomePage /> },
   { path: "/pdf/compress", element: <PdfCompressPage /> },
+  { path: "/workflows/image-delivery", element: <ImageDeliveryPage /> },
+  { path: "/workflows/document-text", element: <DocumentTextPage /> },
+  { path: "/workflows/pdf-delivery", element: <PdfDeliveryPage /> },
   { path: "/image/collage", element: <CollagePage /> },
   { path: "/image/ocr", element: <OcrPage /> },
   { path: "/image/document-scan", element: <DocumentScanPage /> },

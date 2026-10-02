@@ -17,6 +17,7 @@ import { clearRecentTools, rememberTool } from "../services/personalization";
 import { usePersonalizationCopy } from "../i18n/personalization";
 import { PinToolButton } from "../components/PinToolButton";
 import { PersonalSettings } from "../components/PersonalSettings";
+import { WorkflowEntries } from "../components/workflows/WorkflowEntries";
 
 type HomeFilter = "All" | ToolDefinition["category"];
 const EVERYDAY_TOOL_IDS = new Set(["pdf-compress", "image-collage", "image-ocr", "document-scan", "batch-rename"]);
@@ -290,6 +291,8 @@ export function HomePage(): JSX.Element {
                 })}
               </nav>
             ) : null}
+
+          {isDefaultView ? <WorkflowEntries /> : null}
 
           {isDefaultView && pinnedTools.length > 0 ? (
             <section className="workspace-section" data-testid="pinned-tools" aria-labelledby="pinned-tools-title">

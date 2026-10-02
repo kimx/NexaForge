@@ -15,6 +15,7 @@ import { RelatedTools } from "./RelatedTools";
 import { FeedbackPrompt } from "./FeedbackPrompt";
 import { PinToolButton } from "./PinToolButton";
 import { rememberTool } from "../services/personalization";
+import { WorkflowEntries } from "./workflows/WorkflowEntries";
 
 interface ToolPageTemplateProps {
   tool: ToolDefinition;
@@ -148,6 +149,7 @@ export function ToolPageTemplate({
           <span className="tool-page__trust-badge">{t("toolPage.browserOnly")}</span>
         </div>
         <JsonWorkspaceNav />
+        <WorkflowEntries toolId={tool.id} />
 
         <div className={`tool-page__workbench tool-page__workbench--${layout}`}>
           <div className={`tool-page__duo${children.options ? "" : " tool-page__duo--single"}`}>

@@ -1,0 +1,44 @@
+.file-workflow { display: grid; gap: 20px; min-width: 0; }
+.file-workflow__header h1 { margin: 8px 0; font-size: clamp(1.7rem, 4vw, 2.3rem); }
+.file-workflow__header p { color: var(--text-secondary); max-width: 70ch; line-height: 1.65; }
+.file-workflow__privacy { font-size: .875rem; }
+.file-workflow__steps { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.file-workflow__steps button { width: 100%; display: flex; align-items: center; gap: 8px; min-height: 48px; padding: 10px; border: 1px solid var(--border-subtle); border-radius: 8px; background: var(--bg-surface); color: var(--text-secondary); text-align: left; }
+.file-workflow__steps button[aria-current] { border-color: var(--brand-primary); background: var(--bg-accent); color: var(--brand-primary); font-weight: 700; }
+.file-workflow__steps button:disabled { opacity: .55; }
+.file-workflow__steps span { font-variant-numeric: tabular-nums; flex-shrink: 0; }
+.file-workflow__columns { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+.file-workflow__panel { min-width: 0; padding: 24px; background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: 12px; }
+.file-workflow__panel h2 { margin: 0 0 20px; font-size: 1.15rem; }
+.file-workflow fieldset { border: 0; padding: 0; margin: 0; min-width: 0; display: grid; gap: 16px; }
+.file-workflow label { display: grid; gap: 6px; color: var(--text-secondary); }
+.file-workflow label:has(input[type=checkbox]) { display: flex; align-items: center; gap: 8px; }
+.file-workflow input:not([type=checkbox]), .file-workflow select, .file-workflow textarea { width: 100%; min-width: 0; min-height: 42px; border: 1px solid var(--border-strong); border-radius: 6px; padding: 9px; color: var(--text-primary); background: var(--bg-surface); font: inherit; }
+.file-workflow input[type=color] { padding: 4px; }
+.file-workflow textarea { min-height: 240px; line-height: 1.65; resize: vertical; }
+.file-workflow__fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.file-workflow__actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
+.file-workflow figure { margin: 0 0 18px; }
+.file-workflow figure img, .file-workflow figure canvas { max-width: 100%; height: auto; display: block; border: 1px solid var(--border-subtle); }
+.file-workflow figure canvas[hidden] { display: none; }
+.file-workflow figcaption, .file-workflow figure p { overflow-wrap: anywhere; color: var(--text-secondary); font-size: .875rem; margin-top: 8px; }
+.file-workflow progress { width: 100%; margin-bottom: 12px; accent-color: var(--brand-primary); }
+.workflow-file-list { list-style: none; margin: 0; padding: 0; }
+.workflow-file-list li { display: flex; align-items: center; gap: 10px; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border-subtle); }
+.workflow-file-list li > span { min-width: 0; overflow-wrap: anywhere; }
+.workflow-file-list small { display: block; color: var(--text-muted); }
+.workflow-file-list li > div { display: flex; gap: 4px; flex-shrink: 0; }
+.workflow-file-list .btn { min-width: 36px; padding: 6px 10px; }
+.workflow-entries { margin: 20px 0; }
+.workflow-entries h2 { font-size: 1rem; margin-bottom: 12px; }
+.workflow-entries__links { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.workflow-entries__links a { display: grid; gap: 8px; padding: 16px; border: 1px solid var(--border-subtle); border-radius: 8px; background: var(--bg-surface); text-decoration: none; }
+.workflow-entries__links a:hover { border-color: var(--brand-primary); }
+.workflow-entries__links span { font-size: .875rem; color: var(--text-secondary); line-height: 1.6; }
+.file-workflow :is(button, input, select, textarea, a):focus-visible, .workflow-entries a:focus-visible { outline: 3px solid var(--brand-primary); outline-offset: 3px; }
+@media (max-width: 760px) {
+  .file-workflow__columns, .workflow-entries__links { grid-template-columns: minmax(0, 1fr); }
+  .file-workflow__panel { padding: 16px; }
+  .file-workflow__steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 400px) { .file-workflow__fields { grid-template-columns: minmax(0, 1fr); } }

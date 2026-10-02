@@ -83,6 +83,18 @@ NexaForge 將常見工具集中到一個站點，從圖片到 PDF、從 JSON 到
 - **Wi-Fi QR Generator**：將 SSID、安全性與密碼製成 Wi-Fi QR
 - **vCard QR Generator**：建立 vCard 3.0 聯絡人 QR
 
+## 三條完整工作流程
+
+首頁「一次完成整個任務」與相關工具頁提供三個雙語流程入口：
+
+- `/workflows/image-delivery`：圖片縮放 → 文字浮水印 → ZIP 打包 → 下載。支援 JPG、PNG、WebP，最多 20 張、來源總大小 200 MiB；可預覽每張圖片，ZIP 重名檔案會加序號。
+- `/workflows/document-text`：拍攝或選取文件照片 → 四角校正 → OCR → 校對與文字清理 → UTF-8 文字下載或複製。首次 OCR 需下載模型，可取消並重試。
+- `/workflows/pdf-delivery`：依選定順序合併 PDF → 加頁碼 → 壓縮 → 下載。最多 20 份、來源總大小 100 MiB；每階段可檢查第一頁縮圖與頁數。壓縮未縮小時保留加入頁碼的版本；JPEG 模式會移除可選取文字、連結、表單與簽章。
+
+英文路由使用 `/en/workflows/...`。檔案只需在流程開始時選取；步驟可返回檢查，修改上游檔案或設定會清除後續結果。取消或失敗保留已完成的前一步，僅全部圖片處理成功才會開放 ZIP 打包。檔案與文字不會寫入瀏覽器儲存空間，離開或重新整理流程頁即清除。
+
+可選的真實瀏覽器驗證使用 `node scripts/verify-file-workflows.mjs`（需 Playwright）。以 `AUDIT_BASE_URL` 指定本機網址，`AUDIT_OUTPUT` 指定證據目錄，或用 `PLAYWRIGHT_MODULE_PATH` 指向既有 Playwright 套件。
+
 ## 技術特性
 
 - 前端：Vite + React + TypeScript
