@@ -2,6 +2,11 @@ import { PDFDocument } from "pdf-lib";
 import type { PDFPage } from "pdf-lib";
 import { FILE_LIMITS } from "../../config/fileLimits";
 import type { FileProcessResult, ProcessingState } from "../../types/tool";
+import { decryptProtectedPdf, PdfEncryptionError } from "./pdfEncryptionService";
+import {
+  PdfPasswordCancelledError,
+  PdfPasswordPromptUnavailableError,
+} from "./pdfPasswordPrompt";
 import {
   createObjectUrl,
   downloadBlob,
@@ -26,7 +31,11 @@ export type PdfErrorCode =
   | "file-too-large"
   | "invalid-file-type"
   | "invalid-position"
-  | "encrypted-pdf";
+  | "encrypted-pdf"
+  | "unsupported-encryption"
+  | "permission-restricted"
+  | "password-cancelled"
+  | "password-modal-unavailable";
 
 export class PdfToolkitError extends Error {
   readonly code: PdfErrorCode;
@@ -80,6 +89,15 @@ function isPdfHeader(bytes: Uint8Array): boolean {
 function normalizeLoadError(error: unknown): PdfToolkitError {
   if (error instanceof PdfToolkitError) {
     return error;
+  }
+  if (error instanceof PdfEncryptionError) {
+    return createError(error.code, error.message, error);
+  }
+  if (error instanceof PdfPasswordCancelledError) {
+    return createError("password-cancelled", error.message, error);
+  }
+  if (error instanceof PdfPasswordPromptUnavailableError) {
+    return createError("password-modal-unavailable", error.message, error);
   }
 
   const message = error instanceof Error ? error.message : String(error);
@@ -151,6 +169,21 @@ export async function loadPdfDocument(
   source: PdfSource,
   options: PdfLoadOptions = {}
 ): Promise<PDFDocument> {
+  return (await loadPdfData(source, options)).document;
+}
+
+export interface PdfLoadData {
+  document: PDFDocument;
+  bytes: Uint8Array;
+  encrypted: boolean;
+}
+
+const decryptedPdfCache = new WeakMap<Blob, Uint8Array>();
+
+export async function loadPdfData(
+  source: PdfSource,
+  options: PdfLoadOptions = {}
+): Promise<PdfLoadData> {
   if (!(source instanceof Uint8Array) && !(source instanceof ArrayBuffer)) {
     const typeError = validatePdfFileType(source);
     if (typeError) {
@@ -158,12 +191,13 @@ export async function loadPdfDocument(
     }
   }
 
-  let bytes: Uint8Array;
-  try {
-    bytes = await readPdfBytes(source);
-  } catch (error) {
-    throw normalizeLoadError(error);
-  }
+  const cachedBytes = source instanceof Blob ? decryptedPdfCache.get(source) : undefined;
+  let bytes = cachedBytes
+    ? new Uint8Array(cachedBytes)
+    : await readPdfBytes(source).catch((error) => {
+        throw normalizeLoadError(error);
+      });
+  let encrypted = Boolean(cachedBytes);
   if (bytes.length === 0) {
     throw createError("empty-file", "The selected PDF file is empty.");
   }
@@ -175,16 +209,67 @@ export async function loadPdfDocument(
   }
 
   await yieldToBrowser();
+  let document: PDFDocument;
   try {
-    const document = await PDFDocument.load(bytes, {
+    document = await PDFDocument.load(bytes, {
       updateMetadata: options.updateMetadata ?? true,
     });
-    if (document.getPageCount() < 1) {
-      throw createError("empty-pdf", "This PDF does not contain any pages.");
-    }
-    return document;
   } catch (error) {
-    throw normalizeLoadError(error);
+    const loadError = normalizeLoadError(error);
+    if (loadError.code !== "encrypted-pdf") {
+      throw loadError;
+    }
+    try {
+      bytes = await decryptProtectedPdf(
+        bytes,
+        source instanceof Blob && "name" in source && typeof source.name === "string"
+          ? source.name
+          : "PDF"
+      );
+      encrypted = true;
+      document = await PDFDocument.load(bytes, {
+        updateMetadata: options.updateMetadata ?? true,
+      });
+    } catch (decryptError) {
+      throw normalizeLoadError(decryptError);
+    }
+  }
+  if (document.getPageCount() < 1) {
+    throw createError("empty-pdf", "This PDF does not contain any pages.");
+  }
+  if (encrypted && source instanceof Blob) {
+    decryptedPdfCache.set(source, new Uint8Array(bytes));
+  }
+  return { document, bytes, encrypted };
+}
+
+export async function loadPdfBytes(
+  source: PdfSource,
+  options: PdfLoadOptions = {}
+): Promise<Uint8Array> {
+  return (await loadPdfData(source, options)).bytes;
+}
+
+export function getPdfToolkitErrorMessage(
+  error: unknown,
+  translate: (key: string) => string,
+  fallback: string
+): string {
+  const code =
+    error && typeof error === "object" && "code" in error && typeof error.code === "string"
+      ? error.code
+      : "";
+  switch (code) {
+    case "unsupported-encryption":
+      return translate("pdfPassword.error.unsupportedEncryption");
+    case "permission-restricted":
+      return translate("pdfPassword.error.permissionRestricted");
+    case "password-cancelled":
+      return translate("pdfPassword.error.cancelled");
+    case "password-modal-unavailable":
+      return translate("pdfPassword.error.promptUnavailable");
+    default:
+      return fallback;
   }
 }
 

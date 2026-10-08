@@ -14,7 +14,7 @@ import {
   type PdfPageNumberFormat,
   type PdfPageNumberPosition,
 } from "../../services/pdf/pageNumberService";
-import { getPdfPageCount } from "../../services/pdf/pdfService";
+import { createPdfResult, getPdfToolkitErrorMessage, loadPdfData } from "../../services/pdf/pdfToolkit";
 import type { FileProcessResult, ProcessingState, ToolMeta } from "../../types/tool";
 import { trackEvent } from "../../utils/analytics";
 import { getRelatedTools } from "../../utils/toolHelpers";
@@ -44,7 +44,8 @@ export function AddPageNumbersPage(): JSX.Element {
   const [processing, setProcessing] = useState<ProcessingState>("idle");
   const [result, setResult] = useState<FileProcessResult | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const previewUrl = useBlobUrl(file);
+  const [decryptedPreview, setDecryptedPreview] = useState<Blob | null>(null);
+  const previewUrl = useBlobUrl(decryptedPreview ?? file);
 
   const tool = FILE_TOOLS.find((item) => item.id === "pdf-add-page-numbers") ?? FILE_TOOLS[0];
   const title = t("tool.pdf-add-page-numbers.title");
@@ -82,18 +83,23 @@ export function AddPageNumbersPage(): JSX.Element {
 
     setFile(selected);
     setPageCount(null);
+    setDecryptedPreview(null);
     setResult(null);
     setError(null);
     setProcessing("processing");
     trackEvent("workflow_ready", { tool: "pdf-add-page-numbers" });
 
     try {
-      const count = await getPdfPageCount(selected);
+      const loaded = await loadPdfData(selected);
+      const count = loaded.document.getPageCount();
+      if (loaded.encrypted) {
+        setDecryptedPreview(createPdfResult(loaded.bytes, selected.name).blob);
+      }
       setPageCount(count);
       setProcessing("ready");
     } catch (cause) {
       console.error(cause);
-      setError(t("error.processingFailed"));
+      setError(getPdfToolkitErrorMessage(cause, t, t("error.processingFailed")));
       setProcessing("error");
       trackEvent("process_failed", { tool: "pdf-add-page-numbers" });
     }
@@ -129,7 +135,7 @@ export function AddPageNumbersPage(): JSX.Element {
       trackEvent("process_success", { tool: "pdf-add-page-numbers" });
     } catch (cause) {
       console.error(cause);
-      setError(t("error.processingFailed"));
+      setError(getPdfToolkitErrorMessage(cause, t, t("error.processingFailed")));
       setProcessing("error");
       trackEvent("process_failed", { tool: "pdf-add-page-numbers" });
     }

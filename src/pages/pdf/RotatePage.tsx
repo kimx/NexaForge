@@ -6,6 +6,7 @@ import { FileDropzone } from "../../components/FileDropzone";
 import { FileInfo } from "../../components/FileInfo";
 import { DownloadButton } from "../../components/DownloadButton";
 import { rotatePdf } from "../../services/pdf/pdfService";
+import { getPdfToolkitErrorMessage } from "../../services/pdf/pdfToolkit";
 import { getRelatedTools } from "../../utils/toolHelpers";
 import { trackEvent } from "../../utils/analytics";
 import { useSeo } from "../../hooks/useSeo";
@@ -81,7 +82,7 @@ export function PdfRotatePage(): JSX.Element {
       setProcessing("success");
       trackEvent("process_success", { tool: "pdf-rotate" });
     } catch (err) {
-      setError(t("error.processingFailed"));
+      setError(getPdfToolkitErrorMessage(err, t, t("error.processingFailed")));
       setProcessing("error");
       trackEvent("process_failed", { tool: "pdf-rotate" });
       console.error(err);

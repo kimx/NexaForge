@@ -1,7 +1,7 @@
 import { PDFDocument, PDFName, PDFNumber } from "pdf-lib";
 import pdfWorkerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 import type { FileProcessResult } from "../../types/tool";
-import { createPdfResult, loadPdfDocument, PdfToolkitError } from "./pdfToolkit";
+import { createPdfResult, loadPdfData, PdfToolkitError } from "./pdfToolkit";
 
 export const PDF_COMPRESSION_LIMITS = { pages: 200, pagePixels: 16_000_000, totalPixels: 100_000_000, dimension: 8192 } as const;
 
@@ -47,13 +47,12 @@ function jpegBlob(canvas: HTMLCanvasElement, quality: number): Promise<Blob> {
   });
 }
 
-async function rasterize(file: File, original: PDFDocument, options: PdfCompressionOptions): Promise<Uint8Array> {
+async function rasterize(bytes: Uint8Array, original: PDFDocument, options: PdfCompressionOptions): Promise<Uint8Array> {
   const pdfjs = await import("pdfjs-dist");
   checkAbort(options.signal);
   pdfjs.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
-  const data = new Uint8Array(await file.arrayBuffer());
   checkAbort(options.signal);
-  const loadingTask = pdfjs.getDocument({ data });
+  const loadingTask = pdfjs.getDocument({ data: bytes.slice() });
   let destroyPromise: Promise<void> | undefined;
   const destroy = () => destroyPromise ??= Promise.resolve(loadingTask.destroy()).catch(() => {});
   const abortLoading = () => { void destroy(); };
@@ -140,7 +139,7 @@ export async function compressPdf(file: File, options: PdfCompressionOptions): P
     throw new PdfCompressionError("invalid-options", "Use JPEG quality from 10–100% and resolution from 72–300 DPI.");
   }
   try {
-    const source = await loadPdfDocument(file, { updateMetadata: false });
+    const { document: source, bytes: inputBytes } = await loadPdfData(file, { updateMetadata: false });
     checkAbort(options.signal);
     const pages = source.getPageCount();
     if (pages > PDF_COMPRESSION_LIMITS.pages) {
@@ -149,7 +148,7 @@ export async function compressPdf(file: File, options: PdfCompressionOptions): P
     options.onProgress?.(0, pages);
     checkAbort(options.signal);
     const bytes = options.mode === "raster"
-      ? await rasterize(file, source, options)
+      ? await rasterize(inputBytes, source, options)
       : await source.save({ useObjectStreams: true, updateFieldAppearances: false, objectsPerTick: 25 });
     checkAbort(options.signal);
     if (options.mode === "preserve-text") options.onProgress?.(pages, pages);

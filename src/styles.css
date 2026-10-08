@@ -5707,6 +5707,96 @@ button:hover,
   user-select: text;
 }
 
+.pdf-password-backdrop {
+  position: fixed;
+  z-index: 1200;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: var(--space-4);
+  background: rgba(12, 45, 94, 0.56);
+}
+
+.pdf-password-dialog {
+  display: grid;
+  gap: var(--space-3);
+  width: min(32rem, 100%);
+  max-height: calc(100vh - 2rem);
+  overflow: auto;
+  padding: clamp(18px, 3vw, 28px);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  background: var(--bg-surface);
+  box-shadow: var(--shadow-3);
+}
+
+.pdf-password-dialog h2,
+.pdf-password-dialog p {
+  margin: 0;
+}
+
+.pdf-password-dialog__file {
+  overflow-wrap: anywhere;
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+}
+
+.pdf-password-info dl {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+}
+
+.pdf-password-info dl > div {
+  display: grid;
+  grid-template-columns: minmax(8rem, auto) minmax(0, 1fr);
+  gap: var(--space-2);
+}
+
+.pdf-password-info dt {
+  color: var(--text-secondary);
+}
+
+.pdf-password-info dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.pdf-password-dialog form,
+.pdf-password-dialog form > label {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.pdf-password-dialog form > label {
+  color: var(--text-primary);
+  font-weight: var(--font-weight-semibold);
+}
+
+.pdf-password-dialog__input-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--space-2);
+}
+
+.pdf-password-dialog__input-row input {
+  min-width: 0;
+  min-height: var(--touch-target-min);
+}
+
+.pdf-password-dialog__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+
+.pdf-password-dialog__actions .btn,
+.pdf-password-dialog__input-row .btn {
+  min-height: var(--touch-target-min);
+}
+
 @media (max-width: 620px) {
   .emoji-picker__search-row {
     grid-template-columns: minmax(0, 1fr);
@@ -5737,6 +5827,25 @@ button:hover,
 
   .emoji-dialog__field {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .pdf-password-backdrop {
+    align-items: end;
+    padding: 0;
+  }
+
+  .pdf-password-dialog {
+    width: 100%;
+    max-height: 92vh;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  }
+
+  .pdf-password-dialog__input-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .pdf-password-dialog__actions .btn {
+    flex: 1;
   }
 
   .emoji-dialog__field button {

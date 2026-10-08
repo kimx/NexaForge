@@ -219,6 +219,15 @@ export const FILE_TOOLS: ToolDefinition[] = [
     keywords: ["document", "pdf", "metadata", "author", "properties", "privacy"],
   },
   {
+    id: "pdf-remove-password",
+    title: "Remove PDF Password",
+    description: "Unlock a PDF locally and download a copy that opens without a password.",
+    path: "/pdf/remove-password",
+    category: "PDF",
+    aliases: ["unlock pdf", "remove pdf password", "pdf password remover", "decrypt pdf"],
+    keywords: ["document", "pdf", "password", "unlock", "decrypt", "security"],
+  },
+  {
     id: "json-formatter",
     title: "JSON Formatter",
     description: "Format, minify, and validate JSON in seconds.",

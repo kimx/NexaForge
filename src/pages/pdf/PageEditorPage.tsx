@@ -12,7 +12,7 @@ import {
   exportPdfPages,
   type PdfPageItem,
 } from "../../services/pdf/pageEditorService";
-import { getPdfPageCount } from "../../services/pdf/pdfService";
+import { getPdfToolkitErrorMessage, loadPdfData } from "../../services/pdf/pdfToolkit";
 import type { FileProcessResult, ProcessingState, ToolMeta } from "../../types/tool";
 import { trackEvent } from "../../utils/analytics";
 import { downloadBlob } from "../../utils/download";
@@ -184,6 +184,7 @@ export function PdfPageEditorPage({ mode }: { mode: PdfPageEditorMode }): JSX.El
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [range, setRange] = useState("");
   const [rangeError, setRangeError] = useState<string | null>(null);
+  const [sourceBytes, setSourceBytes] = useState<Uint8Array | null>(null);
   const [document, setDocument] = useState<PdfRenderDocument | null>(null);
   const [previewed, setPreviewed] = useState(0);
   const [processing, setProcessing] = useState<ProcessingState>("idle");
@@ -198,7 +199,7 @@ export function PdfPageEditorPage({ mode }: { mode: PdfPageEditorMode }): JSX.El
   };
 
   useEffect(() => {
-    if (!file || pageCount === 0) return;
+    if (!file || pageCount === 0 || !sourceBytes) return;
     let active = true;
     let loadingTask: { promise: Promise<unknown>; destroy(): Promise<void> } | null = null;
     let pdf: PdfRenderDocument | null = null;
@@ -207,7 +208,7 @@ export function PdfPageEditorPage({ mode }: { mode: PdfPageEditorMode }): JSX.El
         const pdfjs = await import("pdfjs-dist");
         const { default: workerUrl } = await import("pdfjs-dist/build/pdf.worker.min.mjs?url");
         pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
-        loadingTask = pdfjs.getDocument({ data: new Uint8Array(await file.arrayBuffer()) });
+        loadingTask = pdfjs.getDocument({ data: sourceBytes.slice() });
         pdf = await loadingTask.promise as unknown as PdfRenderDocument;
         if (active) setDocument(pdf);
       } catch {
@@ -221,7 +222,7 @@ export function PdfPageEditorPage({ mode }: { mode: PdfPageEditorMode }): JSX.El
       void pdf?.destroy();
       void loadingTask?.destroy();
     };
-  }, [file, pageCount]);
+  }, [file, pageCount, sourceBytes]);
 
   const visiblePages = useMemo(
     () => mode === "delete" ? pages : pages,
@@ -267,6 +268,7 @@ export function PdfPageEditorPage({ mode }: { mode: PdfPageEditorMode }): JSX.El
     }
     setFile(source);
     setPageCount(0);
+    setSourceBytes(null);
     setPages([]);
     setSelected(new Set());
     setRange("");
@@ -277,16 +279,17 @@ export function PdfPageEditorPage({ mode }: { mode: PdfPageEditorMode }): JSX.El
     setProgressText(copy.loading);
     setProcessing("processing");
     try {
-      const count = await getPdfPageCount(source);
+      const loaded = await loadPdfData(source);
+      const count = loaded.document.getPageCount();
       if (count < 1) throw new Error("Empty PDF");
+      setSourceBytes(loaded.bytes);
       setPageCount(count);
       setPages(createPdfPageItems(count));
       setProgressText(interpolate(copy.detected, { count }));
       setProcessing("ready");
       trackEvent("workflow_ready", { tool: toolId, resultCount: count });
     } catch (cause) {
-      const message = cause instanceof Error ? cause.message : "";
-      setError(/password|encrypted/i.test(message) ? copy.passwordError : copy.loadError);
+      setError(getPdfToolkitErrorMessage(cause, t, copy.loadError));
       setProcessing("error");
       trackEvent("process_failed", { tool: toolId });
     }
@@ -306,7 +309,7 @@ export function PdfPageEditorPage({ mode }: { mode: PdfPageEditorMode }): JSX.El
   };
 
   const exportPdf = async (): Promise<void> => {
-    if (!file || !canExport) return;
+    if (!file || !sourceBytes || !canExport) return;
     setError(null);
     setProgressText(copy.exporting);
     setProcessing("processing");
@@ -316,13 +319,13 @@ export function PdfPageEditorPage({ mode }: { mode: PdfPageEditorMode }): JSX.El
         delete: "pages-removed.pdf",
         extract: "extracted-pages.pdf",
       };
-      const output = await exportPdfPages(file, exportPages, names[mode]);
+      const output = await exportPdfPages(sourceBytes, exportPages, names[mode]);
       setResult(output);
       downloadBlob(output.blob, output.fileName);
       setProcessing("success");
       trackEvent("process_success", { tool: toolId, resultCount: exportPages.length });
-    } catch {
-      setError(copy.exportError);
+    } catch (cause) {
+      setError(getPdfToolkitErrorMessage(cause, t, copy.exportError));
       setProcessing("error");
       trackEvent("process_failed", { tool: toolId });
     }

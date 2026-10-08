@@ -1,6 +1,7 @@
 import { degrees, PDFDocument } from "pdf-lib";
 import type { FileProcessResult } from "../../types/tool";
 import { createPdfResult, loadPdfDocument } from "./pdfToolkit";
+import type { PdfSource } from "./pdfToolkit";
 
 export interface PdfPageItem {
   id: string;
@@ -18,7 +19,7 @@ export function createPdfPageItems(pageCount: number): PdfPageItem[] {
 }
 
 export async function exportPdfPages(
-  file: File,
+  sourceBytes: PdfSource,
   pages: PdfPageItem[],
   fileName: string
 ): Promise<FileProcessResult> {
@@ -26,7 +27,7 @@ export async function exportPdfPages(
     throw new Error("A PDF must contain at least one page.");
   }
 
-  const source = await loadPdfDocument(file);
+  const source = await loadPdfDocument(sourceBytes);
   const target = await PDFDocument.create();
   const copiedPages = await target.copyPages(
     source,

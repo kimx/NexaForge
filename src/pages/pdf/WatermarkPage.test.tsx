@@ -2,7 +2,8 @@ import { fireEvent, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { renderWithProviders } from "../../test/renderWithProviders";
 import type { FileProcessResult } from "../../types/tool";
-import * as pdfService from "../../services/pdf/pdfService";
+import type { PDFDocument } from "pdf-lib";
+import * as pdfToolkit from "../../services/pdf/pdfToolkit";
 import * as watermarkService from "../../services/pdf/watermarkService";
 import { WatermarkPage } from "./WatermarkPage";
 
@@ -10,9 +11,17 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
+const mockPdfLoader = (pageCount: number): void => {
+  vi.spyOn(pdfToolkit, "loadPdfData").mockResolvedValue({
+    document: { getPageCount: () => pageCount } as unknown as PDFDocument,
+    bytes: new Uint8Array(),
+    encrypted: false,
+  });
+};
+
 describe("PDF watermark page", () => {
   it("shows watermark settings after selecting a PDF", async () => {
-    vi.spyOn(pdfService, "getPdfPageCount").mockResolvedValue(3);
+    mockPdfLoader(3);
     renderWithProviders(<WatermarkPage />, { route: "/pdf/watermark" });
 
     fireEvent.change(screen.getByLabelText(/Drop a PDF file.*click to select/i), {
@@ -29,7 +38,7 @@ describe("PDF watermark page", () => {
   });
 
   it("passes text settings, position, and custom page range to the PDF service", async () => {
-    vi.spyOn(pdfService, "getPdfPageCount").mockResolvedValue(3);
+    mockPdfLoader(3);
     const result: FileProcessResult = {
       blob: new Blob(["%PDF-1.4"], { type: "application/pdf" }),
       fileName: "watermarked.pdf",
@@ -67,7 +76,7 @@ describe("PDF watermark page", () => {
   });
 
   it("requires an image in image mode and forwards PNG settings", async () => {
-    vi.spyOn(pdfService, "getPdfPageCount").mockResolvedValue(1);
+    mockPdfLoader(1);
     const addWatermarkSpy = vi.spyOn(watermarkService, "addWatermarkToPdf").mockResolvedValue({
       blob: new Blob(["%PDF-1.4"], { type: "application/pdf" }),
       fileName: "watermarked.pdf",

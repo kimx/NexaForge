@@ -2,7 +2,7 @@ import { PDFDocument } from "pdf-lib";
 import pdfWorkerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 import type { FileProcessResult } from "../../types/tool";
 import { readFileAsArrayBuffer } from "../file/fileService";
-import { createPdfResult } from "./pdfToolkit";
+import { createPdfResult, loadPdfData } from "./pdfToolkit";
 
 const PDF_MAX_PAGE_DIMENSION = 14_400;
 type PdfImageFormat = "jpeg" | "png" | "webp";
@@ -162,8 +162,9 @@ export async function convertPdfToImages(
 ): Promise<FileProcessResult[]> {
   const pdfjs = await import("pdfjs-dist");
   pdfjs.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
+  const { bytes } = await loadPdfData(file);
   const loadingTask = pdfjs.getDocument({
-    data: new Uint8Array(await readFileAsArrayBuffer(file)),
+    data: bytes.slice(),
   });
   const pdfDocument = await loadingTask.promise;
   try {
