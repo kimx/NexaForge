@@ -16,6 +16,7 @@
     "test": "vitest"
   },
   "dependencies": {
+    "@arshad-shah/qpdf-wasm": "0.1.0",
     "@jsquash/avif": "^2.1.1",
     "@zxing/browser": "^0.2.1",
     "bwip-js": "^4.11.4",
