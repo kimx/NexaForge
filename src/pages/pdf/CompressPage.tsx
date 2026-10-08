@@ -25,6 +25,10 @@ const COPY = {
     attempted: "Attempted output", downloadOriginal: "Download original PDF", download: "Download compressed PDF", clear: "Clear file",
     errors: {
       "encrypted-pdf": "This PDF is password-protected. Export an unlocked copy in your PDF application and try again.",
+      "unsupported-encryption": "This PDF uses an encryption method that this browser does not support.",
+      "permission-restricted": "This PDF has owner-only permission restrictions that this tool does not remove.",
+      "password-cancelled": "PDF processing was cancelled. The source file was not changed.",
+      "password-modal-unavailable": "The PDF password prompt is unavailable. Reload the page and try again.",
       "broken-pdf": "This PDF could not be read or rendered. Export a fresh PDF in its source application and try again.",
       "empty-file": "The PDF is empty. Choose a PDF containing pages.", "empty-pdf": "The PDF has no pages. Choose another document.",
       "file-too-large": "The PDF exceeds 100 MB. Split it into smaller PDFs and try again.", "invalid-file-type": "Choose a PDF file (.pdf).",
@@ -46,6 +50,10 @@ const COPY = {
     attempted: "嘗試產生的檔案", downloadOriginal: "下載原始 PDF", download: "下載壓縮 PDF", clear: "清除檔案",
     errors: {
       "encrypted-pdf": "此 PDF 有密碼保護。請在 PDF 應用程式匯出未加密的副本後重試。",
+      "unsupported-encryption": "此 PDF 使用目前瀏覽器不支援的加密方式。",
+      "permission-restricted": "此 PDF 有本工具不會移除的擁有者權限限制。",
+      "password-cancelled": "已取消 PDF 處理；來源檔案未變更。",
+      "password-modal-unavailable": "目前無法開啟 PDF 密碼視窗，請重新載入頁面後再試。",
       "broken-pdf": "無法讀取或轉換此 PDF。請在來源應用程式重新匯出 PDF 後重試。",
       "empty-file": "PDF 檔案是空的，請選擇有頁面內容的檔案。", "empty-pdf": "PDF 沒有頁面，請選擇其他文件。",
       "file-too-large": "PDF 超過 100 MB，請先分割成較小的 PDF 後重試。", "invalid-file-type": "請選擇 PDF 檔案（.pdf）。",

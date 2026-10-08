@@ -14,6 +14,7 @@ import { ISSUE_23_EN_MESSAGES, ISSUE_23_ZH_MESSAGES } from "../i18n/issue23Messa
 import { ISSUE_26_EN_MESSAGES, ISSUE_26_ZH_MESSAGES } from "../i18n/issue26Messages";
 import { PDF_CONVERSION_EN_MESSAGES, PDF_CONVERSION_ZH_MESSAGES } from "../i18n/pdfConversionMessages";
 import { PDF_METADATA_EN_MESSAGES, PDF_METADATA_ZH_MESSAGES } from "../i18n/pdfMetadataMessages";
+import { PDF_PASSWORD_EN_MESSAGES, PDF_PASSWORD_ZH_MESSAGES } from "../i18n/pdfPasswordMessages";
 import { PDF_WATERMARK_EN_MESSAGES, PDF_WATERMARK_ZH_MESSAGES } from "../i18n/pdfWatermarkMessages";
 import { WATERMARK_EN_MESSAGES, WATERMARK_ZH_MESSAGES } from "../i18n/watermarkMessages";
 import { QR_DESIGNER_EN_MESSAGES, QR_DESIGNER_ZH_MESSAGES } from "../i18n/qrDesignerMessages";
@@ -83,6 +84,7 @@ const zhMessages: Record<string, string> = {
   ...ISSUE_26_ZH_MESSAGES,
   ...PDF_CONVERSION_ZH_MESSAGES,
   ...PDF_METADATA_ZH_MESSAGES,
+  ...PDF_PASSWORD_ZH_MESSAGES,
   ...PDF_WATERMARK_ZH_MESSAGES,
   ...WATERMARK_ZH_MESSAGES,
   ...QR_DESIGNER_ZH_MESSAGES,
@@ -1051,6 +1053,7 @@ const enMessages: Record<string, string> = {
   ...ISSUE_26_EN_MESSAGES,
   ...PDF_CONVERSION_EN_MESSAGES,
   ...PDF_METADATA_EN_MESSAGES,
+  ...PDF_PASSWORD_EN_MESSAGES,
   ...PDF_WATERMARK_EN_MESSAGES,
   ...WATERMARK_EN_MESSAGES,
   ...QR_DESIGNER_EN_MESSAGES,

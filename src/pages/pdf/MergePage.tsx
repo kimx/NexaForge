@@ -7,6 +7,7 @@ import { ToolPageTemplate } from "../../components/ToolPageTemplate";
 import { FileDropzone } from "../../components/FileDropzone";
 import { DownloadButton } from "../../components/DownloadButton";
 import { mergePdf } from "../../services/pdf/pdfService";
+import { getPdfToolkitErrorMessage } from "../../services/pdf/pdfToolkit";
 import { getRelatedTools } from "../../utils/toolHelpers";
 import { trackEvent } from "../../utils/analytics";
 import { useSeo } from "../../hooks/useSeo";
@@ -145,7 +146,7 @@ export function PdfMergePage(): JSX.Element {
       setProcessing("success");
       trackEvent("process_success", { tool: "pdf-merge" });
     } catch (err) {
-      setError(t("error.processingFailed"));
+      setError(getPdfToolkitErrorMessage(err, t, t("error.processingFailed")));
       setProcessing("error");
       trackEvent("process_failed", { tool: "pdf-merge" });
       console.error(err);

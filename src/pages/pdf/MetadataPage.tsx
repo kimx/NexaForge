@@ -11,6 +11,7 @@ import {
   removePdfMetadata,
   type PdfMetadata,
 } from "../../services/pdf/metadataService";
+import { getPdfToolkitErrorMessage } from "../../services/pdf/pdfToolkit";
 import type { FileProcessResult, ProcessingState, ToolMeta } from "../../types/tool";
 import { trackEvent } from "../../utils/analytics";
 import { getRelatedTools } from "../../utils/toolHelpers";
@@ -86,7 +87,9 @@ export function MetadataPage(): JSX.Element {
       setProcessing("idle");
     } catch (cause) {
       console.error(cause);
-      setProcessingError(t("tool.pdf-metadata.error.read"));
+      setProcessingError(
+        getPdfToolkitErrorMessage(cause, t, t("tool.pdf-metadata.error.read"))
+      );
       trackEvent("process_failed", { tool: "pdf-metadata" });
     }
   };
@@ -122,7 +125,9 @@ export function MetadataPage(): JSX.Element {
       trackEvent("process_success", { tool: "pdf-metadata" });
     } catch (cause) {
       console.error(cause);
-      setProcessingError(t("tool.pdf-metadata.error.remove"));
+      setProcessingError(
+        getPdfToolkitErrorMessage(cause, t, t("tool.pdf-metadata.error.remove"))
+      );
       trackEvent("process_failed", { tool: "pdf-metadata" });
     }
   };

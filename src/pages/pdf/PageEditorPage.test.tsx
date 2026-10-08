@@ -3,13 +3,8 @@ import { MemoryRouter } from "react-router-dom";
 import { vi } from "vitest";
 import { LanguageProvider } from "../../context/LanguageContext";
 import * as pageEditorService from "../../services/pdf/pageEditorService";
-import * as pdfService from "../../services/pdf/pdfService";
+import * as pdfToolkit from "../../services/pdf/pdfToolkit";
 import { PdfPageEditorPage } from "./PageEditorPage";
-
-vi.mock("../../services/pdf/pdfService", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("../../services/pdf/pdfService")>()),
-  getPdfPageCount: vi.fn(),
-}));
 
 function renderEditor(mode: "reorder" | "delete" | "extract"): ReturnType<typeof render> {
   return render(
@@ -23,7 +18,11 @@ function renderEditor(mode: "reorder" | "delete" | "extract"): ReturnType<typeof
 
 async function loadPdf(container: HTMLElement, pageCount = 3): Promise<File> {
   const file = new File(["%PDF-1.4"], "sample.pdf", { type: "application/pdf" });
-  vi.mocked(pdfService.getPdfPageCount).mockResolvedValueOnce(pageCount);
+  vi.spyOn(pdfToolkit, "loadPdfData").mockResolvedValueOnce({
+    document: { getPageCount: () => pageCount } as never,
+    bytes: new Uint8Array([37, 80, 68, 70]),
+    encrypted: false,
+  });
   fireEvent.change(container.querySelector('input[type="file"]') as HTMLInputElement, {
     target: { files: [file] },
   });
@@ -78,7 +77,7 @@ describe("PdfPageEditorPage", () => {
     fireEvent.click(screen.getByRole("button", { name: "Export PDF" }));
 
     await waitFor(() => expect(exportSpy).toHaveBeenCalledWith(
-      file,
+      new Uint8Array([37, 80, 68, 70]),
       expect.objectContaining({ length: 5 }),
       "extracted-pages.pdf"
     ));

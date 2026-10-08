@@ -8,6 +8,7 @@ import { FILE_TOOLS } from "../../data/tools";
 import { useBlobUrl } from "../../hooks/useBlobUrl";
 import { useSeo } from "../../hooks/useSeo";
 import { convertPdfToImages } from "../../services/pdf/conversionService";
+import { getPdfToolkitErrorMessage } from "../../services/pdf/pdfToolkit";
 import type { FileProcessResult, ProcessingState, ToolMeta } from "../../types/tool";
 import { trackEvent } from "../../utils/analytics";
 import { downloadBlob } from "../../utils/download";
@@ -74,7 +75,7 @@ export function PdfToImagePage(): JSX.Element {
       trackEvent("process_success", { tool: "pdf-to-image", resultCount: output.length });
     } catch (cause) {
       console.error(cause);
-      setError(t("error.processingFailed"));
+      setError(getPdfToolkitErrorMessage(cause, t, t("error.processingFailed")));
       setProcessing("error");
       trackEvent("process_failed", { tool: "pdf-to-image" });
     }

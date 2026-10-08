@@ -27,6 +27,7 @@ const ROUTE_HEADINGS: Record<string, string> = {
   "/pdf/rotate": "Free Online PDF Rotator",
   "/pdf/to-image": "PDF to Image",
   "/pdf/metadata": "View & Remove PDF Metadata Online",
+  "/pdf/remove-password": "Remove PDF Password",
   "/data/json-formatter": "Free Online JSON Formatter",
   "/data/json-diff": "JSON Diff Online",
   "/data/csv-viewer": "CSV Viewer",
@@ -125,6 +126,14 @@ describe("App routes", () => {
   it("publishes canonical and English Regex Tester routes for indexing", () => {
     expect(BASE_INDEXABLE_ROUTES).toContain("/developer/regex-tester");
     expect(INDEXABLE_ROUTES).toContain("/en/developer/regex-tester");
+  });
+
+  it("publishes the PDF password removal tool in both locales", () => {
+    expect(BASE_INDEXABLE_ROUTES).toContain("/pdf/remove-password");
+    expect(INDEXABLE_ROUTES).toContain("/en/pdf/remove-password");
+    expect(FILE_TOOLS.find((tool) => tool.id === "pdf-remove-password")?.aliases).toContain(
+      "remove pdf password"
+    );
   });
 
   it("renders the English Emoji Picker route as a working tool", async () => {

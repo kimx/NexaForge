@@ -12,6 +12,7 @@ NexaForge uses the following third-party browser libraries:
 - `uuid` — MIT, source: https://github.com/uuidjs/uuid
 - `tesseract.js` — Apache-2.0, source: https://github.com/naptha/tesseract.js
 - `tesseract.js-core` — Apache-2.0, source: https://github.com/naptha/tesseract.js-core
+- `@arshad-shah/qpdf-wasm` — MIT wrapper with qpdf 12.2.0 under Apache-2.0; see https://github.com/arshad-shah/qpdf-wasm and the package's `THIRD_PARTY_LICENSES` for qpdf, zlib, and libjpeg-turbo notices.
 
 OCR worker and core assets are copied with their available license notices during
 install/dev/build. The language model files are obtained from the upstream
