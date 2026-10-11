@@ -1,5 +1,6 @@
 export const fileWorkflowMessages = {
   en: {
+    imagePrivacy: "Files stay in this page's memory and are cleared when you leave or refresh. Only explicitly saved template settings, including watermark text, persist in this browser.",
     heading: "Complete a task", backHome: "All tools", privacy: "Files and text stay in this page's memory. Leaving or refreshing clears this workflow.",
     stepNav: "Workflow steps", continue: "Continue to next step", back: "Previous step", reset: "Start over", cancel: "Cancel processing", cancelled: "Processing cancelled. Earlier results are preserved; you can retry.",
     processing: "Processing…", complete: "Ready to download", preview: "Stage preview", empty: "Run this step to preview its result.", failure: "This step failed. Check the files and settings, then try again. Earlier results are preserved.",
@@ -16,6 +17,7 @@ export const fileWorkflowMessages = {
     downloadZip: "Download ZIP", downloadText: "Download text", downloadPdf: "Download PDF", outputCount: "Images included", loadingPreview: "Loading preview…",
   },
   "zh-TW": {
+    imagePrivacy: "檔案只保留在此頁面的記憶體中，離開或重新整理會清除；只有明確儲存的範本設定（包含浮水印文字）會保留在此瀏覽器。",
     heading: "一次完成整個任務", backHome: "所有工具", privacy: "檔案與文字只保留在此頁面的記憶體中；離開或重新整理會清除本次流程。",
     stepNav: "流程步驟", continue: "繼續下一步", back: "上一步", reset: "重新開始", cancel: "取消處理", cancelled: "已取消處理，先前結果仍保留，可以重試。",
     processing: "處理中…", complete: "已可下載", preview: "階段預覽", empty: "執行此步驟後，可在這裡預覽結果。", failure: "此步驟處理失敗，請檢查檔案與設定後重試。先前結果仍保留。",
