@@ -7,8 +7,10 @@ import { DownloadButton } from "../../components/DownloadButton";
 import { WorkflowShell } from "../../components/workflows/WorkflowShell";
 import { WorkflowFileList } from "../../components/workflows/WorkflowFileList";
 import { ImageStagePreview } from "../../components/workflows/WorkflowPreviews";
+import { ImageDeliveryTemplates } from "../../components/workflows/ImageDeliveryTemplates";
+import type { ImageDeliverySettings } from "../../services/workflow/imageDeliveryTemplates";
 import { resizeImage } from "../../services/image/imageService";
-import { applyWatermark, getPresetPosition, type WatermarkPreset } from "../../services/image/watermarkService";
+import { applyWatermark, getPresetPosition } from "../../services/image/watermarkService";
 import { createZip } from "../../services/file/zipService";
 import { processWorkflowFiles, resultFile, checkWorkflowAbort } from "../../services/workflow/fileWorkflowService";
 import { validateImageBatch } from "../../services/batch/batchService";
@@ -23,7 +25,7 @@ export function ImageDeliveryPage() {
   const [files, setFiles] = useState<File[]>([]);
   const [options, setOptions] = useState(defaults);
   const [text, setText] = useState("");
-  const [position, setPosition] = useState<WatermarkPreset>("bottom-right");
+  const [position, setPosition] = useState<ImageDeliverySettings["watermark"]["position"]>("bottom-right");
   const [opacity, setOpacity] = useState(60);
   const [size, setSize] = useState(5);
   const [color, setColor] = useState("#ffffff");
@@ -32,6 +34,12 @@ export function ImageDeliveryPage() {
   const validWatermark = text.trim().length > 0 && opacity >= 5 && opacity <= 100 && size >= 1 && size <= 50;
   function select(next: File[]) { flow.invalidate(0); setFiles(next); }
   function change(update: Partial<ImageResizeOptions>) { flow.invalidate(0); setOptions(current => ({ ...current, ...update })); }
+  function applyTemplate(settings: ImageDeliverySettings) {
+    if (flow.busy) return;
+    flow.invalidate(0); setOptions({ ...settings.resize });
+    setText(settings.watermark.text); setPosition(settings.watermark.position);
+    setOpacity(settings.watermark.opacity); setSize(settings.watermark.size); setColor(settings.watermark.color);
+  }
   function reset() {
     select([]); setOptions(defaults); setText(""); setPosition("bottom-right"); setOpacity(60); setSize(5); setColor("#ffffff");
   }
@@ -62,6 +70,7 @@ export function ImageDeliveryPage() {
   }
   const preview = flow.step === 0 ? flow.results[0] : flow.results[1] ?? flow.results[0];
   return <WorkflowShell id="image-delivery" flow={flow} reset={reset} preview={preview ? <>{preview.map((result, index) => <ImageStagePreview key={index} result={result} />)}</> : null}>
+    <ImageDeliveryTemplates busy={flow.busy} settings={{ resize: options, watermark: { text, position, opacity, size, color } }} onApply={applyTemplate} />
     {flow.step === 0 ? <fieldset disabled={flow.busy}>
       <FileDropzone label={c.selectImages} compact={Boolean(files.length)} compactLabel={c.replace} accept="image/jpeg,image/png,image/webp" multiple maxSize={50 * 1024 * 1024} disabled={flow.busy} onFiles={select} />
       <p>JPG / PNG / WebP · 20 {locale === "en" ? "files" : "個檔案"} · 200 MiB</p>
@@ -76,7 +85,7 @@ export function ImageDeliveryPage() {
     </fieldset> : null}
     {flow.step === 1 ? <fieldset disabled={flow.busy}>
       <label>{c.text}<input value={text} maxLength={200} onChange={event => { flow.invalidate(1); setText(event.target.value); }} /></label>
-      <label>{c.position}<select aria-label={c.position} value={position} onChange={event => { flow.invalidate(1); setPosition(event.target.value as WatermarkPreset); }}><option value="top-left">{c.topLeft}</option><option value="center">{c.center}</option><option value="bottom-right">{c.bottomRight}</option></select></label>
+      <label>{c.position}<select aria-label={c.position} value={position} onChange={event => { flow.invalidate(1); setPosition(event.target.value as ImageDeliverySettings["watermark"]["position"]); }}><option value="top-left">{c.topLeft}</option><option value="center">{c.center}</option><option value="bottom-right">{c.bottomRight}</option></select></label>
       <div className="file-workflow__fields"><label>{c.opacity}<input type="number" min={5} max={100} value={opacity} onChange={event => { flow.invalidate(1); setOpacity(Number(event.target.value)); }} /></label><label>{c.size}<input type="number" min={1} max={50} value={size} onChange={event => { flow.invalidate(1); setSize(Number(event.target.value)); }} /></label></div>
       <label>{c.color}<input type="color" value={color} onChange={event => { flow.invalidate(1); setColor(event.target.value); }} /></label>
       <button type="button" className="btn primary" disabled={!validWatermark} onClick={watermark}>{c.watermark}</button>

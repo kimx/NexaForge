@@ -34,7 +34,7 @@ export function WorkflowShell({ id, flow, reset, children, preview }: WorkflowSh
     : c.failure;
   return <article className="file-workflow">
     <Link to={localizePath("/", locale)}>{c.backHome}</Link>
-    <header className="file-workflow__header"><h1>{copy.title}</h1><p>{copy.description}</p><p className="file-workflow__privacy">{c.privacy}</p></header>
+    <header className="file-workflow__header"><h1>{copy.title}</h1><p>{copy.description}</p><p className="file-workflow__privacy">{id === "image-delivery" ? c.imagePrivacy : c.privacy}</p></header>
     <nav aria-label={c.stepNav}><ol className="file-workflow__steps">
       {copy.steps.map((label, index) => <li key={label}><button type="button" aria-label={`${index + 1}. ${label}`} aria-current={flow.step === index ? "step" : undefined} disabled={flow.busy || index > flow.available} onClick={() => flow.go(index)}><span aria-hidden="true">{index < flow.available ? "✓" : index + 1}</span>{label}</button></li>)}
     </ol></nav>
