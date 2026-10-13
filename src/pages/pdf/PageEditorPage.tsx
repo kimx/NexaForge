@@ -19,23 +19,12 @@ import { downloadBlob } from "../../utils/download";
 import { validateFileSize, validateMime } from "../../utils/validation";
 import { assertValidPageRanges, parsePageRanges } from "../../services/pdf/pageRange";
 import { localizePath } from "../../routing/localePaths";
+import type { PDFDocumentProxy } from "pdfjs-dist";
+import { PdfPagePreview } from "../../components/PdfPagePreview";
 
 export type PdfPageEditorMode = "reorder" | "delete" | "extract";
 
-interface PdfRenderPage {
-  getViewport(options: { scale: number }): { width: number; height: number };
-  render(options: {
-    canvas: HTMLCanvasElement;
-    canvasContext: CanvasRenderingContext2D;
-    viewport: { width: number; height: number };
-  }): { promise: Promise<unknown> };
-}
-
-interface PdfRenderDocument {
-  getPage(pageNumber: number): Promise<PdfRenderPage>;
-  cleanup(): Promise<void>;
-  destroy(): Promise<void>;
-}
+type PdfRenderDocument = Pick<PDFDocumentProxy, "getPage">;
 
 const COPY = {
   en: {
@@ -46,6 +35,10 @@ const COPY = {
     passwordError: "This PDF is password-protected and cannot currently be processed.",
     exportError: "Unable to create this PDF. Please try another file.",
     page: "Page {page}",
+    previewPage: "Page {page} / {total}",
+    previewError: "Unable to preview this page. You can still select and export pages.",
+    deletionSelection: "Select page {page} for deletion",
+    deletionHint: "Click a thumbnail to preview. Use the checkboxes, then Delete selected to mark pages for deletion.",
     selected: "selected",
     deleted: "Marked for deletion",
     restore: "Restore",
@@ -80,6 +73,10 @@ const COPY = {
     passwordError: "這份 PDF 已受密碼保護，目前無法處理。",
     exportError: "無法建立 PDF，請嘗試其他檔案。",
     page: "第 {page} 頁",
+    previewPage: "第 {page} 頁／共 {total} 頁",
+    previewError: "無法預覽此頁面，仍可選取及匯出頁面。",
+    deletionSelection: "選取第 {page} 頁以刪除",
+    deletionHint: "點擊縮圖可放大預覽；勾選頁面後，按「刪除選取頁面」標記刪除。",
     selected: "已選取",
     deleted: "已標記刪除",
     restore: "還原",
@@ -186,6 +183,8 @@ export function PdfPageEditorPage({ mode }: { mode: PdfPageEditorMode }): JSX.El
   const [rangeError, setRangeError] = useState<string | null>(null);
   const [sourceBytes, setSourceBytes] = useState<Uint8Array | null>(null);
   const [document, setDocument] = useState<PdfRenderDocument | null>(null);
+  const [previewPage, setPreviewPage] = useState(1);
+  const [previewLoadError, setPreviewLoadError] = useState(false);
   const [previewed, setPreviewed] = useState(0);
   const [processing, setProcessing] = useState<ProcessingState>("idle");
   const [progressText, setProgressText] = useState("");
@@ -203,24 +202,26 @@ export function PdfPageEditorPage({ mode }: { mode: PdfPageEditorMode }): JSX.El
     let active = true;
     let loadingTask: { promise: Promise<unknown>; destroy(): Promise<void> } | null = null;
     let pdf: PdfRenderDocument | null = null;
+    setPreviewLoadError(false);
     void (async () => {
       try {
         const pdfjs = await import("pdfjs-dist");
         const { default: workerUrl } = await import("pdfjs-dist/build/pdf.worker.min.mjs?url");
+        if (!active) return;
         pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
         loadingTask = pdfjs.getDocument({ data: sourceBytes.slice() });
         pdf = await loadingTask.promise as unknown as PdfRenderDocument;
         if (active) setDocument(pdf);
       } catch {
         // Editing remains available if preview rendering is unavailable.
+        if (active) setPreviewLoadError(true);
       }
     })();
     return () => {
       active = false;
       setDocument(null);
-      void pdf?.cleanup();
-      void pdf?.destroy();
-      void loadingTask?.destroy();
+      // Destroy the loading task once; it also releases its resolved document.
+      void loadingTask?.destroy().catch(() => {});
     };
   }, [file, pageCount, sourceBytes]);
 
@@ -267,6 +268,9 @@ export function PdfPageEditorPage({ mode }: { mode: PdfPageEditorMode }): JSX.El
       return;
     }
     setFile(source);
+    setDocument(null);
+    setPreviewPage(1);
+    setPreviewLoadError(false);
     setPageCount(0);
     setSourceBytes(null);
     setPages([]);
@@ -347,10 +351,12 @@ export function PdfPageEditorPage({ mode }: { mode: PdfPageEditorMode }): JSX.El
           <>
             <FileDropzone label={t("label.dropPdf")} accept="application/pdf,.pdf" compact={Boolean(file)} disabled={processing === "processing"} onFiles={(incoming) => void loadFile(incoming)} />
             {file ? <p className="pdf-page-editor__file"><strong>{file.name}</strong> · {pageCount ? interpolate(copy.detected, { count: pageCount }) : progressText}</p> : null}
+            {mode === "delete" && pageCount > 0 ? <PdfPagePreview document={document} page={previewPage} label={interpolate(copy.previewPage, { page: previewPage, total: pageCount })} loadingText={copy.loading} errorText={copy.previewError} loadError={previewLoadError} /> : null}
           </>
         ),
         options: pageCount > 0 ? (
           <div className="pdf-page-editor">
+            {mode === "delete" ? <p className="pdf-page-editor__progress">{copy.deletionHint}</p> : null}
             <p className="pdf-page-editor__progress" role="status">
               {document && previewed < pageCount ? interpolate(copy.previews, { completed: previewed, total: pageCount }) : progressText}
             </p>
@@ -379,7 +385,7 @@ export function PdfPageEditorPage({ mode }: { mode: PdfPageEditorMode }): JSX.El
                 const isSelected = selected.has(page.id);
                 const pageNumber = page.originalIndex + 1;
                 return (
-                  <li key={page.id} className={`pdf-page-editor__card${isSelected ? " pdf-page-editor__card--selected" : ""}${page.deleted ? " pdf-page-editor__card--deleted" : ""}`} draggable={mode === "reorder"} onDragStart={() => setDraggedIndex(index)} onDragOver={(event) => event.preventDefault()} onDrop={(event: DragEvent<HTMLLIElement>) => {
+                  <li key={page.id} className={`pdf-page-editor__card${isSelected ? " pdf-page-editor__card--selected" : ""}${mode === "delete" && previewPage === pageNumber ? " pdf-page-editor__card--previewing" : ""}${page.deleted ? " pdf-page-editor__card--deleted" : ""}`} draggable={mode === "reorder"} onDragStart={() => setDraggedIndex(index)} onDragOver={(event) => event.preventDefault()} onDrop={(event: DragEvent<HTMLLIElement>) => {
                     event.preventDefault();
                     if (draggedIndex !== null && draggedIndex !== index) {
                       setPages((current) => {
@@ -392,12 +398,16 @@ export function PdfPageEditorPage({ mode }: { mode: PdfPageEditorMode }): JSX.El
                     }
                     setDraggedIndex(null);
                   }} onDragEnd={() => setDraggedIndex(null)}>
-                    <button type="button" className="pdf-page-editor__select" aria-pressed={isSelected} aria-label={`${interpolate(copy.page, { page: pageNumber })}${isSelected ? `, ${copy.selected}` : ""}${page.deleted ? `, ${copy.deleted}` : ""}`} disabled={Boolean(page.deleted)} onClick={() => selectPage(page.id)}>
+                    <button type="button" className="pdf-page-editor__select" aria-pressed={mode === "delete" ? previewPage === pageNumber : isSelected} aria-label={`${interpolate(copy.page, { page: pageNumber })}${mode !== "delete" && isSelected ? `, ${copy.selected}` : ""}${page.deleted ? `, ${copy.deleted}` : ""}`} disabled={mode !== "delete" && Boolean(page.deleted)} onClick={() => mode === "delete" ? setPreviewPage(pageNumber) : selectPage(page.id)}>
                       <PdfThumbnail document={document} page={pageNumber} onRendered={() => setPreviewed((count) => Math.min(pageCount, count + 1))} />
                       <strong>{interpolate(copy.page, { page: pageNumber })}</strong>
                       {page.rotation ? <small>{page.rotation}°</small> : null}
                       {page.deleted ? <span className="pdf-page-editor__badge">{copy.deleted}</span> : null}
                     </button>
+                    {mode === "delete" && !page.deleted ? <label className="pdf-page-editor__delete-selection">
+                      <input type="checkbox" checked={isSelected} onChange={() => selectPage(page.id)} aria-label={interpolate(copy.deletionSelection, { page: pageNumber })} />
+                      {interpolate(copy.deletionSelection, { page: pageNumber })}
+                    </label> : null}
                     {mode === "delete" && page.deleted ? <button type="button" className="pdf-page-editor__restore" onClick={() => { setPages((current) => current.map((item) => item.id === page.id ? { ...item, deleted: false } : item)); markDirty(); }}>{copy.restore}</button> : null}
                     {mode === "reorder" ? <div className="pdf-page-editor__move">
                       <button type="button" aria-label={interpolate(copy.moveLeft, { page: pageNumber })} disabled={index === 0} onClick={() => movePage(index, -1)}>←</button>

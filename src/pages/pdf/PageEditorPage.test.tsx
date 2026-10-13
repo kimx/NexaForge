@@ -6,6 +6,11 @@ import * as pageEditorService from "../../services/pdf/pageEditorService";
 import * as pdfToolkit from "../../services/pdf/pdfToolkit";
 import { PdfPageEditorPage } from "./PageEditorPage";
 
+vi.mock("../../utils/download", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../../utils/download")>()),
+  downloadBlob: vi.fn(),
+}));
+
 function renderEditor(mode: "reorder" | "delete" | "extract"): ReturnType<typeof render> {
   return render(
     <MemoryRouter initialEntries={["/pdf/reorder-pages"]}>
@@ -48,7 +53,7 @@ describe("PdfPageEditorPage", () => {
     const { container } = renderEditor("delete");
     await loadPdf(container, 1);
 
-    fireEvent.click(screen.getByRole("button", { name: "Page 1" }));
+    fireEvent.click(screen.getByRole("checkbox", { name: "Select page 1 for deletion" }));
     fireEvent.click(screen.getByRole("button", { name: "Delete selected" }));
 
     expect(screen.getByText("Marked for deletion")).toBeVisible();
@@ -58,6 +63,47 @@ describe("PdfPageEditorPage", () => {
     fireEvent.click(screen.getByRole("button", { name: "Restore" }));
     expect(screen.queryByText("Marked for deletion")).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Export PDF" })).toBeEnabled();
+  });
+
+  it("separates preview navigation from deletion selection and preserves marked pages on export", async () => {
+    const exportSpy = vi.spyOn(pageEditorService, "exportPdfPages").mockResolvedValue({
+      blob: new Blob(["pdf"], { type: "application/pdf" }),
+      fileName: "pages-removed.pdf", mimeType: "application/pdf", size: 3,
+    });
+    const { container } = renderEditor("delete");
+    const file = await loadPdf(container, 39);
+    expect(screen.getByText("Page 1 / 39")).toBeVisible();
+    expect(screen.getByRole("button", { name: "Page 1" })).toHaveAttribute("aria-pressed", "true");
+    fireEvent.click(screen.getByRole("checkbox", { name: "Select page 2 for deletion" }));
+    for (const page of [2, 10, 39]) {
+      fireEvent.click(screen.getByRole("button", { name: `Page ${page}` }));
+      expect(screen.getByText(`Page ${page} / 39`)).toBeVisible();
+      expect(screen.getByRole("checkbox", { name: "Select page 2 for deletion" })).toBeChecked();
+      expect(screen.getByText("0 page(s) marked for deletion")).toBeVisible();
+    }
+    fireEvent.click(screen.getByRole("button", { name: "Delete selected" }));
+    expect(screen.getByText("1 page(s) marked for deletion")).toBeVisible();
+    fireEvent.click(screen.getByRole("button", { name: "Page 2, Marked for deletion" }));
+    expect(screen.getByText("Page 2 / 39")).toBeVisible();
+    fireEvent.click(screen.getByRole("button", { name: "Export PDF" }));
+    await waitFor(() => expect(exportSpy).toHaveBeenCalledWith(new Uint8Array([37, 80, 68, 70]),
+      expect.not.arrayContaining([expect.objectContaining({ originalIndex: 1 })]), "pages-removed.pdf"));
+    fireEvent.click(screen.getByRole("button", { name: "Page 10" }));
+    expect(screen.getByText("PDF created (0 KB).")).toBeVisible();
+  });
+
+  it("keeps select all and clear selection independent of the preview and resets on replacement", async () => {
+    const { container } = renderEditor("delete");
+    await loadPdf(container);
+    fireEvent.click(screen.getByRole("button", { name: "Page 3" }));
+    fireEvent.click(screen.getByRole("button", { name: "Select all" }));
+    expect(screen.getAllByRole("checkbox").filter((input) => (input as HTMLInputElement).checked)).toHaveLength(3);
+    fireEvent.click(screen.getByRole("button", { name: "Clear selection" }));
+    expect(screen.getByText("Page 3 / 3")).toBeVisible();
+    expect(screen.getByRole("button", { name: "Delete selected" })).toBeDisabled();
+    await loadPdf(container, 2);
+    expect(screen.getByText("Page 1 / 2")).toBeVisible();
+    expect(screen.getByText("0 page(s) marked for deletion")).toBeVisible();
   });
 
   it("synchronizes valid page ranges with selection and exports selected pages only", async () => {
