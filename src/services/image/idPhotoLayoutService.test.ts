@@ -4,6 +4,7 @@ import {
   ID_PHOTO_DPI,
   ID_PHOTO_MAX_PAGES,
   mmToPixels,
+  idPhotoCropMarks,
 } from "./idPhotoLayoutService";
 
 describe("ID photo layout", () => {
@@ -46,7 +47,7 @@ describe("ID photo layout", () => {
       ...options,
       marginMm: 5,
       spacingMm: 8,
-      copies: 1,
+      copies: 4,
     });
 
     expect(layout.columns).toBe(2);
@@ -59,11 +60,32 @@ describe("ID photo layout", () => {
     expect(() => calculateIdPhotoLayout({ ...options, paperWidthMm: 20 })).toThrow("photo-does-not-fit");
     expect(() => calculateIdPhotoLayout({ ...options, copies: 601 })).toThrow("page-limit");
     expect(() => calculateIdPhotoLayout({ ...options, marginMm: -1 })).toThrow("invalid-layout");
+    expect(() => calculateIdPhotoLayout({ ...options, photoWidthMm: 1, photoHeightMm: 1, copies: 10001 })).toThrow("copy-limit");
+    expect(() => calculateIdPhotoLayout({ ...options, paperWidthMm: 1e12, paperHeightMm: 1e12 })).toThrow("page-too-large");
     expect(ID_PHOTO_MAX_PAGES).toBe(100);
   });
 
   it("creates a filename containing the photo and paper dimensions", () => {
     expect(idPhotoFileName(35, 45, "4x6", "pdf")).toBe("id-photo-35x45mm-4x6.pdf");
     expect(idPhotoFileName(25.5, 35, "A4", "png")).toBe("id-photo-25-5x35mm-A4.png");
+  });
+
+  it("only allocates placements needed by the requested copies", () => {
+    const layout = calculateIdPhotoLayout({ ...options, photoWidthMm: 1, photoHeightMm: 1, copies: 1 });
+    expect(layout.capacity).toBeGreaterThan(10000);
+    expect(layout.placements).toHaveLength(1);
+  });
+
+  it.each([0, 0.2, 1, 2, 8])("keeps crop marks outside every photo with %s mm spacing", spacingMm => {
+    const layout = calculateIdPhotoLayout({ ...options, spacingMm, cropMarks: true });
+    for (const mark of idPhotoCropMarks(layout, layout.capacity)) {
+      for (const [x, y] of [[mark.x1, mark.y1], [mark.x2, mark.y2], [(mark.x1 + mark.x2) / 2, (mark.y1 + mark.y2) / 2]]) {
+        expect(x).toBeGreaterThanOrEqual(0);
+        expect(y).toBeGreaterThanOrEqual(0);
+        expect(x).toBeLessThanOrEqual(layout.pageWidthMm);
+        expect(y).toBeLessThanOrEqual(layout.pageHeightMm);
+        expect(layout.placements.some(p => x > p.xMm && x < p.xMm + p.widthMm && y > p.yMm && y < p.yMm + p.heightMm)).toBe(false);
+      }
+    }
   });
 });

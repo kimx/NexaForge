@@ -107,6 +107,7 @@ const BatchRenamePage = lazy(() => import("./pages/file/BatchRenamePage").then(m
 const ImageConvertPage = lazy(() =>
   import("./pages/image/ConvertPage").then((module) => ({ default: module.ImageConvertPage }))
 );
+const IdPhotoLayoutPage = lazy(() => import("./pages/image/IdPhotoLayoutPage").then(module => ({ default: module.IdPhotoLayoutPage })));
 const ImageCropPage = lazy(() =>
   import("./pages/image/CropPage").then((module) => ({ default: module.ImageCropPage }))
 );
@@ -261,6 +262,7 @@ const APP_ROUTES: AppRoute[] = [
   { path: "/json", element: <JsonHubPage /> },
   { path: "/image/resize", element: <ImageResizePage /> },
   { path: "/image/crop", element: <ImageCropPage /> },
+  { path: "/image/id-photo-layout", element: <IdPhotoLayoutPage /> },
   { path: "/image/compress", element: <ImageCompressPage /> },
   { path: "/image/convert", element: <ImageConvertPage /> },
   { path: "/image/exif-viewer", element: <ExifPage kind="image-exif-viewer" /> },

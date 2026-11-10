@@ -25,6 +25,8 @@ export interface ImageCropEditorProps {
   onValidationChange: (validation: ReturnType<typeof validateCropShape>) => void;
   onSourceStatusChange: (status: "loading" | "ready" | "error") => void;
   labels: ImageCropEditorLabels;
+  lockedAspectRatio?: number;
+  onSourceSizeChange?: (size: { width: number; height: number }) => void;
 }
 
 type ResizeDirection = "north" | "northeast" | "east" | "southeast" | "south" | "southwest" | "west" | "northwest";
@@ -73,7 +75,7 @@ function pointDistance(a: CropPoint, b: CropPoint): number {
   return Math.hypot(a.x - b.x, a.y - b.y);
 }
 
-function moveBoundsEdge(bounds: CropBounds, direction: ResizeDirection, dx: number, dy: number): CropBounds {
+function moveBoundsEdge(bounds: CropBounds, direction: ResizeDirection, dx: number, dy: number, minWidth = 0.05, minHeight = 0.05): CropBounds {
   let { x, y, width, height } = bounds;
   if (direction.includes("east")) width += dx;
   if (direction.includes("south")) height += dy;
@@ -86,13 +88,13 @@ function moveBoundsEdge(bounds: CropBounds, direction: ResizeDirection, dx: numb
     height -= dy;
   }
 
-  if (width < 0.05) {
-    if (direction.includes("west")) x -= 0.05 - width;
-    width = 0.05;
+  if (width < minWidth) {
+    if (direction.includes("west")) x -= minWidth - width;
+    width = minWidth;
   }
-  if (height < 0.05) {
-    if (direction.includes("north")) y -= 0.05 - height;
-    height = 0.05;
+  if (height < minHeight) {
+    if (direction.includes("north")) y -= minHeight - height;
+    height = minHeight;
   }
   return {
     x: stable(Math.min(2, Math.max(-1, x))),
@@ -126,6 +128,8 @@ export function ImageCropEditor({
   onValidationChange,
   onSourceStatusChange,
   labels,
+  lockedAspectRatio,
+  onSourceSizeChange,
 }: ImageCropEditorProps): JSX.Element {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
@@ -335,8 +339,16 @@ export function ImageCropEditor({
     const bounds = sourceBounds ?? value.shape.bounds;
     if (!bounds || !PRESET_KINDS.includes(value.shape.kind)) return;
     const nextBounds = value.shape.kind === "rectangle"
-      ? moveBoundsEdge(bounds, direction, dx, dy)
+      ? moveBoundsEdge(bounds, direction, dx, dy, 0.05 * Math.min(1, lockedAspectRatio ?? 1), 0.05 * Math.min(1, 1 / (lockedAspectRatio ?? 1)))
       : moveSquareEdge(bounds, direction, dx, dy);
+    if (lockedAspectRatio) {
+      const width = Math.max(0.05 * Math.min(1, lockedAspectRatio), Math.min(3, 3 * lockedAspectRatio,
+        direction === "north" || direction === "south" ? nextBounds.height * lockedAspectRatio : nextBounds.width));
+      nextBounds.width = width;
+      nextBounds.height = width / lockedAspectRatio;
+      nextBounds.x = direction.includes("west") ? bounds.x + bounds.width - width : bounds.x;
+      nextBounds.y = direction.includes("north") ? bounds.y + bounds.height - nextBounds.height : bounds.y;
+    }
     onChange({ ...value, shape: { ...value.shape, bounds: nextBounds } });
   };
 
@@ -446,7 +458,14 @@ export function ImageCropEditor({
   const reset = (): void => {
     setHistory([]);
     setDraftPoints(null);
-    onChange(createDefaultCropSettings());
+    const next = createDefaultCropSettings();
+    if (lockedAspectRatio) {
+      const width = Math.min(0.8, 0.8 * lockedAspectRatio);
+      const height = width / lockedAspectRatio;
+      next.shape.bounds = { x: (1 - width) / 2, y: (1 - height) / 2, width, height };
+      next.shape.aspectRatio = lockedAspectRatio;
+    }
+    onChange(next);
   };
   const presetBounds = value.shape.bounds;
 
@@ -468,6 +487,7 @@ export function ImageCropEditor({
             return;
           }
           setSourceSize({ width, height });
+          onSourceSizeChange?.({ width, height });
           onSourceStatusChange("ready");
         }}
         onError={() => {
@@ -476,7 +496,7 @@ export function ImageCropEditor({
         }}
       />
 
-      <fieldset className="image-crop-editor__shape-fieldset">
+      {!lockedAspectRatio && <fieldset className="image-crop-editor__shape-fieldset">
         <legend>{labels.presets}</legend>
         <div className="image-crop-editor__shape-grid">
           {ALL_KINDS.map((kind) => (
@@ -491,7 +511,7 @@ export function ImageCropEditor({
             </button>
           ))}
         </div>
-      </fieldset>
+      </fieldset>}
 
       <div className="image-crop-editor__stage">
         <canvas
@@ -604,7 +624,7 @@ export function ImageCropEditor({
           <input
             type="range"
             min={100}
-            max={400}
+            max={Math.max(400, zoomPercent)}
             value={zoomPercent}
             aria-label={labels.zoom}
             onChange={(event) => {

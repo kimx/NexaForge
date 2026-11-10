@@ -23,6 +23,7 @@ export interface CropBounds {
 
 export interface CropShape {
   kind: CropShapeKind;
+  aspectRatio?: number;
   bounds?: CropBounds;
   points?: CropPoint[];
   closed?: boolean;

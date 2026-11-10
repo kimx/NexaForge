@@ -1,4 +1,4 @@
-import { zipSync } from "fflate";
+import { zip } from "fflate";
 import { PDFDocument } from "pdf-lib";
 import type { CropSettings } from "../../types/imageCrop";
 import type { FileProcessResult } from "../../types/tool";
@@ -37,6 +37,7 @@ export interface IdPhotoLayout {
 
 export const ID_PHOTO_DPI = 300;
 export const ID_PHOTO_MAX_PAGES = 100;
+export const ID_PHOTO_MAX_COPIES = 10_000;
 const MAX_PAGE_PIXELS = 12_000_000;
 
 export function mmToPixels(mm: number, dpi = ID_PHOTO_DPI): number {
@@ -69,6 +70,8 @@ export function calculateIdPhotoLayout(options: IdPhotoLayoutOptions): IdPhotoLa
   ) {
     throw new Error("invalid-layout");
   }
+  if (copies > ID_PHOTO_MAX_COPIES) throw new Error("copy-limit");
+  if (mmToPixels(paperWidthMm) * mmToPixels(paperHeightMm) > MAX_PAGE_PIXELS) throw new Error("page-too-large");
 
   const printableWidth = paperWidthMm - marginMm * 2;
   const printableHeight = paperHeightMm - marginMm * 2;
@@ -84,16 +87,12 @@ export function calculateIdPhotoLayout(options: IdPhotoLayoutOptions): IdPhotoLa
   const gridHeight = rows * photoHeightMm + (rows - 1) * spacingMm;
   const startX = marginMm + (printableWidth - gridWidth) / 2;
   const startY = marginMm + (printableHeight - gridHeight) / 2;
-  const placements = Array.from({ length: capacity }, (_, index) => ({
+  const placements = Array.from({ length: Math.min(capacity, copies) }, (_, index) => ({
     xMm: startX + (index % columns) * (photoWidthMm + spacingMm),
     yMm: startY + Math.floor(index / columns) * (photoHeightMm + spacingMm),
     widthMm: photoWidthMm,
     heightMm: photoHeightMm,
   }));
-  if (mmToPixels(paperWidthMm) * mmToPixels(paperHeightMm) > MAX_PAGE_PIXELS) {
-    throw new Error("page-too-large");
-  }
-
   return {
     options,
     columns,
@@ -122,66 +121,59 @@ function canvasToBlob(canvas: HTMLCanvasElement, type: string, quality?: number)
   });
 }
 
-function drawPhotoPage(
+export type CropMark = { x1: number; y1: number; x2: number; y2: number };
+
+// Shared millimeter geometry; shorten marks to the available gutter.
+export function idPhotoCropMarks(layout: IdPhotoLayout, count: number): CropMark[] {
+  const { marginMm: margin, spacingMm: spacing } = layout.options;
+  const marks: CropMark[] = [];
+  layout.placements.slice(0, count).forEach((p, index) => {
+    const col = index % layout.columns;
+    const row = Math.floor(index / layout.columns);
+    const left = col === 0 ? p.xMm - margin : spacing / 2;
+    const right = col === layout.columns - 1 ? layout.pageWidthMm - margin - p.xMm - p.widthMm : spacing / 2;
+    const top = row === 0 ? p.yMm - margin : spacing / 2;
+    const bottom = row === layout.rows - 1 ? layout.pageHeightMm - margin - p.yMm - p.heightMm : spacing / 2;
+    const offset = 0.5;
+    for (const y of [p.yMm, p.yMm + p.heightMm]) {
+      if (left > offset + 0.1) marks.push({ x1: p.xMm - Math.min(2.5, left - 0.1), y1: y, x2: p.xMm - offset, y2: y });
+      if (right > offset + 0.1) marks.push({ x1: p.xMm + p.widthMm + offset, y1: y, x2: p.xMm + p.widthMm + Math.min(2.5, right - 0.1), y2: y });
+    }
+    for (const x of [p.xMm, p.xMm + p.widthMm]) {
+      if (top > offset + 0.1) marks.push({ x1: x, y1: p.yMm - Math.min(2.5, top - 0.1), x2: x, y2: p.yMm - offset });
+      if (bottom > offset + 0.1) marks.push({ x1: x, y1: p.yMm + p.heightMm + offset, x2: x, y2: p.yMm + p.heightMm + Math.min(2.5, bottom - 0.1) });
+    }
+  });
+  return marks;
+}
+
+export function drawIdPhotoPage(
   canvas: HTMLCanvasElement,
-  bitmap: ImageBitmap,
+  photo: CanvasImageSource,
   layout: IdPhotoLayout,
   pageIndex: number,
-  format: "image/png" | "image/jpeg"
+  dpi = ID_PHOTO_DPI
 ): void {
-  const { paperWidthMm, paperHeightMm, copies, cropMarks } = layout.options;
-  const width = mmToPixels(paperWidthMm);
-  const height = mmToPixels(paperHeightMm);
-  canvas.width = width;
-  canvas.height = height;
+  const px = (mm: number): number => mmToPixels(mm, dpi);
+  canvas.width = px(layout.pageWidthMm);
+  canvas.height = px(layout.pageHeightMm);
   const context = canvas.getContext("2d");
   if (!context) throw new Error("canvas-unavailable");
   context.fillStyle = "#ffffff";
-  context.fillRect(0, 0, width, height);
-  const start = pageIndex * layout.capacity;
-  const count = Math.min(layout.capacity, copies - start);
-  const px = (value: number): number => mmToPixels(value);
-  for (const placement of layout.placements.slice(0, count)) {
-    const x = px(placement.xMm);
-    const y = px(placement.yMm);
-    const photoWidth = px(placement.widthMm);
-    const photoHeight = px(placement.heightMm);
-    context.drawImage(bitmap, x, y, photoWidth, photoHeight);
-    if (cropMarks) {
-      const offset = Math.max(1, mmToPixels(0.5));
-      const length = Math.min(mmToPixels(2), Math.floor(Math.min(photoWidth, photoHeight) / 4));
-      const printableLeft = mmToPixels(layout.options.marginMm);
-      const printableTop = mmToPixels(layout.options.marginMm);
-      const printableRight = width - printableLeft;
-      const printableBottom = height - printableTop;
-      const gap = mmToPixels(layout.options.spacingMm);
-      context.strokeStyle = "#222222";
-      context.lineWidth = Math.max(1, mmToPixels(0.1));
-      context.beginPath();
-      if (x > printableLeft || gap >= mmToPixels(2.5)) {
-        context.moveTo(x - offset, y); context.lineTo(x - offset - length, y);
-        context.moveTo(x - offset, y + photoHeight); context.lineTo(x - offset - length, y + photoHeight);
-      }
-      if (y > printableTop || gap >= mmToPixels(2.5)) {
-        context.moveTo(x, y - offset); context.lineTo(x, y - offset - length);
-        context.moveTo(x + photoWidth, y - offset); context.lineTo(x + photoWidth, y - offset - length);
-      }
-      if (x + photoWidth < printableRight || gap >= mmToPixels(2.5)) {
-        context.moveTo(x + photoWidth + offset, y); context.lineTo(x + photoWidth + offset + length, y);
-        context.moveTo(x + photoWidth + offset, y + photoHeight); context.lineTo(x + photoWidth + offset + length, y + photoHeight);
-      }
-      if (y + photoHeight < printableBottom || gap >= mmToPixels(2.5)) {
-        context.moveTo(x, y + photoHeight + offset); context.lineTo(x, y + photoHeight + offset + length);
-        context.moveTo(x + photoWidth, y + photoHeight + offset); context.lineTo(x + photoWidth, y + photoHeight + offset + length);
-      }
-      context.stroke();
-    }
+  context.fillRect(0, 0, canvas.width, canvas.height);
+  const count = Math.min(layout.capacity, layout.options.copies - pageIndex * layout.capacity);
+  for (const p of layout.placements.slice(0, count)) {
+    context.drawImage(photo, px(p.xMm), px(p.yMm), px(p.xMm + p.widthMm) - px(p.xMm), px(p.yMm + p.heightMm) - px(p.yMm));
   }
-  if (format === "image/jpeg") {
-    context.globalCompositeOperation = "destination-over";
-    context.fillStyle = "#ffffff";
-    context.fillRect(0, 0, width, height);
-    context.globalCompositeOperation = "source-over";
+  if (layout.options.cropMarks) {
+    context.strokeStyle = "#222222";
+    context.lineWidth = Math.max(0.5, 0.1 / 25.4 * dpi);
+    context.beginPath();
+    for (const mark of idPhotoCropMarks(layout, count)) {
+      context.moveTo(mark.x1 / 25.4 * dpi, mark.y1 / 25.4 * dpi);
+      context.lineTo(mark.x2 / 25.4 * dpi, mark.y2 / 25.4 * dpi);
+    }
+    context.stroke();
   }
 }
 
@@ -223,74 +215,40 @@ export async function createIdPhotoLayoutExport(
           });
         });
         if (options.cropMarks) {
-          const markLength = pointsFromMm(2);
-          const gap = pointsFromMm(0.5);
-          layout.placements.slice(0, count).forEach((placement) => {
-            const x = pointsFromMm(placement.xMm);
-            const y = pointsFromMm(options.paperHeightMm - placement.yMm - placement.heightMm);
-            const w = pointsFromMm(placement.widthMm);
-            const h = pointsFromMm(placement.heightMm);
-            const markSegments = [
-              [x - gap - markLength, y + h, x - gap, y + h], [x, y + h + gap, x, y + h + gap + markLength],
-              [x + w + gap, y + h, x + w + gap + markLength, y + h], [x + w, y + h + gap, x + w, y + h + gap + markLength],
-              [x - gap - markLength, y, x - gap, y], [x, y - gap - markLength, x, y - gap],
-              [x + w + gap, y, x + w + gap + markLength, y], [x + w, y - gap - markLength, x + w, y - gap],
-            ];
-            markSegments.forEach(([startX, startY, endX, endY]) => page.drawLine({
-              start: { x: startX, y: startY },
-              end: { x: endX, y: endY },
-              thickness: 0.25,
-            }));
-          });
+          for (const mark of idPhotoCropMarks(layout, count)) {
+            page.drawLine({
+              start: { x: pointsFromMm(mark.x1), y: pointsFromMm(options.paperHeightMm - mark.y1) },
+              end: { x: pointsFromMm(mark.x2), y: pointsFromMm(options.paperHeightMm - mark.y2) },
+              thickness: pointsFromMm(0.1),
+            });
+          }
         }
+        await new Promise<void>(resolve => setTimeout(resolve, 0));
       }
       const bytes = await pdf.save();
       const blob = new Blob([new Uint8Array(bytes)], { type: "application/pdf" });
-      return {
-        blob,
-        fileName: idPhotoFileName(options.photoWidthMm, options.photoHeightMm, paperName, "pdf"),
-        mimeType: "application/pdf",
-        size: blob.size,
-      };
+      return { blob, fileName: idPhotoFileName(options.photoWidthMm, options.photoHeightMm, paperName, "pdf"), mimeType: "application/pdf", size: blob.size };
     }
-
-    const imageFormat = format === "png" ? "image/png" : "image/jpeg";
-    const extension = format === "png" ? "png" : "jpg";
+    const mimeType = format === "png" ? "image/png" : "image/jpeg";
     const pages: Record<string, Uint8Array> = {};
     for (let pageIndex = 0; pageIndex < layout.pageCount; pageIndex += 1) {
       canvas = document.createElement("canvas");
-      drawPhotoPage(canvas, bitmap, layout, pageIndex, imageFormat);
-      const blob = await canvasToBlob(canvas, imageFormat, format === "jpg" ? 0.95 : undefined);
-      const bytes = new Uint8Array(await blob.arrayBuffer());
+      drawIdPhotoPage(canvas, bitmap, layout, pageIndex);
+      const blob = await canvasToBlob(canvas, mimeType, format === "jpg" ? 0.95 : undefined);
       if (layout.pageCount === 1) {
-        return {
-          blob,
-          fileName: idPhotoFileName(options.photoWidthMm, options.photoHeightMm, paperName, extension),
-          mimeType: imageFormat,
-          size: blob.size,
-          width: canvas.width,
-          height: canvas.height,
-        };
+        return { blob, fileName: idPhotoFileName(options.photoWidthMm, options.photoHeightMm, paperName, format), mimeType, size: blob.size, width: canvas.width, height: canvas.height };
       }
-      const pageNumber = String(pageIndex + 1).padStart(2, "0");
-      const pageName = idPhotoFileName(options.photoWidthMm, options.photoHeightMm, paperName, `${pageNumber}.${extension}`);
-      pages[pageName] = bytes;
-      canvas.width = 0;
-      canvas.height = 0;
-      canvas = undefined;
+      pages[idPhotoFileName(options.photoWidthMm, options.photoHeightMm, paperName, `${String(pageIndex + 1).padStart(2, "0")}.${format}`)] = new Uint8Array(await blob.arrayBuffer());
+      canvas.width = 0; canvas.height = 0; canvas = undefined;
+      await new Promise<void>(resolve => setTimeout(resolve, 0));
     }
-    const blob = new Blob([zipSync(pages)], { type: "application/zip" });
-    return {
-      blob,
-      fileName: idPhotoFileName(options.photoWidthMm, options.photoHeightMm, paperName, "zip"),
-      mimeType: "application/zip",
-      size: blob.size,
-    };
+    const archive = await new Promise<Uint8Array<ArrayBuffer>>((resolve, reject) => {
+      zip(pages, { level: 0 }, (error, data) => error ? reject(error) : resolve(new Uint8Array(data)));
+    });
+    const blob = new Blob([archive], { type: "application/zip" });
+    return { blob, fileName: idPhotoFileName(options.photoWidthMm, options.photoHeightMm, paperName, "zip"), mimeType: "application/zip", size: blob.size };
   } finally {
     bitmap.close();
-    if (canvas) {
-      canvas.width = 0;
-      canvas.height = 0;
-    }
+    if (canvas) { canvas.width = 0; canvas.height = 0; }
   }
 }

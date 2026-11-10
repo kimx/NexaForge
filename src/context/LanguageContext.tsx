@@ -1,3 +1,4 @@
+import { ID_PHOTO_EN_MESSAGES, ID_PHOTO_ZH_MESSAGES } from "../i18n/idPhotoMessages";
 import { listCleanupToolMessages } from "../pages/text/listCleanupMessages";
 import { EVERYDAY_EN_MESSAGES, EVERYDAY_ZH_MESSAGES } from "../i18n/everydayMessages";
 import {
@@ -76,6 +77,7 @@ function persistLocaleState(locale: Locale): void {
 }
 
 const zhMessages: Record<string, string> = {
+  ...ID_PHOTO_ZH_MESSAGES,
   ...EVERYDAY_ZH_MESSAGES,
   ...listCleanupToolMessages["zh-TW"],
   ...TEXT_WORKFLOW_ZH_MESSAGES,
@@ -1045,6 +1047,7 @@ const zhMessages: Record<string, string> = {
 };
 
 const enMessages: Record<string, string> = {
+  ...ID_PHOTO_EN_MESSAGES,
   ...EVERYDAY_EN_MESSAGES,
   ...listCleanupToolMessages.en,
   ...TEXT_WORKFLOW_EN_MESSAGES,

@@ -11,6 +11,7 @@ const ROUTE_HEADINGS: Record<string, string> = {
   "/json": "JSON Workspace",
   "/image/resize": "Free Online Image Resizer",
   "/image/crop": "Free Online Image Cropper",
+  "/image/id-photo-layout": "ID Photo Layout",
   "/image/convert": "Image Converter",
   "/image/compress": "Image Compress",
   "/image/exif-viewer": "EXIF Viewer",
