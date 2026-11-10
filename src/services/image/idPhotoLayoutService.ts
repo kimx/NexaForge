@@ -245,7 +245,7 @@ export async function createIdPhotoLayoutExport(
         }
       }
       const bytes = await pdf.save();
-      const blob = new Blob([bytes], { type: "application/pdf" });
+      const blob = new Blob([new Uint8Array(bytes)], { type: "application/pdf" });
       return {
         blob,
         fileName: idPhotoFileName(options.photoWidthMm, options.photoHeightMm, paperName, "pdf"),
