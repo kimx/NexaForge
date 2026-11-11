@@ -121,6 +121,58 @@ function canvasToBlob(canvas: HTMLCanvasElement, type: string, quality?: number)
   });
 }
 
+// Canvas serializes resolution as 96 DPI; encode the intended print density.
+async function withPrintDensity(blob: Blob, format: "png" | "jpg"): Promise<Blob> {
+  const bytes = new Uint8Array(await blob.arrayBuffer());
+  if (format === "jpg") {
+    if (bytes[0] !== 0xff || bytes[1] !== 0xd8) throw new Error("invalid-jpeg");
+    let offset = 2;
+    while (offset + 4 <= bytes.length && bytes[offset] === 0xff) {
+      const marker = bytes[offset + 1];
+      if (marker === 0xda || marker === 0xd9) break;
+      const length = (bytes[offset + 2] << 8) | bytes[offset + 3];
+      if (length < 2 || offset + 2 + length > bytes.length) throw new Error("invalid-jpeg");
+      if (marker === 0xe0 && length >= 16 && String.fromCharCode(...bytes.slice(offset + 4, offset + 9)) === "JFIF\0") {
+        bytes.set([1, 1, 44, 1, 44], offset + 11);
+        return new Blob([bytes], { type: blob.type });
+      }
+      offset += length + 2;
+    }
+    const jfif = Uint8Array.from([0xff, 0xe0, 0, 16, 0x4a, 0x46, 0x49, 0x46, 0, 1, 1, 1, 1, 44, 1, 44, 0, 0]);
+    return new Blob([bytes.slice(0, 2), jfif, bytes.slice(2)], { type: blob.type });
+  }
+  const signature = [137, 80, 78, 71, 13, 10, 26, 10];
+  if (!signature.every((value, index) => bytes[index] === value)) throw new Error("invalid-png");
+  const chunk = new Uint8Array(21);
+  const chunkView = new DataView(chunk.buffer);
+  chunkView.setUint32(0, 9);
+  chunk.set([112, 72, 89, 115], 4); // pHYs
+  chunkView.setUint32(8, Math.round(ID_PHOTO_DPI / 0.0254));
+  chunkView.setUint32(12, Math.round(ID_PHOTO_DPI / 0.0254));
+  chunk[16] = 1;
+  let crc = 0xffffffff;
+  for (const byte of chunk.slice(4, 17)) {
+    crc ^= byte;
+    for (let bit = 0; bit < 8; bit++) crc = (crc >>> 1) ^ (0xedb88320 & -(crc & 1));
+  }
+  chunkView.setUint32(17, (crc ^ 0xffffffff) >>> 0);
+  const parts: Uint8Array<ArrayBuffer>[] = [bytes.slice(0, 8)];
+  let offset = 8;
+  let inserted = false;
+  while (offset + 12 <= bytes.length) {
+    const length = new DataView(bytes.buffer, bytes.byteOffset + offset, 4).getUint32(0);
+    const end = offset + 12 + length;
+    if (end > bytes.length) throw new Error("invalid-png");
+    const type = String.fromCharCode(...bytes.slice(offset + 4, offset + 8));
+    if (type !== "pHYs") parts.push(bytes.slice(offset, end));
+    if (type === "IHDR") { parts.push(chunk); inserted = true; }
+    offset = end;
+    if (type === "IEND") break;
+  }
+  if (!inserted || offset !== bytes.length) throw new Error("invalid-png");
+  return new Blob(parts, { type: blob.type });
+}
+
 export type CropMark = { x1: number; y1: number; x2: number; y2: number };
 
 // Shared millimeter geometry; shorten marks to the available gutter.
@@ -234,7 +286,7 @@ export async function createIdPhotoLayoutExport(
     for (let pageIndex = 0; pageIndex < layout.pageCount; pageIndex += 1) {
       canvas = document.createElement("canvas");
       drawIdPhotoPage(canvas, bitmap, layout, pageIndex);
-      const blob = await canvasToBlob(canvas, mimeType, format === "jpg" ? 0.95 : undefined);
+      const blob = await withPrintDensity(await canvasToBlob(canvas, mimeType, format === "jpg" ? 0.95 : undefined), format);
       if (layout.pageCount === 1) {
         return { blob, fileName: idPhotoFileName(options.photoWidthMm, options.photoHeightMm, paperName, format), mimeType, size: blob.size, width: canvas.width, height: canvas.height };
       }

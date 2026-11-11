@@ -24,6 +24,7 @@ describe("ID photo layout page", () => {
     fireEvent.change(screen.getByLabelText("Photo size"), { target: { value: "custom" } });
     fireEvent.change(screen.getByLabelText("Photo width (mm)"), { target: { value: "200" } });
     expect(screen.getByRole("alert")).toHaveTextContent("does not fit");
+    expect(screen.getByLabelText("Photo width (mm)")).toHaveAccessibleDescription(/does not fit/);
     fireEvent.change(screen.getByLabelText("Photo width (mm)"), { target: { value: "25" } });
     fireEvent.change(screen.getByLabelText("Copies"), { target: { value: "13" } });
     expect(screen.getByText(/13 photos/)).toBeInTheDocument();

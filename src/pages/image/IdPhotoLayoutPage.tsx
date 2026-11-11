@@ -58,6 +58,7 @@ export function IdPhotoLayoutPage(): JSX.Element {
     catch (cause) { return { layout: null, error: cause instanceof Error ? cause.message : "invalid-layout" }; }
   }, [options]);
   const { layout } = calculated;
+  const photoError = calculated.error === "photo-does-not-fit" || (calculated.error === "invalid-layout" && (!Number.isFinite(width) || !Number.isFinite(height) || width < 1 || height < 1));
   const visiblePage = Math.min(pageIndex, (layout?.pageCount ?? 1) - 1);
   const meta = { title: `${t("tool.id-photo-layout.title")} - NexaForge`, description: t("tool.id-photo-layout.description"), canonical: tool.path, h1: t("tool.id-photo-layout.title") };
   useSeo(meta);
@@ -119,11 +120,14 @@ export function IdPhotoLayoutPage(): JSX.Element {
   }, [cropUrl, layout, visiblePage]);
   useEffect(() => () => { revision.current += 1; }, []);
 
-  const labels = useMemo(() => Object.fromEntries([
+  const labels = useMemo(() => ({ ...Object.fromEntries([
     "canvas", "presets", "rectangle", "circle", "heart", "star", "polygon", "freehand", "zoom", "undo", "reset", "rotateLeft", "rotateRight", "flipHorizontal", "flipVertical", "closeShape", "addPoint", "point", "xCoordinate", "yCoordinate", "resizeShape",
   ].map(key => [key, t(`tool.image-crop.${key}`)]).concat([
     "notEnoughPoints", "closeShapeHint", "selfIntersection", "shapeTooSmall", "outsideImage",
-  ].map(key => [key, t(`tool.image-crop.validation.${key === "closeShapeHint" ? "closeShape" : key}`)]))) as unknown as ImageCropEditorLabels, [t]);
+  ].map(key => [key, t(`tool.image-crop.validation.${key === "closeShapeHint" ? "closeShape" : key}`)]))),
+    keyboardInstructions: t("tool.image-crop.keyboardInstructions"),
+    directions: Object.fromEntries(["north", "northeast", "east", "southeast", "south", "southwest", "west", "northwest"].map(direction => [direction, t(`tool.image-crop.direction.${direction}`)])),
+  }) as unknown as ImageCropEditorLabels, [t]);
 
   const exportFile = async (): Promise<void> => {
     if (!file || !layout || !ready || busy) return;
@@ -138,6 +142,8 @@ export function IdPhotoLayoutPage(): JSX.Element {
 
   const numberField = (key: string, value: number, update: (next: number) => void, min: number, step = 0.1): JSX.Element => (
     <label>{t(`idPhoto.${key}`)}<input type="number" min={min} step={step} value={Number.isNaN(value) ? "" : value}
+      aria-describedby={photoError && (key === "width" || key === "height") ? "id-photo-layout-error" : undefined}
+      aria-invalid={photoError && (key === "width" || key === "height") ? true : undefined}
       onChange={event => change(() => update(event.target.value === "" ? NaN : Number(event.target.value)))} /></label>
   );
 
@@ -148,12 +154,13 @@ export function IdPhotoLayoutPage(): JSX.Element {
       <FileInfo files={file ? [file] : []} mode="single" compact showEmpty={false} onRemove={() => selectFile([])} />
       {sourceSize && <p>{sourceSize.width} × {sourceSize.height} px</p>}
       <div className="id-photo-fields">
-        <label>{t("idPhoto.photoSize")}<select value={preset} onChange={event => change(() => {
+        <label>{t("idPhoto.photoSize")}<select aria-describedby={photoError ? "id-photo-layout-error" : undefined} value={preset} onChange={event => change(() => {
           setPreset(event.target.value);
           if (event.target.value !== "custom") { setWidth(event.target.value === "one" ? 25 : 35); setHeight(event.target.value === "one" ? 35 : 45); }
         })}><option value="one">{t("idPhoto.one")}</option><option value="two">{t("idPhoto.two")}</option><option value="custom">{t("idPhoto.custom")}</option></select></label>
         {preset === "custom" && <>{numberField("width", width, setWidth, 1)}{numberField("height", height, setHeight, 1)}</>}
       </div>
+      {photoError && <p id="id-photo-layout-error" role="alert" className="error">{t(`idPhoto.${calculated.error}`)}</p>}
       <p className="id-photo-note">{t("idPhoto.disclaimer")}</p>
       {sourceUrl && <ImageCropEditor key={sourceUrl} sourceUrl={sourceUrl} fileName={file!.name} value={settings} onChange={changeCrop}
         onValidationChange={setValidation} onSourceStatusChange={setSourceStatus} onSourceSizeChange={onSize} labels={labels} lockedAspectRatio={ratio} />}
@@ -163,12 +170,12 @@ export function IdPhotoLayoutPage(): JSX.Element {
         width: cropPlan.outputWidth, height: cropPlan.outputHeight, targetWidth: mmToPixels(width), targetHeight: mmToPixels(height),
       })}</p>}
       <div className="id-photo-fields">
-        <label>{t("idPhoto.paper")}<select value={paper} onChange={event => change(() => setPaper(event.target.value as keyof typeof PAPERS))}><option value="4x6">4 × 6″ (101.6 × 152.4 mm)</option><option value="5x7">5 × 7″ (127 × 177.8 mm)</option><option value="A4">A4 (210 × 297 mm)</option></select></label>
+        <label>{t("idPhoto.paper")}<select aria-describedby={photoError ? "id-photo-layout-error" : undefined} value={paper} onChange={event => change(() => setPaper(event.target.value as keyof typeof PAPERS))}><option value="4x6">4 × 6″ (101.6 × 152.4 mm)</option><option value="5x7">5 × 7″ (127 × 177.8 mm)</option><option value="A4">A4 (210 × 297 mm)</option></select></label>
         <label>{t("idPhoto.orientation")}<select value={landscape ? "landscape" : "portrait"} onChange={event => change(() => setLandscape(event.target.value === "landscape"))}><option value="portrait">{t("idPhoto.portrait")}</option><option value="landscape">{t("idPhoto.landscape")}</option></select></label>
         {numberField("margin", margin, setMargin, 0)}{numberField("spacing", spacing, setSpacing, 0)}{numberField("copies", copies, setCopies, 1, 1)}
         <label className="id-photo-check"><input type="checkbox" checked={marks} onChange={event => change(() => setMarks(event.target.checked))} />{t("idPhoto.marks")}</label>
       </div>
-      {calculated.error && <p role="alert" className="error">{t(`idPhoto.${calculated.error}`)}</p>}
+      {calculated.error && !photoError && <p role="alert" className="error">{t(`idPhoto.${calculated.error}`)}</p>}
       {error && <p role="alert" className="error">{t(`idPhoto.${error}`)}</p>}
     </div>,
     options: null,
