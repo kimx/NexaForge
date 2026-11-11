@@ -12,7 +12,7 @@ const tool: ToolDefinition = {
   category: "Data",
 };
 
-function Template({ state, route = "/" }: { state: ProcessingState; route?: string }): JSX.Element {
+function Template({ state, route = "/", locale = "en" }: { state: ProcessingState; route?: string; locale?: "en" | "zh-TW" }): JSX.Element {
   const workflow: ToolWorkflow = { state };
 
   return (
@@ -20,7 +20,7 @@ function Template({ state, route = "/" }: { state: ProcessingState; route?: stri
       initialEntries={[route]}
       future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
     >
-      <LanguageProvider initialLocale="en">
+      <LanguageProvider initialLocale={locale}>
         <ToolPageTemplate
           tool={tool}
           meta={{ title: tool.title, description: tool.description, canonical: tool.path, h1: tool.title }}
@@ -79,6 +79,11 @@ describe("ToolPageTemplate result focus", () => {
 
     expect(guidance.compareDocumentPosition(advertisement) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(advertisement.compareDocumentPosition(faq) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it.each([["en", "Was this tool helpful?"], ["zh-TW", "這個工具有幫助嗎？"]] as const)("does not show the tool feedback prompt in %s", (locale, heading) => {
+    render(<Template state="ready" locale={locale} />);
+    expect(screen.queryByRole("heading", { name: heading })).not.toBeInTheDocument();
   });
 
   it("uses route-specific page identity and avoids duplicate FAQ content", () => {

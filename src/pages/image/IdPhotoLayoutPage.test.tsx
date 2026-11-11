@@ -20,6 +20,9 @@ describe("ID photo layout page", () => {
   it("provides physical layout controls and prevents export before selecting a photo", () => {
     render(<MemoryRouter><LanguageProvider initialLocale="en"><IdPhotoLayoutPage /></LanguageProvider></MemoryRouter>);
     expect(screen.getByRole("button", { name: "Create print file" })).toBeDisabled();
+    expect(screen.getByLabelText("Orientation")).toHaveValue("landscape");
+    expect(screen.getByLabelText("Copies")).toHaveValue(8);
+    expect(screen.getByText(/8 photos/)).toBeInTheDocument();
     expect(screen.getByText(/Actual size/)).toBeInTheDocument();
     fireEvent.change(screen.getByLabelText("Photo size"), { target: { value: "custom" } });
     fireEvent.change(screen.getByLabelText("Photo width (mm)"), { target: { value: "200" } });
