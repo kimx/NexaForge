@@ -31,10 +31,10 @@ export function IdPhotoLayoutPage(): JSX.Element {
   const [width, setWidth] = useState(35);
   const [height, setHeight] = useState(45);
   const [paper, setPaper] = useState<keyof typeof PAPERS>("4x6");
-  const [landscape, setLandscape] = useState(false);
+  const [landscape, setLandscape] = useState(true);
   const [margin, setMargin] = useState(3);
   const [spacing, setSpacing] = useState(2);
-  const [copies, setCopies] = useState(6);
+  const [copies, setCopies] = useState(8);
   const [marks, setMarks] = useState(false);
   const [format, setFormat] = useState<IdPhotoExportFormat>("pdf");
   const [settings, setSettings] = useState(() => createIdPhotoCrop(35 / 45));
