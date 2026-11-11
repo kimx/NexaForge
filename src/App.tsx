@@ -2,6 +2,7 @@ import { createContext, lazy, Suspense, useCallback, useContext, useEffect, useL
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { Footer } from "./components/Footer";
 import { Header } from "./components/Header";
+import { PdfPasswordProvider } from "./components/PdfPasswordProvider";
 import { ToolSidebar } from "./components/ToolSidebar";
 import { useLanguage } from "./context/LanguageContext";
 import { TextWorkflowProvider } from "./context/TextWorkflowContext";
@@ -106,6 +107,7 @@ const BatchRenamePage = lazy(() => import("./pages/file/BatchRenamePage").then(m
 const ImageConvertPage = lazy(() =>
   import("./pages/image/ConvertPage").then((module) => ({ default: module.ImageConvertPage }))
 );
+const IdPhotoLayoutPage = lazy(() => import("./pages/image/IdPhotoLayoutPage").then(module => ({ default: module.IdPhotoLayoutPage })));
 const ImageCropPage = lazy(() =>
   import("./pages/image/CropPage").then((module) => ({ default: module.ImageCropPage }))
 );
@@ -159,6 +161,9 @@ const PdfWatermarkPage = lazy(() =>
 );
 const PdfMetadataPage = lazy(() =>
   import("./pages/pdf/MetadataPage").then((module) => ({ default: module.MetadataPage }))
+);
+const RemovePasswordPage = lazy(() =>
+  import("./pages/pdf/RemovePasswordPage").then((module) => ({ default: module.RemovePasswordPage }))
 );
 const QrPage = lazy(() =>
   import("./pages/qr/QrPage").then((module) => ({ default: module.QrPage }))
@@ -257,6 +262,7 @@ const APP_ROUTES: AppRoute[] = [
   { path: "/json", element: <JsonHubPage /> },
   { path: "/image/resize", element: <ImageResizePage /> },
   { path: "/image/crop", element: <ImageCropPage /> },
+  { path: "/image/id-photo-layout", element: <IdPhotoLayoutPage /> },
   { path: "/image/compress", element: <ImageCompressPage /> },
   { path: "/image/convert", element: <ImageConvertPage /> },
   { path: "/image/exif-viewer", element: <ExifPage kind="image-exif-viewer" /> },
@@ -278,6 +284,7 @@ const APP_ROUTES: AppRoute[] = [
   { path: "/pdf/add-page-numbers", element: <AddPageNumbersPage /> },
   { path: "/pdf/watermark", element: <PdfWatermarkPage /> },
   { path: "/pdf/metadata", element: <PdfMetadataPage /> },
+  { path: "/pdf/remove-password", element: <RemovePasswordPage /> },
   { path: "/data/json-formatter", element: <JsonFormatterPage /> },
   { path: "/data/jsonpath-tester", element: <JsonPathTesterPage /> },
   { path: "/data/json-diff", element: <JsonDiffPage /> },
@@ -524,6 +531,7 @@ export function ToolFrame({ children }: { children: JSX.Element }): JSX.Element 
 export default function App(): JSX.Element {
   return (
     <TextWorkflowProvider>
+      <PdfPasswordProvider />
       <RouteLocaleSync />
       <Routes>
         {APP_ROUTES.flatMap(({ path, element }) => [

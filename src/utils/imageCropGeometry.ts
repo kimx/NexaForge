@@ -215,7 +215,8 @@ export function validateCropShape(shape: CropShape, imageBounds?: CropBounds): C
   }
 
   const bounds = getCropBounds(shape);
-  if (bounds.width < 0.05 || bounds.height < 0.05) {
+  const aspect = shape.kind === "rectangle" && shape.aspectRatio && Number.isFinite(shape.aspectRatio) && shape.aspectRatio > 0 ? shape.aspectRatio : 1;
+  if (bounds.width < 0.05 * Math.min(1, aspect) || bounds.height < 0.05 * Math.min(1, 1 / aspect)) {
     return { valid: false, reason: "shape-too-small" };
   }
   if (imageBounds && !boundsIntersect(bounds, imageBounds)) {

@@ -15,7 +15,7 @@ import {
   type PdfWatermarkPosition,
   validatePdfWatermarkOptions,
 } from "../../services/pdf/watermarkService";
-import { getPdfPageCount } from "../../services/pdf/pdfService";
+import { createPdfResult, getPdfToolkitErrorMessage, loadPdfData } from "../../services/pdf/pdfToolkit";
 import type { FileProcessResult, ProcessingState, ToolMeta } from "../../types/tool";
 import { trackEvent } from "../../utils/analytics";
 import { getRelatedTools } from "../../utils/toolHelpers";
@@ -38,6 +38,7 @@ const IMAGE_ACCEPT = "image/png,image/jpeg,.png,.jpg,.jpeg";
 export function WatermarkPage(): JSX.Element {
   const { t } = useLanguage();
   const [file, setFile] = useState<File | null>(null);
+  const [decryptedPreview, setDecryptedPreview] = useState<Blob | null>(null);
   const [image, setImage] = useState<File | null>(null);
   const [pageCount, setPageCount] = useState<number | null>(null);
   const [mode, setMode] = useState<PdfWatermarkMode>("text");
@@ -92,7 +93,7 @@ export function WatermarkPage(): JSX.Element {
     validation.length === 0 &&
     !hasRangeError &&
     processing !== "processing";
-  const previewUrl = useBlobUrl(result?.blob ?? file);
+  const previewUrl = useBlobUrl(result?.blob ?? decryptedPreview ?? file);
 
   const howItWorks = useMemo(
     () => [0, 1, 2, 3].map((index) => t(`tool.pdf-watermark.how.${index}`)),
@@ -125,17 +126,22 @@ export function WatermarkPage(): JSX.Element {
     }
 
     setFile(selected);
+    setDecryptedPreview(null);
     setPageCount(null);
     setResult(null);
     setError(null);
     setProcessing("processing");
     trackEvent("workflow_ready", { tool: "pdf-watermark" });
     try {
-      setPageCount(await getPdfPageCount(selected));
+      const loaded = await loadPdfData(selected);
+      setPageCount(loaded.document.getPageCount());
+      if (loaded.encrypted) {
+        setDecryptedPreview(createPdfResult(loaded.bytes, selected.name).blob);
+      }
       setProcessing("ready");
     } catch (cause) {
       console.error(cause);
-      setError(t("error.processingFailed"));
+      setError(getPdfToolkitErrorMessage(cause, t, t("error.processingFailed")));
       setProcessing("error");
       trackEvent("process_failed", { tool: "pdf-watermark" });
     }
@@ -175,7 +181,9 @@ export function WatermarkPage(): JSX.Element {
       trackEvent("process_success", { tool: "pdf-watermark" });
     } catch (cause) {
       console.error(cause);
-      setError(t("tool.pdf-watermark.error.processing"));
+      setError(
+        getPdfToolkitErrorMessage(cause, t, t("tool.pdf-watermark.error.processing"))
+      );
       setProcessing("error");
       trackEvent("process_failed", { tool: "pdf-watermark" });
     }

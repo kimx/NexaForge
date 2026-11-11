@@ -2,7 +2,7 @@ import { fireEvent, render, screen, within } from "@testing-library/react";
 import { useState } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { CropSettings, ImageCropEditorLabels } from "../types/imageCrop";
-import { createDefaultCropSettings } from "../utils/imageCropGeometry";
+import { createDefaultCropSettings, validateCropShape } from "../utils/imageCropGeometry";
 import { ImageCropEditor } from "./ImageCropEditor";
 
 const labels: ImageCropEditorLabels & {
@@ -68,7 +68,7 @@ const canvasContext = {
   globalCompositeOperation: "source-over",
 };
 
-function EditorHarness({ initial = createDefaultCropSettings() }: { initial?: CropSettings }): JSX.Element {
+function EditorHarness({ initial = createDefaultCropSettings(), lockedAspectRatio }: { initial?: CropSettings; lockedAspectRatio?: number }): JSX.Element {
   const [value, setValue] = useState(initial);
   return (
     <ImageCropEditor
@@ -82,6 +82,7 @@ function EditorHarness({ initial = createDefaultCropSettings() }: { initial?: Cr
       onValidationChange={onValidationChange}
       onSourceStatusChange={onSourceStatusChange}
       labels={labels}
+      lockedAspectRatio={lockedAspectRatio}
     />
   );
 }
@@ -138,6 +139,25 @@ beforeEach(() => {
 });
 
 describe("ImageCropEditor", () => {
+  it("keeps locked crops valid at the minimum keyboard resize size", () => {
+    const initial = createDefaultCropSettings();
+    initial.shape = { kind: "rectangle", aspectRatio: 25 / 35, bounds: { x: 0.4, y: 0.4, width: 0.05, height: 0.07 } };
+    render(<EditorHarness initial={initial} lockedAspectRatio={25 / 35} />);
+    loadSource();
+    fireEvent.keyDown(screen.getByRole("button", { name: "Resize shape east" }), { key: "ArrowLeft", shiftKey: true });
+    expect(validateCropShape(onChange.mock.calls.at(-1)![0].shape).valid).toBe(true);
+  });
+  it("preserves a locked ID photo ratio when resizing and resetting", () => {
+    render(<EditorHarness lockedAspectRatio={35 / 45} />);
+    loadSource();
+    expect(screen.queryByRole("button", { name: "Circle" })).not.toBeInTheDocument();
+    fireEvent.keyDown(screen.getByRole("button", { name: "Resize shape east" }), { key: "ArrowRight" });
+    let bounds = onChange.mock.calls.at(-1)![0].shape.bounds;
+    expect(bounds.width / bounds.height).toBeCloseTo(35 / 45);
+    fireEvent.click(screen.getByRole("button", { name: "Reset" }));
+    bounds = onChange.mock.calls.at(-1)![0].shape.bounds;
+    expect(bounds.width / bounds.height).toBeCloseTo(35 / 45);
+  });
   it("shows a named preview and changes to a transparent PNG circle", () => {
     render(<EditorHarness />);
     loadSource();

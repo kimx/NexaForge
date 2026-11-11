@@ -1,0 +1,10 @@
+.id-photo-workspace, .id-photo-result { display: grid; gap: 1rem; min-width: 0; }
+.id-photo-fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr)); gap: 1rem; }
+.id-photo-workspace label, .id-photo-result label { display: grid; gap: .4rem; min-width: 0; }
+.id-photo-workspace input, .id-photo-workspace select, .id-photo-result select { width: 100%; min-width: 0; min-height: 44px; }
+.id-photo-workspace .id-photo-check { display: flex; align-items: center; gap: .6rem; }
+.id-photo-check input { width: 20px; min-height: 20px; }
+.id-photo-preview { display: block; width: 100%; max-width: 600px; height: auto; border: 1px solid #8c929d; background: white; }
+.id-photo-note { font-size: .9rem; line-height: 1.6; }
+.id-photo-warning { border-inline-start: 3px solid #b88c35; padding-inline-start: .8rem; line-height: 1.6; }
+.id-photo-workspace .image-crop-editor { width: 100%; max-width: 620px; justify-self: center; }

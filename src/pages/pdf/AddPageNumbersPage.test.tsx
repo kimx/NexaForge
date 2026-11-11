@@ -2,7 +2,8 @@ import { fireEvent, screen, waitFor } from "@testing-library/react";
 import { vi } from "vitest";
 import { AddPageNumbersPage } from "./AddPageNumbersPage";
 import * as pageNumberService from "../../services/pdf/pageNumberService";
-import * as pdfService from "../../services/pdf/pdfService";
+import * as pdfToolkit from "../../services/pdf/pdfToolkit";
+import type { PDFDocument } from "pdf-lib";
 import type { FileProcessResult } from "../../types/tool";
 import { renderWithProviders } from "../../test/renderWithProviders";
 
@@ -12,7 +13,11 @@ afterEach(() => {
 
 describe("AddPageNumbersPage", () => {
   it("shows the page count and required settings after selecting a PDF", async () => {
-    vi.spyOn(pdfService, "getPdfPageCount").mockResolvedValue(3);
+    vi.spyOn(pdfToolkit, "loadPdfData").mockResolvedValue({
+      document: { getPageCount: () => 3 } as PDFDocument,
+      bytes: new Uint8Array([37, 80, 68, 70]),
+      encrypted: false,
+    });
 
     const { container } = renderWithProviders(<AddPageNumbersPage />);
     fireEvent.change(container.querySelector('input[type="file"]') as HTMLInputElement, {
@@ -29,7 +34,11 @@ describe("AddPageNumbersPage", () => {
   });
 
   it("passes selected options to the browser-only PDF service", async () => {
-    vi.spyOn(pdfService, "getPdfPageCount").mockResolvedValue(3);
+    vi.spyOn(pdfToolkit, "loadPdfData").mockResolvedValue({
+      document: { getPageCount: () => 3 } as PDFDocument,
+      bytes: new Uint8Array([37, 80, 68, 70]),
+      encrypted: false,
+    });
     const result: FileProcessResult = {
       blob: new Blob(["%PDF-1.4"], { type: "application/pdf" }),
       fileName: "numbered.pdf",

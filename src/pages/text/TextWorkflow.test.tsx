@@ -30,7 +30,8 @@ function renderWorkflow(route = "/en/text/text-cleaner", locale: Locale = "en") 
 }
 
 async function cleanEnglish(input = SOURCE): Promise<void> {
-  fireEvent.change(await screen.findByLabelText("Input text"), { target: { value: input } });
+  // Lazy routes can take longer than Testing Library's default 1s on busy CI workers.
+  fireEvent.change(await screen.findByLabelText("Input text", {}, { timeout: 5000 }), { target: { value: input } });
   fireEvent.click(screen.getByLabelText("Trim each line"));
   fireEvent.click(screen.getByLabelText("Remove empty lines"));
   fireEvent.click(screen.getByRole("button", { name: "Clean text" }));
@@ -59,14 +60,14 @@ describe("Text workflow", () => {
     renderWorkflow();
     await cleanEnglish();
     fireEvent.click(within(screen.getByRole("main")).getByRole("link", { name: "List Cleanup" }));
-    expect(await screen.findByLabelText("Original list")).toHaveValue("");
+    expect(await screen.findByLabelText("Original list", {}, { timeout: 5000 })).toHaveValue("");
     fireEvent.click(screen.getByRole("button", { name: "Use original text from the current workflow" }));
     expect(screen.getByLabelText("Original list")).toHaveValue(SOURCE);
     expect(screen.queryByLabelText("Final list")).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Run cleanup" }));
     expect(screen.getByLabelText("Final list")).toHaveValue("apple\npear");
     expect(screen.getByTestId("location")).toHaveTextContent(JSON.stringify({ path: "/en/text/list-cleanup", search: "", hash: "", state: null }));
-  });
+  }, 15000);
 
   it.each(["en", "zh-TW"] as const)("completes cleanup, deduplication and sorting without persisting content (%s)", async (locale) => {
     const isEnglish = locale === "en";

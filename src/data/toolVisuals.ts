@@ -25,6 +25,7 @@ export const CATEGORY_VISUALS: Readonly<Record<ToolCategory, ToolVisual>> = {
 
 // Coverage is enforced against FILE_TOOLS in toolVisuals.test.ts.
 export const TOOL_VISUALS: Readonly<Partial<Record<string, ToolVisual>>> = {
+  "id-photo-layout": { label: "ID", tone: "blue", sidebarIcon: "image" },
   "pdf-compress": { label: "SIZE", tone: "red", sidebarIcon: "pdf" },
   "image-collage": { label: "GRID", tone: "blue", sidebarIcon: "image" },
   "image-ocr": { label: "OCR", tone: "blue", sidebarIcon: "image" },
@@ -53,6 +54,7 @@ export const TOOL_VISUALS: Readonly<Partial<Record<string, ToolVisual>>> = {
   "pdf-add-page-numbers": { label: "#", tone: "red", sidebarIcon: "pdf" },
   "pdf-watermark": { label: "WM", tone: "red", sidebarIcon: "pdf" },
   "pdf-metadata": { label: "META", tone: "red", sidebarIcon: "pdf" },
+  "pdf-remove-password": { label: "UNLOCK", tone: "red", sidebarIcon: "pdf" },
   "json-formatter": { label: "{}", tone: "mint", sidebarIcon: "data" },
   "jsonpath-tester": { label: "JPATH", tone: "mint", sidebarIcon: "data" },
   "csv-viewer": { label: "CSV", tone: "mint", sidebarIcon: "data" },

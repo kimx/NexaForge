@@ -126,7 +126,7 @@ describe("PDF compression", () => {
     await expect(compressPdf(new File(["bad"], "bad.pdf"), { mode: "preserve-text" })).rejects.toMatchObject({ code: "broken-pdf" });
     const pdf = await fixture();
     const text = new TextDecoder("latin1").decode(await pdf.arrayBuffer()).replace("/Root", "/Encrypt 1 0 R\n/Root");
-    await expect(compressPdf(new File([text], "encrypted.pdf"), { mode: "preserve-text" })).rejects.toMatchObject({ code: "encrypted-pdf" });
+    await expect(compressPdf(new File([text], "encrypted.pdf"), { mode: "preserve-text" })).rejects.toMatchObject({ code: "unsupported-encryption" });
   });
 
   it("rejects unsafe rendering dimensions before allocating a canvas", async () => {

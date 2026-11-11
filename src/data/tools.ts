@@ -48,6 +48,15 @@ export const FILE_TOOLS: ToolDefinition[] = [
     keywords: ["photo", "image", "crop", "mask", "circle", "polygon", "transparent png"],
   },
   {
+    id: "id-photo-layout",
+    title: "ID Photo Layout",
+    description: "Crop and arrange ID photos on photo paper or A4, then export print-ready PDF, PNG or JPG locally.",
+    path: "/image/id-photo-layout",
+    category: "Image",
+    aliases: ["證件照排版", "大頭照", "passport photo layout", "ID photo print"],
+    keywords: ["id photo", "passport", "visa", "print", "300 DPI", "證件照", "相紙", "一吋", "二吋", "1吋", "2吋", "列印"],
+  },
+  {
     id: "image-compress",
     title: "Image Compress",
     description: "Batch compress images with quality control and compare file sizes.",
@@ -217,6 +226,15 @@ export const FILE_TOOLS: ToolDefinition[] = [
     category: "PDF",
     aliases: ["pdf metadata viewer", "remove pdf metadata", "pdf author remover"],
     keywords: ["document", "pdf", "metadata", "author", "properties", "privacy"],
+  },
+  {
+    id: "pdf-remove-password",
+    title: "Remove PDF Password",
+    description: "Unlock a PDF locally and download a copy that opens without a password.",
+    path: "/pdf/remove-password",
+    category: "PDF",
+    aliases: ["unlock pdf", "remove pdf password", "pdf password remover", "decrypt pdf"],
+    keywords: ["document", "pdf", "password", "unlock", "decrypt", "security"],
   },
   {
     id: "json-formatter",
@@ -622,7 +640,8 @@ export const FILE_TOOLS: ToolDefinition[] = [
 export const TOOL_RELATIONSHIPS: Record<string, string[]> = {
   "image-to-pdf": ["pdf-merge", "pdf-reorder-pages", "pdf-to-image", "image-compress"],
   "image-resize": ["image-crop", "image-compress", "image-convert", "image-remove-exif"],
-  "image-crop": ["image-resize", "image-compress", "image-convert", "image-remove-exif"],
+  "id-photo-layout": ["image-crop", "image-resize", "image-to-pdf", "image-compress"],
+  "image-crop": ["id-photo-layout", "image-compress", "image-convert", "image-remove-exif"],
   "image-compress": ["image-resize", "image-convert", "image-crop", "image-remove-exif"],
   "image-convert": ["image-resize", "image-compress", "image-crop", "image-remove-exif"],
   "heic-converter": ["image-convert", "image-resize", "image-crop", "image-compress"],

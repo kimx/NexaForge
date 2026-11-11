@@ -24,10 +24,147 @@ function select(container: HTMLElement, files: File[]) { fireEvent.change(contai
 
 beforeEach(() => {
   vi.clearAllMocks();
+  window.localStorage.clear();
   vi.stubGlobal("createImageBitmap", vi.fn(async () => ({ width: 600, height: 400, close: vi.fn() })));
   vi.stubGlobal("URL", Object.assign(URL, { createObjectURL: vi.fn(() => "blob:photo"), revokeObjectURL: vi.fn() }));
 });
-afterEach(() => vi.unstubAllGlobals());
+afterEach(() => { vi.unstubAllGlobals(); vi.restoreAllMocks(); });
+
+const templatesKey = "nexaforge-image-delivery-templates-v1";
+function savedTemplate(name = "Shop photos") {
+  return { name, resize: { width: 800, height: 600, keepAspectRatio: false, format: "webp", quality: .8 }, watermark: { text: "My shop", position: "center", opacity: 40, size: 8, color: "#123456" } };
+}
+function seedTemplates() { localStorage.setItem(templatesKey, JSON.stringify([savedTemplate()])); }
+
+it("restores and explicitly applies a template without storing selected files", async () => {
+  seedTemplates();
+  const { container, unmount } = renderWithProviders(<ImageDeliveryPage />);
+  select(container, [new File(["private bytes"], "private-photo.png", { type: "image/png" })]);
+  fireEvent.change(screen.getByLabelText("Saved template"), { target: { value: "Shop photos" } });
+  expect(screen.getByLabelText("Width (px)")).toHaveValue(1200);
+  fireEvent.click(screen.getByRole("button", { name: "Apply template" }));
+  expect(screen.getByLabelText("Width (px)")).toHaveValue(800);
+  expect(screen.getByLabelText("Height (px)")).toHaveValue(600);
+  expect(screen.getByLabelText("Output format")).toHaveValue("webp");
+  expect(screen.getByLabelText("Quality (%)")).toHaveValue(80);
+  expect(screen.getByRole("button", { name: "Resize images" })).toBeEnabled();
+  expect(localStorage.getItem(templatesKey)).not.toMatch(/private-photo|private bytes/);
+  unmount(); renderWithProviders(<ImageDeliveryPage />);
+  expect(screen.getByRole("option", { name: "Shop photos" })).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "Resize images" })).toBeDisabled();
+});
+
+it("saves resize and watermark settings, renames without changing them, and deletes a template", async () => {
+  services.resize.mockResolvedValue(output("resized.jpg"));
+  const { container, unmount } = renderWithProviders(<ImageDeliveryPage />);
+  select(container, [new File(["source"], "private.png", { type: "image/png" })]);
+  fireEvent.change(screen.getByLabelText("Width (px)"), { target: { value: "900" } });
+  fireEvent.click(screen.getByRole("button", { name: "Resize images" }));
+  await waitFor(() => expect(screen.getByRole("button", { name: "Continue to next step" })).toBeEnabled()); next();
+  fireEvent.change(screen.getByLabelText("Watermark text"), { target: { value: "Brand" } });
+  fireEvent.change(screen.getByLabelText("Template name"), { target: { value: "  Catalog  " } });
+  fireEvent.click(screen.getByRole("button", { name: "Save current settings" }));
+  expect(JSON.parse(localStorage.getItem(templatesKey)!)).toEqual([{ name: "Catalog", resize: { width: 900, height: 1200, keepAspectRatio: true, quality: .9, format: "jpeg" }, watermark: { text: "Brand", position: "bottom-right", opacity: 60, size: 5, color: "#ffffff" } }]);
+  fireEvent.change(screen.getByLabelText("Watermark text"), { target: { value: "Unsaved change" } });
+  fireEvent.change(screen.getByLabelText("Template name"), { target: { value: "Website" } });
+  fireEvent.click(screen.getByRole("button", { name: "Rename template" }));
+  expect(JSON.parse(localStorage.getItem(templatesKey)!)[0].watermark.text).toBe("Brand");
+  unmount(); renderWithProviders(<ImageDeliveryPage />);
+  fireEvent.change(screen.getByLabelText("Saved template"), { target: { value: "Website" } });
+  fireEvent.click(screen.getByRole("button", { name: "Delete template" }));
+  expect(screen.queryByRole("option", { name: "Website" })).not.toBeInTheDocument();
+  expect(JSON.parse(localStorage.getItem(templatesKey)!)).toEqual([]);
+});
+
+it("applying a template clears completed ZIP results, preserves inputs and restores watermark settings", async () => {
+  seedTemplates();
+  services.resize.mockResolvedValue(output("resized.jpg"));
+  services.watermark.mockResolvedValue(output("watermarked.jpg"));
+  services.zip.mockResolvedValue(output("images-delivery.zip", "application/zip"));
+  const { container } = renderWithProviders(<ImageDeliveryPage />);
+  select(container, [new File(["source"], "original.png", { type: "image/png" })]);
+  fireEvent.click(screen.getByRole("button", { name: "Resize images" }));
+  await waitFor(() => expect(screen.getByRole("button", { name: "Continue to next step" })).toBeEnabled()); next();
+  fireEvent.change(screen.getByLabelText("Watermark text"), { target: { value: "Old" } });
+  fireEvent.click(screen.getByRole("button", { name: "Apply watermark" }));
+  await waitFor(() => expect(screen.getByRole("button", { name: "Continue to next step" })).toBeEnabled()); next();
+  fireEvent.click(screen.getByRole("button", { name: "Create ZIP" }));
+  await waitFor(() => expect(screen.getByRole("button", { name: "Continue to next step" })).toBeEnabled()); next();
+  fireEvent.change(screen.getByLabelText("Saved template"), { target: { value: "Shop photos" } });
+  fireEvent.click(screen.getByRole("button", { name: "Apply template" }));
+  expect(screen.queryByRole("button", { name: "Download ZIP" })).not.toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "4. Download" })).toBeDisabled();
+  expect(screen.getByRole("button", { name: "Continue to next step" })).toBeDisabled();
+  expect(screen.getByRole("button", { name: "Resize images" })).toBeEnabled();
+  expect(screen.queryByText("Preview: watermarked.jpg")).not.toBeInTheDocument();
+  fireEvent.click(screen.getByRole("button", { name: "Resize images" }));
+  await waitFor(() => expect(screen.getByRole("button", { name: "Continue to next step" })).toBeEnabled()); next();
+  expect(screen.getByLabelText("Watermark text")).toHaveValue("My shop");
+  expect(screen.getByLabelText("Position")).toHaveValue("center");
+  expect(screen.getByLabelText("Opacity (%)")).toHaveValue(40);
+  expect(screen.getByLabelText("Text size (%)")).toHaveValue(8);
+  expect(screen.getByLabelText("Text color")).toHaveValue("#123456");
+});
+
+it("disables template controls while processing and enables them after cancellation", async () => {
+  seedTemplates(); services.resize.mockReturnValue(new Promise(() => {}));
+  const { container } = renderWithProviders(<ImageDeliveryPage />);
+  select(container, [new File(["source"], "original.png", { type: "image/png" })]);
+  fireEvent.change(screen.getByLabelText("Saved template"), { target: { value: "Shop photos" } });
+  fireEvent.click(screen.getByRole("button", { name: "Apply template" }));
+  fireEvent.click(screen.getByRole("button", { name: "Resize images" }));
+  await waitFor(() => expect(screen.getByRole("button", { name: "Cancel processing" })).toBeInTheDocument());
+  for (const label of ["Apply template", "Save current settings", "Rename template", "Delete template"]) expect(screen.getByRole("button", { name: label })).toBeDisabled();
+  expect(screen.getByLabelText("Saved template")).toBeDisabled();
+  fireEvent.click(screen.getByRole("button", { name: "Cancel processing" }));
+  expect(screen.getByRole("button", { name: "Apply template" })).toBeEnabled();
+});
+
+it("rejects invalid saved settings while retaining valid templates", () => {
+  localStorage.setItem(templatesKey, JSON.stringify([savedTemplate(), { ...savedTemplate("Broken"), resize: { ...savedTemplate().resize, width: 0 } }]));
+  renderWithProviders(<ImageDeliveryPage />);
+  expect(screen.getByRole("option", { name: "Shop photos" })).toBeInTheDocument();
+  expect(screen.queryByRole("option", { name: "Broken" })).not.toBeInTheDocument();
+  expect(screen.getByRole("alert")).toHaveTextContent(/saved templates could not be loaded/i);
+});
+
+it("reports unavailable storage without claiming a template was saved", () => {
+  seedTemplates(); renderWithProviders(<ImageDeliveryPage />);
+  fireEvent.change(screen.getByLabelText("Saved template"), { target: { value: "Shop photos" } });
+  fireEvent.click(screen.getByRole("button", { name: "Apply template" }));
+  fireEvent.change(screen.getByLabelText("Template name"), { target: { value: "New template" } });
+  vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => { throw new Error("quota"); });
+  fireEvent.click(screen.getByRole("button", { name: "Save current settings" }));
+  expect(screen.getByRole("alert")).toHaveTextContent(/could not save templates/i);
+  expect(screen.queryByRole("option", { name: "New template" })).not.toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "Resize images" })).toBeDisabled();
+});
+
+it("rejects duplicate names and invalid current settings", () => {
+  seedTemplates(); renderWithProviders(<ImageDeliveryPage />);
+  fireEvent.change(screen.getByLabelText("Saved template"), { target: { value: "Shop photos" } });
+  fireEvent.click(screen.getByRole("button", { name: "Apply template" }));
+  fireEvent.click(screen.getByRole("button", { name: "Save current settings" }));
+  expect(screen.getByRole("alert")).toHaveTextContent(/unique name/i);
+  fireEvent.change(screen.getByLabelText("Width (px)"), { target: { value: "0" } });
+  expect(screen.getByRole("button", { name: "Save current settings" })).toBeDisabled();
+  expect(JSON.parse(localStorage.getItem(templatesKey)!)).toHaveLength(1);
+});
+
+it("provides Chinese template controls and preserves templates when starting over", () => {
+  seedTemplates(); renderWithProviders(<ImageDeliveryPage />, { locale: "zh-TW" });
+  fireEvent.change(screen.getByLabelText("已儲存範本"), { target: { value: "Shop photos" } });
+  fireEvent.click(screen.getByRole("button", { name: "套用範本" }));
+  expect(screen.getByLabelText("寬度（px）")).toHaveValue(800);
+  fireEvent.click(screen.getByRole("button", { name: "重新開始" }));
+  expect(screen.getByLabelText("寬度（px）")).toHaveValue(1200);
+  expect(screen.getByRole("option", { name: "Shop photos" })).toBeInTheDocument();
+});
+
+it("explains that explicitly saved watermark text persists while source files are cleared", () => {
+  const { container } = renderWithProviders(<ImageDeliveryPage />);
+  expect(container.querySelector(".file-workflow__privacy")).toHaveTextContent(/saved template settings.*watermark text.*persist/i);
+});
 
 it("completes image resize → watermark → ZIP with one file selection, then invalidates downstream outputs", async () => {
   services.resize.mockResolvedValue(output("resized.jpg"));

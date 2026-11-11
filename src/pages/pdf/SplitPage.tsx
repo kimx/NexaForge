@@ -6,6 +6,7 @@ import { FileDropzone } from "../../components/FileDropzone";
 import { FileInfo } from "../../components/FileInfo";
 import { DownloadButton } from "../../components/DownloadButton";
 import { getPdfPageCount, splitPdf } from "../../services/pdf/pdfService";
+import { getPdfToolkitErrorMessage } from "../../services/pdf/pdfToolkit";
 import { getRelatedTools } from "../../utils/toolHelpers";
 import { trackEvent } from "../../utils/analytics";
 import { useSeo } from "../../hooks/useSeo";
@@ -97,7 +98,7 @@ export function PdfSplitPage(): JSX.Element {
       setProcessing("success");
       trackEvent("process_success", { tool: "pdf-split" });
     } catch (err) {
-      setError(t("error.processingFailed"));
+      setError(getPdfToolkitErrorMessage(err, t, t("error.processingFailed")));
       setProcessing("error");
       trackEvent("process_failed", { tool: "pdf-split" });
       console.error(err);
@@ -124,7 +125,7 @@ export function PdfSplitPage(): JSX.Element {
       trackEvent("download", { tool: "pdf-split" });
       trackEvent("process_success", { tool: "pdf-split" });
     } catch (err) {
-      setError(t("error.processingFailed"));
+      setError(getPdfToolkitErrorMessage(err, t, t("error.processingFailed")));
       setProcessing("error");
       trackEvent("process_failed", { tool: "pdf-split" });
       console.error(err);

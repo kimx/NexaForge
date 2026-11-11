@@ -23,6 +23,11 @@
 .file-workflow figure canvas[hidden] { display: none; }
 .file-workflow figcaption, .file-workflow figure p { overflow-wrap: anywhere; color: var(--text-secondary); font-size: .875rem; margin-top: 8px; }
 .file-workflow progress { width: 100%; margin-bottom: 12px; accent-color: var(--brand-primary); }
+.file-workflow .image-delivery-templates { padding: 16px; margin: 0 0 24px; border: 1px solid var(--border-subtle); border-radius: 8px; gap: 12px; }
+.image-delivery-templates legend { padding: 0 6px; font-weight: 600; }
+.image-delivery-templates p { margin: 0; line-height: 1.6; overflow-wrap: anywhere; }
+.image-delivery-templates__actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.image-delivery-templates__privacy { color: var(--text-secondary); font-size: .875rem; }
 .workflow-file-list { list-style: none; margin: 0; padding: 0; }
 .workflow-file-list li { display: flex; align-items: center; gap: 10px; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border-subtle); }
 .workflow-file-list li > span { min-width: 0; overflow-wrap: anywhere; }

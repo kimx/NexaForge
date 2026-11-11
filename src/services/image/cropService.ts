@@ -25,13 +25,14 @@ function croppedFileName(fileName: string, mimeType: string): string {
 
 export async function cropImage(file: File, settings: CropSettings): Promise<ImageCropResult> {
   const bitmap = await createImageBitmap(file);
+  let canvas: HTMLCanvasElement | undefined;
   try {
     if (bitmap.width <= 0 || bitmap.height <= 0) {
       throw new Error("Image has no drawable pixels.");
     }
 
     const plan = createCropRenderPlan(bitmap.width, bitmap.height, settings);
-    const canvas = document.createElement("canvas");
+    canvas = document.createElement("canvas");
     canvas.width = plan.outputWidth;
     canvas.height = plan.outputHeight;
     const context = canvas.getContext("2d");
@@ -83,5 +84,6 @@ export async function cropImage(file: File, settings: CropSettings): Promise<Ima
     };
   } finally {
     bitmap.close();
+    if (canvas) { canvas.width = 0; canvas.height = 0; }
   }
 }
