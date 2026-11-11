@@ -84,6 +84,8 @@ export function ImageCropPage(): JSX.Element {
       xCoordinate: t("tool.image-crop.xCoordinate"),
       yCoordinate: t("tool.image-crop.yCoordinate"),
       resizeShape: t("tool.image-crop.resizeShape"),
+      keyboardInstructions: t("tool.image-crop.keyboardInstructions"),
+      directions: Object.fromEntries(["north", "northeast", "east", "southeast", "south", "southwest", "west", "northwest"].map(direction => [direction, t(`tool.image-crop.direction.${direction}`)])) as ImageCropEditorLabels["directions"],
       notEnoughPoints: t("tool.image-crop.validation.notEnoughPoints"),
       closeShapeHint: t("tool.image-crop.validation.closeShape"),
       selfIntersection: t("tool.image-crop.validation.selfIntersection"),

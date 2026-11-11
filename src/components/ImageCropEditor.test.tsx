@@ -33,6 +33,8 @@ const labels: ImageCropEditorLabels & {
   xCoordinate: "X coordinate",
   yCoordinate: "Y coordinate",
   resizeShape: "Resize shape",
+  keyboardInstructions: "Use arrow keys to move the image or resize the crop. Hold Shift for larger steps.",
+  directions: { north: "north", northeast: "northeast", east: "east", southeast: "southeast", south: "south", southwest: "southwest", west: "west", northwest: "northwest" },
   notEnoughPoints: "Add at least 3 points",
   closeShapeHint: "Close the shape",
   selfIntersection: "Shape lines cannot cross",
@@ -139,6 +141,54 @@ beforeEach(() => {
 });
 
 describe("ImageCropEditor", () => {
+  it("undoes keyboard pan, resize and zoom in reverse order", () => {
+    render(<EditorHarness lockedAspectRatio={35 / 45} />);
+    loadSource();
+    const canvas = screen.getByRole("img", { name: "Crop preview" });
+    fireEvent.keyDown(canvas, { key: "ArrowRight" });
+    fireEvent.keyDown(screen.getByRole("button", { name: "Resize shape east" }), { key: "ArrowRight" });
+    fireEvent.change(screen.getByRole("slider", { name: "Zoom" }), { target: { value: "150" } });
+    fireEvent.click(screen.getByRole("button", { name: "Undo" }));
+    expect(onChange.mock.calls.at(-1)![0].imageTransform.scale).toBe(1);
+    fireEvent.click(screen.getByRole("button", { name: "Undo" }));
+    expect(onChange.mock.calls.at(-1)![0].shape.bounds.width).toBeCloseTo(0.8);
+    fireEvent.click(screen.getByRole("button", { name: "Undo" }));
+    expect(onChange.mock.calls.at(-1)![0].imageTransform.offsetX).toBe(0);
+  });
+
+  it("undoes a pointer pan as one operation", () => {
+    render(<EditorHarness />);
+    loadSource();
+    const canvas = setStageRect();
+    fireEvent.pointerDown(canvas, { pointerId: 1, clientX: 100, clientY: 100 });
+    fireEvent.pointerMove(canvas, { pointerId: 1, clientX: 110, clientY: 100 });
+    fireEvent.pointerMove(canvas, { pointerId: 1, clientX: 120, clientY: 100 });
+    fireEvent.pointerUp(canvas, { pointerId: 1, clientX: 120, clientY: 100 });
+    fireEvent.click(screen.getByRole("button", { name: "Undo" }));
+    expect(onChange.mock.calls.at(-1)![0].imageTransform.offsetX).toBe(0);
+    expect(screen.getByRole("button", { name: "Undo" })).toBeDisabled();
+  });
+
+  it("undoes a crop handle drag and a zoom gesture separately", () => {
+    render(<EditorHarness />);
+    loadSource();
+    setStageRect();
+    const handle = screen.getByRole("button", { name: "Resize shape east" });
+    fireEvent.pointerDown(handle, { pointerId: 1, clientX: 100, clientY: 100 });
+    fireEvent.pointerMove(handle, { pointerId: 1, clientX: 110, clientY: 100 });
+    fireEvent.pointerMove(handle, { pointerId: 1, clientX: 120, clientY: 100 });
+    fireEvent.pointerUp(handle, { pointerId: 1, clientX: 120, clientY: 100 });
+    const zoom = screen.getByRole("slider", { name: "Zoom" });
+    fireEvent.pointerDown(zoom, { pointerId: 2 });
+    fireEvent.change(zoom, { target: { value: "125" } });
+    fireEvent.change(zoom, { target: { value: "150" } });
+    fireEvent.pointerUp(zoom, { pointerId: 2 });
+    fireEvent.click(screen.getByRole("button", { name: "Undo" }));
+    expect(onChange.mock.calls.at(-1)![0].imageTransform.scale).toBe(1);
+    fireEvent.click(screen.getByRole("button", { name: "Undo" }));
+    expect(onChange.mock.calls.at(-1)![0].shape.bounds.width).toBeCloseTo(0.8);
+    expect(screen.getByRole("button", { name: "Undo" })).toBeDisabled();
+  });
   it("keeps locked crops valid at the minimum keyboard resize size", () => {
     const initial = createDefaultCropSettings();
     initial.shape = { kind: "rectangle", aspectRatio: 25 / 35, bounds: { x: 0.4, y: 0.4, width: 0.05, height: 0.07 } };
@@ -177,6 +227,7 @@ describe("ImageCropEditor", () => {
     render(<EditorHarness />);
     loadSource();
     const canvas = screen.getByRole("img", { name: "Crop preview" });
+    expect(canvas).toHaveAccessibleDescription(/arrow keys/i);
 
     fireEvent.keyDown(canvas, { key: "ArrowRight" });
     expect(onChange).toHaveBeenLastCalledWith(

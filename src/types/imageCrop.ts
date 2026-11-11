@@ -92,6 +92,8 @@ export interface ImageCropEditorLabels {
   xCoordinate: string;
   yCoordinate: string;
   resizeShape: string;
+  keyboardInstructions: string;
+  directions: Record<"north" | "northeast" | "east" | "southeast" | "south" | "southwest" | "west" | "northwest", string>;
   notEnoughPoints: string;
   closeShapeHint: string;
   selfIntersection: string;

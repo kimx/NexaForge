@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import type { CSSProperties, KeyboardEvent, PointerEvent } from "react";
 import type {
   CropBounds,
@@ -131,10 +131,12 @@ export function ImageCropEditor({
   lockedAspectRatio,
   onSourceSizeChange,
 }: ImageCropEditorProps): JSX.Element {
+  const instructionsId = useId();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
-  const dragRef = useRef<{ x: number; y: number; transform: CropSettings["imageTransform"] } | null>(null);
-  const resizeRef = useRef<{ x: number; y: number; bounds: CropBounds; direction: ResizeDirection } | null>(null);
+  const dragRef = useRef<{ x: number; y: number; transform: CropSettings["imageTransform"]; start: CropSettings; recorded: boolean } | null>(null);
+  const resizeRef = useRef<{ x: number; y: number; bounds: CropBounds; direction: ResizeDirection; start: CropSettings; recorded: boolean } | null>(null);
+  const zoomGestureRef = useRef<{ start: CropSettings; recorded: boolean } | null>(null);
   const drawingRef = useRef<{ points: CropPoint[]; lastClientX: number; lastClientY: number } | null>(null);
   const nodeDragRef = useRef<{ index: number } | null>(null);
   const [sourceSize, setSourceSize] = useState<{ width: number; height: number } | null>(null);
@@ -156,8 +158,11 @@ export function ImageCropEditor({
   };
   const validationMessage = validation.reason ? reasonLabels[validation.reason] : "";
 
+  const recordHistory = (previous: CropSettings): void => {
+    setHistory((current) => [...current, previous].slice(-50));
+  };
   const commitChange = (next: CropSettings): void => {
-    setHistory((current) => [...current, value].slice(-50));
+    recordHistory(value);
     onChange(next);
   };
 
@@ -255,7 +260,7 @@ export function ImageCropEditor({
     }[event.key];
     if (!movement) return;
     event.preventDefault();
-    emitTransform(value.imageTransform.offsetX + movement[0], value.imageTransform.offsetY + movement[1]);
+    commitChange({ ...value, imageTransform: { ...value.imageTransform, offsetX: stable(value.imageTransform.offsetX + movement[0]), offsetY: stable(value.imageTransform.offsetY + movement[1]) } });
   };
 
   const pointFromPointer = (event: PointerEvent<HTMLElement>): CropPoint | null => {
@@ -291,7 +296,7 @@ export function ImageCropEditor({
       event.currentTarget.setPointerCapture?.(event.pointerId);
       return;
     }
-    dragRef.current = { x: event.clientX, y: event.clientY, transform: { ...value.imageTransform } };
+    dragRef.current = { x: event.clientX, y: event.clientY, transform: { ...value.imageTransform }, start: value, recorded: false };
     event.currentTarget.setPointerCapture?.(event.pointerId);
   };
 
@@ -312,6 +317,7 @@ export function ImageCropEditor({
     if (!drag) return;
     const rect = event.currentTarget.getBoundingClientRect();
     if (rect.width <= 0 || rect.height <= 0) return;
+    if (!drag.recorded && (event.clientX !== drag.x || event.clientY !== drag.y)) { recordHistory(drag.start); drag.recorded = true; }
     emitTransform(
       drag.transform.offsetX + (event.clientX - drag.x) / rect.width,
       drag.transform.offsetY + (event.clientY - drag.y) / rect.height
@@ -335,7 +341,7 @@ export function ImageCropEditor({
     dragRef.current = null;
   };
 
-  const resizeShape = (direction: ResizeDirection, dx: number, dy: number, sourceBounds?: CropBounds): void => {
+  const resizeShape = (direction: ResizeDirection, dx: number, dy: number, sourceBounds?: CropBounds, record = false): void => {
     const bounds = sourceBounds ?? value.shape.bounds;
     if (!bounds || !PRESET_KINDS.includes(value.shape.kind)) return;
     const nextBounds = value.shape.kind === "rectangle"
@@ -349,7 +355,8 @@ export function ImageCropEditor({
       nextBounds.x = direction.includes("west") ? bounds.x + bounds.width - width : bounds.x;
       nextBounds.y = direction.includes("north") ? bounds.y + bounds.height - nextBounds.height : bounds.y;
     }
-    onChange({ ...value, shape: { ...value.shape, bounds: nextBounds } });
+    const next = { ...value, shape: { ...value.shape, bounds: nextBounds } };
+    if (record) commitChange(next); else onChange(next);
   };
 
   const handleResizeKey = (event: KeyboardEvent<HTMLButtonElement>, direction: ResizeDirection): void => {
@@ -362,13 +369,13 @@ export function ImageCropEditor({
     }[event.key];
     if (!delta) return;
     event.preventDefault();
-    resizeShape(direction, delta[0], delta[1]);
+    resizeShape(direction, delta[0], delta[1], undefined, true);
   };
 
   const handleResizePointerDown = (event: PointerEvent<HTMLButtonElement>, direction: ResizeDirection): void => {
     if (!value.shape.bounds) return;
     event.stopPropagation();
-    resizeRef.current = { x: event.clientX, y: event.clientY, bounds: { ...value.shape.bounds }, direction };
+    resizeRef.current = { x: event.clientX, y: event.clientY, bounds: { ...value.shape.bounds }, direction, start: value, recorded: false };
     event.currentTarget.setPointerCapture?.(event.pointerId);
   };
 
@@ -377,6 +384,7 @@ export function ImageCropEditor({
     const stage = canvasRef.current?.getBoundingClientRect();
     if (!resize || !stage || stage.width <= 0 || stage.height <= 0) return;
     event.stopPropagation();
+    if (!resize.recorded && (event.clientX !== resize.x || event.clientY !== resize.y)) { recordHistory(resize.start); resize.recorded = true; }
     resizeShape(
       resize.direction,
       (event.clientX - resize.x) / stage.width,
@@ -513,12 +521,13 @@ export function ImageCropEditor({
         </div>
       </fieldset>}
 
+      <p id={instructionsId}>{labels.keyboardInstructions}</p>
       <div className="image-crop-editor__stage">
         <canvas
           ref={canvasRef}
           role="img"
           aria-label={labels.canvas}
-          aria-describedby="image-crop-editor-status"
+          aria-describedby={`${instructionsId} image-crop-editor-status`}
           tabIndex={0}
           onKeyDown={handleCanvasKeyDown}
           onPointerDown={handleCanvasPointerDown}
@@ -533,7 +542,8 @@ export function ImageCropEditor({
                 type="button"
                 className={`image-crop-editor__handle image-crop-editor__handle--${direction}`}
                 style={getHandlePosition(presetBounds, direction)}
-                aria-label={`${labels.resizeShape} ${direction}`}
+                aria-label={`${labels.resizeShape} ${labels.directions[direction]}`}
+                aria-describedby={instructionsId}
                 onKeyDown={(event) => handleResizeKey(event, direction)}
                 onPointerDown={(event) => handleResizePointerDown(event, direction)}
                 onPointerMove={handleResizePointerMove}
@@ -627,7 +637,14 @@ export function ImageCropEditor({
             max={Math.max(400, zoomPercent)}
             value={zoomPercent}
             aria-label={labels.zoom}
+            onPointerDown={() => { zoomGestureRef.current = { start: value, recorded: false }; }}
+            onPointerUp={() => { zoomGestureRef.current = null; }}
+            onPointerCancel={() => { zoomGestureRef.current = null; }}
             onChange={(event) => {
+              const gesture = zoomGestureRef.current;
+              if (gesture) {
+                if (!gesture.recorded) { recordHistory(gesture.start); gesture.recorded = true; }
+              } else recordHistory(value);
               onChange({
                 ...value,
                 imageTransform: { ...value.imageTransform, scale: Number(event.target.value) / 100 },
